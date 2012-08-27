@@ -44,14 +44,16 @@ namespace SolarLoadModel.Actors
         private static readonly ExecutionManager ExecutionManager = new ExecutionManager();
         private bool _busy;
         private ulong iteration;
+        private int _id;
 
         // counters
         public int Nstarts { get; private set; }
         public int Nstops { get; private set; }
         public GeneratorState State { get; private set; }
 
-        public Generator()
+        public Generator(int id)
         {
+            _id = id;
             State = GeneratorState.Stopped;
         }
 
@@ -67,8 +69,8 @@ namespace SolarLoadModel.Actors
                     ExecutionManager.After(60, TransitionToOnline);
                     Nstarts++;
                     _busy = true;
+                    State = GeneratorState.RunningOpen;
                 }
-                State = GeneratorState.RunningOpen;
             }
         }
         public void Stop()
@@ -83,8 +85,8 @@ namespace SolarLoadModel.Actors
                     ExecutionManager.After(60, TransitionToStop);
                     Nstops++;
                     _busy = true;
+                    State = GeneratorState.RunningOpen;
                 }
-                State = GeneratorState.RunningOpen;
             }
         }
 
@@ -108,7 +110,6 @@ namespace SolarLoadModel.Actors
         {
             lock (_genThreadLock)
             {
-                Console.WriteLine(iteration + " transition to Online");
                 State = GeneratorState.RunningClosed;
                 _busy = false;
             }
@@ -117,7 +118,6 @@ namespace SolarLoadModel.Actors
         {
             lock (_genThreadLock)
             {
-                Console.WriteLine(iteration + " transition to Stopped");
                 State = GeneratorState.Stopped;
                 _busy = false;
             }
@@ -154,6 +154,7 @@ namespace SolarLoadModel.Actors
         private ushort _currCfg;
         private double StatPact;
         private double StatPHyst;
+        private double StatPspin;
         private ushort GenAvailCfg;
         private ulong iteration;
         private readonly GenStrings[] _varStr = new GenStrings[MaxGens];
@@ -182,6 +183,7 @@ namespace SolarLoadModel.Actors
             }
             StatPact = varPool["StatPact"];
             StatPHyst = varPool["StatPHyst"];
+            StatPspin = varPool["StatPspin"];
             GenAvailCfg = Convert.ToUInt16(varPool["GenAvailCfg"]);
             //_executionManager.RunActions(iteration);
             
@@ -191,9 +193,13 @@ namespace SolarLoadModel.Actors
             _currCfg = SelectGens();
             StartStopGens(_currCfg);
             LoadShare();
+            double genPact = 0;
+            bool overload = false;
             for (int i = 0; i < MaxGens; i++)
             {
                 Gen[i].Tick(iteration);
+                genPact += Gen[i].Pact;
+                overload = overload || (Gen[i].LoadFactor > 1);
             }
 
             //
@@ -213,13 +219,15 @@ namespace SolarLoadModel.Actors
                 varPool[_varStr[i].FuelUsed] = Gen[i].FuelUsed;
                 varPool[_varStr[i].RunTime] = Gen[i].RunTime;
             }
+            varPool["GenPact"] = genPact;
+            varPool["GenOverload"] = overload ? 1.0 : 0.0;
         }
 
         public void Init(Dictionary<string, double> varPool)
         {
             for (int i = 0; i < MaxGens; i++)
             {
-                Gen[i] = new Generator();
+                Gen[i] = new Generator(i);
                 int genNo = i + 1;
                 // create keys (faster than doing concats in the Run() method)
                 _varStr[i].Pmax = "Gen" + genNo + "Pmax";
@@ -242,6 +250,8 @@ namespace SolarLoadModel.Actors
                 varPool[_varStr[i].LoadFactor] = 0;
                 varPool[_varStr[i].RunTime] = 0;
             }
+            varPool["GenPact"] = 0;
+            varPool["GenOverload"] = 0;
         }
 
         public void Finish()
@@ -260,7 +270,7 @@ namespace SolarLoadModel.Actors
             for (int i = 0; i < MaxCfg; i++)
             {
                 var thisPwr = TotalPower((ushort)(_configs[i] & GenAvailCfg));
-                if (thisPwr >= StatPact)
+                if (thisPwr >= StatPact + StatPspin)
                 {
                     cfg = _configs[i];
                     pwr = thisPwr;
@@ -318,6 +328,7 @@ namespace SolarLoadModel.Actors
             // simple load sharing:
             // - load is taken / dropped immediatly
             // - load factor is evened across all online sets
+            // - generators can be loaded infinitely
 
             // figure out actual online capacity
             double onlineCap = 0;
