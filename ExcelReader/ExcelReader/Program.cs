@@ -47,6 +47,15 @@ namespace ExcelReader
                                     }
                                 }
 
+                                if (_settings.OutputFiles.Any() && !string.IsNullOrEmpty(_settings.Directory))
+                                {
+                                    int outputFileCount = _settings.OutputFiles.Count();
+                                    for (int i = 0; i < outputFileCount; i++)
+                                    {
+                                        _settings.OutputFiles[i].Filename = _settings.Directory + _settings.OutputFiles[i].Filename;
+                                    }
+                                }
+
                                 // process the other worksheets
                                 Parallel.ForEach(book.Worksheets, sheet =>
                                 {
@@ -67,6 +76,12 @@ namespace ExcelReader
                     }
                 }
             }
+            else
+            {
+                Console.WriteLine("The file '" + config.FullName + "' does not exist.");
+            }
+            Console.WriteLine("Process complete. Press any key to continue.");
+            Console.ReadKey(true);
         }
 
         static void GetOpts(string[] args)

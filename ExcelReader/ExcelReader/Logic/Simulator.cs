@@ -15,9 +15,22 @@ namespace ExcelReader.Logic
                 FileInfo simulatorLocation = new FileInfo(settings.Simulator);
                 if (simulatorLocation.Exists)
                 {
+                    Process simulator = new Process();
                     ProcessStartInfo psi = new ProcessStartInfo(settings.Simulator);
                     psi.Arguments = GenerateArguments(settings);
-                    Process.Start(psi);
+                    psi.CreateNoWindow = true;
+                    psi.UseShellExecute = false;
+                    psi.RedirectStandardOutput = true;
+                    psi.RedirectStandardError = true;
+
+                    simulator.StartInfo = psi;
+                    simulator.OutputDataReceived += (sender, args) => Console.WriteLine(args.Data);
+                    simulator.ErrorDataReceived += (sender, args) => Console.WriteLine(args.Data);
+                    simulator.Start();
+                    simulator.BeginOutputReadLine();
+                    simulator.BeginErrorReadLine();
+                    simulator.WaitForExit();
+                    simulator.Close();
                 }
             }
         }

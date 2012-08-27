@@ -168,12 +168,12 @@ namespace ExcelReader.Logic
                         for (int column = startColumn; column <= endColumn; column++)
                         {
                             var cell = sheet.Cells[row, column].Value;
-                            sbRow.Append(WrapperString);
+                            //sbRow.Append(WrapperString);
                             if (cell != null)
                             {
                                 sbRow.Append(cell);
                             }
-                            sbRow.Append(WrapperString);
+                            //sbRow.Append(WrapperString);
                             if (column != endColumn)
                             {
                                 sbRow.Append(Delimiter);
