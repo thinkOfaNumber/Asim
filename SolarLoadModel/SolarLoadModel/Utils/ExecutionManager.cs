@@ -27,6 +27,7 @@ namespace SolarLoadModel.Utils
             _todo.Add(new DelayedExecution(t, a));
         }
 
+        // todo: opportunity to speed this up as the number of actions gets larger, _todo is not sorted or searched well
         public void RunActions(ulong iter)
         {
             for (int i = _todo.Count - 1; i >= 0; i--)

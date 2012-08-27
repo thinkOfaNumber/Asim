@@ -7,7 +7,26 @@ using SolarLoadModel.Contracts;
 
 namespace SolarLoadModel.Actors
 {
-    // this could be expanded to a class later on with min run times, start(), stop() etc.
+    enum GeneratorState
+    {
+        /// <summary>
+        /// stopped, offline, open, etc.
+        /// </summary>
+        Stopped,
+        /// <summary>
+        /// Run counter incrememnted, but no load or fuel used
+        /// </summary>
+        RunningOpen,
+        /// <summary>
+        /// Run counter incrememted and loaded
+        /// </summary>
+        RunningClosed
+    }
+
+    /// <summary>
+    /// Basic Generator class.  Locking is not required on state transitions becuase all commands
+    /// happen at specific points in the iteration
+    /// </summary>
     class Generator
     {
         public double Pmax { get; set; }
@@ -24,40 +43,84 @@ namespace SolarLoadModel.Actors
         private readonly Object _genThreadLock = new Object();
         private static readonly ExecutionManager ExecutionManager = new ExecutionManager();
         private bool _busy;
+        private ulong iteration;
 
         // counters
         public int Nstarts { get; private set; }
         public int Nstops { get; private set; }
-        public bool Running { get; private set; }
+        public GeneratorState State { get; private set; }
+
+        public Generator()
+        {
+            State = GeneratorState.Stopped;
+        }
 
         public void Start()
         {
             lock (_genThreadLock)
             {
-                if (!Running)
+                if (_busy)
+                    return;
+
+                if (State == GeneratorState.Stopped)
+                {
+                    ExecutionManager.After(60, TransitionToOnline);
                     Nstarts++;
-                Running = true;
+                    _busy = true;
+                }
+                State = GeneratorState.RunningOpen;
             }
         }
         public void Stop()
         {
             lock (_genThreadLock)
             {
-                if (Running)
+                if (_busy)
+                    return;
+
+                if (State == GeneratorState.RunningClosed)
+                {
+                    ExecutionManager.After(60, TransitionToStop);
                     Nstops++;
-                Running = false;
+                    _busy = true;
+                }
+                State = GeneratorState.RunningOpen;
             }
         }
 
         public void Tick(ulong iteration)
         {
-            if (Running)
+            this.iteration = iteration;
+            if (State == GeneratorState.RunningOpen)
+            {
+                RunTime++;
+            }
+            else if (State == GeneratorState.RunningClosed)
             {
                 RunTime++;
                 KwhTotal += PerHourToSec;
-                FuelUsed += (_fuelConsKws * Pact);
+                FuelUsed += (_fuelConsKws * Pact);   
             }
             ExecutionManager.RunActions(iteration);
+        }
+
+        private void TransitionToOnline()
+        {
+            lock (_genThreadLock)
+            {
+                Console.WriteLine(iteration + " transition to Online");
+                State = GeneratorState.RunningClosed;
+                _busy = false;
+            }
+        }
+        private void TransitionToStop()
+        {
+            lock (_genThreadLock)
+            {
+                Console.WriteLine(iteration + " transition to Stopped");
+                State = GeneratorState.Stopped;
+                _busy = false;
+            }
         }
     }
 
@@ -95,7 +158,7 @@ namespace SolarLoadModel.Actors
         private ulong iteration;
         private readonly GenStrings[] _varStr = new GenStrings[MaxGens];
 
-        private readonly ExecutionManager _executionManager = new ExecutionManager();
+        //private readonly ExecutionManager _executionManager = new ExecutionManager();
 
         #region Implementation of IActor
 
@@ -130,7 +193,7 @@ namespace SolarLoadModel.Actors
             LoadShare();
             for (int i = 0; i < MaxGens; i++)
             {
-                Gen[i].Tick();
+                Gen[i].Tick(iteration);
             }
 
             //
@@ -253,13 +316,21 @@ namespace SolarLoadModel.Actors
         private void LoadShare()
         {
             // simple load sharing:
-            // - load is take / dropped immediatly
+            // - load is taken / dropped immediatly
             // - load factor is evened across all online sets
-            var onlineCap = TotalPower(_currCfg);
+
+            // figure out actual online capacity
+            double onlineCap = 0;
+            for (int i = 0; i < MaxGens; i++)
+            {
+                if (Gen[i].State == GeneratorState.RunningClosed)
+                    onlineCap += Gen[i].Pmax;
+            }
+
             for (ushort i = 0; i < MaxGens; i++)
             {
                 ushort genBit = (ushort)(1 << i);
-                if ((genBit & _currCfg) == genBit)
+                if (Gen[i].State == GeneratorState.RunningClosed && ((genBit & _currCfg) == genBit))
                 {
                     Gen[i].Pact = Gen[i].Pmax / onlineCap * StatPact;
                 }
