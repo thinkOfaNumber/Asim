@@ -31,6 +31,7 @@ namespace ExcelReader.Logic
                     simulator.BeginErrorReadLine();
                     simulator.WaitForExit();
                     simulator.Close();
+                    simulator.Dispose();
                 }
             }
         }
