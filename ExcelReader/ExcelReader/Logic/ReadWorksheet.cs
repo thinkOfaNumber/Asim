@@ -162,7 +162,7 @@ namespace ExcelReader.Logic
                     int endRow = sheet.Dimension.End.Row;
                     int startRow = sheet.Dimension.Start.Row;
 
-                    for (int row = startRow; row < endRow; row++)
+                    for (int row = startRow; row <= endRow; row++)
                     {
                         sbRow.Clear();
                         for (int column = startColumn; column <= endColumn; column++)
