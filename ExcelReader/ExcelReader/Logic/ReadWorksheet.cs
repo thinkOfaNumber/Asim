@@ -73,9 +73,6 @@ namespace ExcelReader.Logic
                                         {
                                             settings.Directory = settings.Directory + "\\";
                                         }
-
-                                        // now add the " back on
-                                        settings.Directory = WrapperString + settings.Directory + WrapperString;
                                     }
                                     break;
                                 case "iterations":

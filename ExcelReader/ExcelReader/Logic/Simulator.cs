@@ -10,28 +10,40 @@ namespace ExcelReader.Logic
     {
         public void Run(ConfigSettings settings)
         {
-            if (settings != null && settings.RunSimulator && !string.IsNullOrEmpty(settings.Simulator))
+            if (settings != null && settings.RunSimulator)
             {
-                FileInfo simulatorLocation = new FileInfo(settings.Simulator);
-                if (simulatorLocation.Exists)
+                if (!string.IsNullOrEmpty(settings.Simulator))
                 {
-                    Process simulator = new Process();
-                    ProcessStartInfo psi = new ProcessStartInfo(settings.Simulator);
-                    psi.Arguments = GenerateArguments(settings);
-                    psi.CreateNoWindow = true;
-                    psi.UseShellExecute = false;
-                    psi.RedirectStandardOutput = true;
-                    psi.RedirectStandardError = true;
+                    FileInfo simulatorLocation = new FileInfo(settings.Simulator);
+                    if (simulatorLocation.Exists)
+                    {
+                        Process simulator = new Process();
+                        ProcessStartInfo psi = new ProcessStartInfo(settings.Simulator);
+                        psi.Arguments = GenerateArguments(settings);
+                        psi.CreateNoWindow = true;
+                        psi.UseShellExecute = false;
+                        psi.RedirectStandardOutput = true;
+                        psi.RedirectStandardError = true;
 
-                    simulator.StartInfo = psi;
-                    simulator.OutputDataReceived += (sender, args) => Console.WriteLine(args.Data);
-                    simulator.ErrorDataReceived += (sender, args) => Console.WriteLine(args.Data);
-                    simulator.Start();
-                    simulator.BeginOutputReadLine();
-                    simulator.BeginErrorReadLine();
-                    simulator.WaitForExit();
-                    simulator.Close();
-                    simulator.Dispose();
+                        simulator.StartInfo = psi;
+                        simulator.OutputDataReceived += (sender, args) => Console.WriteLine(args.Data);
+                        simulator.ErrorDataReceived += (sender, args) => Console.WriteLine(args.Data);
+                        simulator.Start();
+                        simulator.BeginOutputReadLine();
+                        simulator.BeginErrorReadLine();
+                        simulator.WaitForExit();
+                        simulator.Close();
+                        simulator.Dispose();
+                    }
+                    else
+                    {
+                        Console.WriteLine("The simulator doesn't exist at the following location: " +
+                                          simulatorLocation.FullName);
+                    }
+                }
+                else
+                {
+                    Console.WriteLine("No simulator location was provided.");
                 }
             }
         }

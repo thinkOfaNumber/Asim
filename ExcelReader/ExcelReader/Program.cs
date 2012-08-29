@@ -13,6 +13,7 @@ namespace ExcelReader
     {
         private static ConfigSettings _settings;
         private static string _inputFile;
+        private const char WrapperString = '"';
 
         enum Arguments
         {
@@ -68,7 +69,7 @@ namespace ExcelReader
                                                 {
                                                     lock (_settings)
                                                     {
-                                                        _settings.InputFiles.Add(inputFileName);
+                                                        _settings.InputFiles.Add(WrapperString + inputFileName + WrapperString);
                                                     }
                                                 }
                                             });
@@ -78,6 +79,11 @@ namespace ExcelReader
                                             Error("Error splitting worksheets: " + e.Message);
                                         }
 
+                                        // add the quotes to the directory
+                                        if (!string.IsNullOrEmpty(_settings.Directory))
+                                        {
+                                            _settings.Directory = WrapperString + _settings.Directory + WrapperString;
+                                        }
 
                                         // call the external system
                                         try
