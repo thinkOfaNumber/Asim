@@ -83,6 +83,14 @@ namespace ExcelReader.Logic
                 });
             }
 
+            if (!string.IsNullOrEmpty(settings.Directory))
+            {
+                args.Append(" --directory ");
+                args.Append(settings.Directory);
+            }
+
+            args.Append(" --nopause ");
+
             return args.ToString();
         }
 

@@ -57,9 +57,25 @@ namespace ExcelReader.Logic
                                 case "directory":
                                     settings.Directory = RetrieveCellValue(sheet.Cells[i,AttributePosition].Value);
                                     // ensure ends with \\
-                                    if (!string.IsNullOrEmpty(settings.Directory) && !settings.Directory.EndsWith("\\"))
+                                    if (!string.IsNullOrEmpty(settings.Directory))
                                     {
-                                        settings.Directory = settings.Directory + "\\";
+                                        if (settings.Directory.StartsWith(WrapperString.ToString()))
+                                        {
+                                            settings.Directory = settings.Directory.TrimStart(new char[] { WrapperString });
+                                        }
+
+                                        if (settings.Directory.EndsWith(WrapperString.ToString()))
+                                        {
+                                            settings.Directory = settings.Directory.TrimEnd(new char[] { WrapperString });
+                                        }
+
+                                        if (!settings.Directory.EndsWith("\\"))
+                                        {
+                                            settings.Directory = settings.Directory + "\\";
+                                        }
+
+                                        // now add the " back on
+                                        settings.Directory = WrapperString + settings.Directory + WrapperString;
                                     }
                                     break;
                                 case "iterations":
@@ -69,6 +85,16 @@ namespace ExcelReader.Logic
                                     cellValue = RetrieveCellValue(sheet.Cells[i,AttributePosition].Value);
                                     if(!string.IsNullOrEmpty(cellValue))
                                     {
+                                        if(!cellValue.StartsWith(WrapperString.ToString()))
+                                        {
+                                            cellValue = WrapperString + cellValue;
+                                        }
+
+                                        if (!cellValue.EndsWith(WrapperString.ToString()))
+                                        {
+                                            cellValue = cellValue + WrapperString;
+                                        }
+
                                         settings.InputFiles.Add(cellValue);
                                     }
                                     break;
@@ -95,7 +121,7 @@ namespace ExcelReader.Logic
                             }
                         }
 
-                        settings.SplitFileDirectory = _defaultDirectory;
+                        settings.SplitFileDirectory = !string.IsNullOrEmpty(settings.Directory) ? settings.Directory : _defaultDirectory;
                         settings.SplitFilePrefix = _defaultFilePrefix;
                     }
                 }
@@ -126,6 +152,15 @@ namespace ExcelReader.Logic
                 {
                     rVal = new OutputInformation();
                     // get the filename
+                    if (!filename.StartsWith(WrapperString.ToString()))
+                    {
+                        filename = WrapperString + filename;
+                    }
+
+                    if (!filename.EndsWith(WrapperString.ToString()))
+                    {
+                        filename = filename + WrapperString;
+                    }
                     rVal.Filename = filename;
                     // get the period
                     rVal.Period = RetrieveCellValue(sheet.Cells[currentRow,PeriodPosition].Value);

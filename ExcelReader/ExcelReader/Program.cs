@@ -14,91 +14,165 @@ namespace ExcelReader
         private static ConfigSettings _settings;
         private static string _inputFile;
 
+        enum Arguments
+        {
+            Input
+        }
+
         public static void Main(string[] args)
         {
             GetOpts(args);
-            FileInfo config = new FileInfo(_inputFile);
-            if (config.Exists)
+            if (string.IsNullOrEmpty(_inputFile))
             {
-                using (FileStream theFile = new FileStream(config.FullName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
-                {
-                    using (ExcelPackage package = new ExcelPackage(theFile))
-                    {
-                        var book = package.Workbook;
-                        if (book != null)
-                        {
-                            if (book.Worksheets.Any())
-                            {
-                                string defaultDirectory = config.Directory + "\\";
-                                string defaultFilePrefix = config.Name.Replace(config.Extension, string.Empty) + "_";
-
-                                ReadWorksheet worksheetReader = new ReadWorksheet(defaultDirectory, defaultFilePrefix);
-
-                                // find the config worksheet
-                                _settings = worksheetReader.ProcessConfigSheet(book.Worksheets);
-
-                                // update input files with directory location
-                                if (_settings.InputFiles.Any() && !string.IsNullOrEmpty(_settings.Directory))
-                                {
-                                    int inputFileCount = _settings.InputFiles.Count();
-                                    for (int i = 0; i < inputFileCount; i++)
-                                    {
-                                        _settings.InputFiles[i] = _settings.Directory + _settings.InputFiles[i];
-                                    }
-                                }
-
-                                if (_settings.OutputFiles.Any() && !string.IsNullOrEmpty(_settings.Directory))
-                                {
-                                    int outputFileCount = _settings.OutputFiles.Count();
-                                    for (int i = 0; i < outputFileCount; i++)
-                                    {
-                                        _settings.OutputFiles[i].Filename = _settings.Directory + _settings.OutputFiles[i].Filename;
-                                    }
-                                }
-
-                                // process the other worksheets
-                                Parallel.ForEach(book.Worksheets, sheet =>
-                                {
-                                    string inputFileName = worksheetReader.ProcessWorksheets(sheet, _settings.SplitOutputFile);
-                                    if (!string.IsNullOrEmpty(inputFileName))
-                                    {
-                                        lock (_settings)
-                                        {
-                                            _settings.InputFiles.Add(inputFileName);
-                                        }
-                                    }
-                                });
-
-                                // call the external system
-                                new Simulator().Run(_settings);
-                            }
-                        }
-                    }
-                }
+                Error("No input file provided.");
             }
             else
             {
-                Console.WriteLine("The file '" + config.FullName + "' does not exist.");
+                try
+                {
+                    FileInfo config = new FileInfo(_inputFile);
+                    if (config.Exists)
+                    {
+                        using (FileStream theFile = new FileStream(config.FullName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+                        {
+                            using (ExcelPackage package = new ExcelPackage(theFile))
+                            {
+                                var book = package.Workbook;
+                                if (book != null)
+                                {
+                                    if (book.Worksheets.Any())
+                                    {
+                                        string defaultDirectory = config.Directory + "\\";
+                                        string defaultFilePrefix = config.Name.Replace(config.Extension, string.Empty) + "_";
+
+                                        ReadWorksheet worksheetReader = new ReadWorksheet(defaultDirectory, defaultFilePrefix);
+
+                                        // find the config worksheet
+                                        try
+                                        {
+                                            _settings = worksheetReader.ProcessConfigSheet(book.Worksheets);
+                                        }
+                                        catch (Exception e)
+                                        {
+                                            Error("Error reading config worksheets: " + e.Message);
+                                        }
+
+
+                                        // process the other worksheets
+                                        try
+                                        {
+                                            Parallel.ForEach(book.Worksheets, sheet =>
+                                            {
+                                                string inputFileName = worksheetReader.ProcessWorksheets(sheet, _settings.SplitOutputFile);
+                                                if (!string.IsNullOrEmpty(inputFileName))
+                                                {
+                                                    lock (_settings)
+                                                    {
+                                                        _settings.InputFiles.Add(inputFileName);
+                                                    }
+                                                }
+                                            });
+                                        }
+                                        catch (Exception e)
+                                        {
+                                            Error("Error splitting worksheets: " + e.Message);
+                                        }
+
+
+                                        // call the external system
+                                        try
+                                        {
+                                            new Simulator().Run(_settings);
+                                        }
+                                        catch (Exception e)
+                                        {
+                                            Error("Error running simulation: " + e.Message);
+                                        }
+
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    else
+                    {
+                        Console.WriteLine("The file '" + config.FullName + "' does not exist.");
+                    }
+                }
+                catch (Exception e)
+                {
+                    Error("Error running reader: " + e.Message);
+                }
             }
-            Console.WriteLine("Process complete. Press any key to continue.");
-            Console.ReadKey(true);
+            AnyKey();
         }
 
         static void GetOpts(string[] args)
         {
+            var allowed = Enum.GetValues(typeof(Arguments)).Cast<Arguments>().Select(e => e.ToString()).ToList();
+
             var stack = new Stack<string>(args.Reverse());
             while (stack.Count > 0)
             {
                 var arg = stack.Pop();
-                if (arg.Equals("--input"))
+                if (!arg.StartsWith("--"))
                 {
-                    _inputFile = stack.Pop();
+                    Error("Unknown argument: " + arg);
+                }
+                arg = arg.Substring(2);
+                if (allowed.Count(s => s.ToLower().StartsWith(arg.ToLower())) > 1)
+                {
+                    Error("Ambiguous argument: " + arg);
+                }
+
+                Arguments thisArg;
+                if (Enum.TryParse(arg, true, out thisArg))
+                {
+                    switch (thisArg)
+                    {
+                        case Arguments.Input:
+                            _inputFile = stack.Pop();
+                            break;
+                    }
+                }
+                else
+                {
+                    Error("Unknown argument: " + arg);
                 }
             }
-            if (stack.Any())
+        }
+
+        static void Error(string s)
+        {
+            StringBuilder usage = new StringBuilder();
+            usage.Append(Environment.NewLine);
+            usage.Append("Useage:");
+            usage.Append(Environment.NewLine);
+            usage.Append("ExcelReader.exe [--input <filename>]");
+            usage.Append(Environment.NewLine);
+            usage.Append(Environment.NewLine);
+            usage.Append("Example:");
+            usage.Append(Environment.NewLine);
+            usage.Append("ExcelReader.exe --input \"C:\\Users\\Joe\\Data\\Example.xlsm\"");
+            usage.Append(Environment.NewLine);
+
+            Console.WriteLine("Error: " + s);
+            Console.WriteLine(usage);
+            AnyKey();
+            Environment.Exit(-1);
+        }
+
+        static void AnyKey()
+        {
+            Console.WriteLine("Press any key to continue.");
+            try
             {
-                throw new ArgumentException("Unknown command line arguments: '" + string.Join(", ", stack) + "'");
+                Console.ReadKey();
+            }
+            catch (Exception e)
+            {
             }
         }
+
     }
 }
