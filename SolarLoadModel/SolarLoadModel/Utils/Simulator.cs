@@ -12,7 +12,6 @@ namespace SolarLoadModel.Utils
     {
         public bool WaitForKeyPress { get; set; }
         public ulong Iterations { get; set; }
-        public string Path = "";
 
         private class OutputOption
         {
@@ -41,10 +40,10 @@ namespace SolarLoadModel.Utils
             var actors = new List<IActor>();
             var varPool = new Dictionary<string, double>();
 
-            _inputActors.ForEach(s => actors.Add(new NextData(Path+s)));
+            _inputActors.ForEach(s => actors.Add(new NextData(s)));
             // add extra simulation actors here.  Order is important:
             actors.Add(new GenMgr());
-            _outputActors.ForEach(o => actors.Add(new OutputData(Path+o.Filename, o.Vars, o.Period)));
+            _outputActors.ForEach(o => actors.Add(new OutputData(o.Filename, o.Vars, o.Period)));
 
             _inputActors = null;
             _outputActors = null;

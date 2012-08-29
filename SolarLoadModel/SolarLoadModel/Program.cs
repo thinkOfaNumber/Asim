@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Timers;
@@ -20,7 +21,7 @@ namespace SolarLoadModel
             Iterations,
             Input,
             Output,
-            Path,
+            Directory,
             Nopause
         }
 
@@ -58,12 +59,13 @@ namespace SolarLoadModel
                             if (!ulong.TryParse(s, out iterations))
                                 Error("--iterations must be followed by a whole number, not '" + s + "'");
                             break;
+
                         case Arguments.Input:
                             _simulator.AddInput(stack.Pop());
                             break;
+
                         case Arguments.Output:  
                             outputFile = stack.Pop();
-                            
                             uint period = 1;
                             if (UInt32.TryParse(stack.Peek(), out period))
                                 stack.Pop();
@@ -71,11 +73,10 @@ namespace SolarLoadModel
                             var vars = stack.Pop().Split(new[]{','}, StringSplitOptions.RemoveEmptyEntries);
                             _simulator.AddOutput(outputFile, vars, period);
                             break;
-                        case Arguments.Path:
+
+                        case Arguments.Directory:
                             string path = stack.Pop();
-                            if (!path.EndsWith("\\"))
-                                path = path + "\\";
-                            _simulator.Path = path;
+                            Directory.SetCurrentDirectory(path);
                             break;
 
                         case Arguments.Nopause:
