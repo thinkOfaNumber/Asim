@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Timers;
@@ -13,18 +14,21 @@ namespace SolarLoadModel
     class Program
     {
         private static Simulator _simulator;
+        private static bool _pause;
         enum Arguments
         {
             Iterations,
             Input,
             Output,
-            Path
+            Path,
+            Nopause
         }
 
         static void Main(string[] args)
         {
             _simulator = new Simulator();
             ulong iterations = 100000;
+            _pause = true;
             // convert the enum to a list of strings to save retyping each option:
             var allowed = Enum.GetValues(typeof(Arguments)).Cast<Arguments>().Select(e => e.ToString()).ToList();
 
@@ -50,7 +54,9 @@ namespace SolarLoadModel
                     switch (thisArg)
                     {
                         case Arguments.Iterations:
-                            iterations = Convert.ToUInt64(stack.Pop());
+                            var s = stack.Pop();
+                            if (!ulong.TryParse(s, out iterations))
+                                Error("--iterations must be followed by a whole number, not '" + s + "'");
                             break;
                         case Arguments.Input:
                             _simulator.AddInput(stack.Pop());
@@ -71,6 +77,10 @@ namespace SolarLoadModel
                                 path = path + "\\";
                             _simulator.Path = path;
                             break;
+
+                        case Arguments.Nopause:
+                            _pause = false;
+                            break;
                     }
                 }
                 else
@@ -80,7 +90,15 @@ namespace SolarLoadModel
             }
 
             _simulator.Iterations = iterations;
-            _simulator.Simulate();
+            try
+            {
+                _simulator.Simulate();
+            }
+            catch(Exception e)
+            {
+                Error("Error running simulation: " +  e.Message);
+            }
+            AnyKey();
         }
 
         static void Error(string s)
@@ -88,12 +106,15 @@ namespace SolarLoadModel
             const string usage = @"
 Usage:
 SolarLoadModel.exe [--iterations <iterations>] [--input <filename> [...]]
-        [--output [period] <varlist> [...]] [--path <pathName>]
+        [--output [period] <varlist> [...]] [--path <pathName>] [--nopause]
 
 Where:
     iterations: number of iterations to run
     period: seconds
     varlist: comma separated list of variable names (no spaces)
+
+--nopause tells the application not to prompt to ""Press any key to continue""
+    at the end.
 
 All paths are system-quoted (\\ in Windows).  pathName is prefixed to both
     input and output file names.
@@ -103,9 +124,25 @@ SolarLoadModel.exe --iterations 100000 --path C:\\Users\\Joe\\Data
     --input config.csv
     --output output.csv Gen1KwhTotal,Gen2KwhTotal,Gen3KwhTotal,Gen4KwhTotal
 ";
-            Console.WriteLine(s);
+            Console.WriteLine("Error: " + s);
             Console.WriteLine(usage);
+            AnyKey();
             Environment.Exit(-1);
+        }
+
+        static void AnyKey()
+        {
+            if (!_pause)
+                return;
+
+            Console.WriteLine("Press any key to continue.");
+            try
+            {
+                Console.ReadKey();
+            }
+            catch (Exception e)
+            {
+            }
         }
     }
 }

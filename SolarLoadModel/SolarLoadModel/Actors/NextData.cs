@@ -26,11 +26,6 @@ namespace SolarLoadModel.Actors
             _file = new System.IO.StreamReader(_filename);
         }
 
-        ~NextData()
-        {
-            _file.Close();
-        }
-
         public void Run(Dictionary<string, double> varPool, ulong iteration)
         {
             try
@@ -69,16 +64,22 @@ namespace SolarLoadModel.Actors
             List<string> data = _nextline.Split(',').ToList();
             if (!data[0].Equals("t"))
             {
-                throw new FormatException("Cell 0,0 must contain 't' to be a valid input file");
+                throw new FormatException(_filename + ": Cell 0,0 must contain 't' to be a valid input file");
             }
             if (data.Count <= 1)
             {
-                throw new FormatException("Header row must contain at least one variable besides 't'.");
+                throw new FormatException(_filename + ": Header row must contain at least one variable besides 't'.");
             }
             data.RemoveAt(0);
             data.ForEach(_headers.Add);
             _headerCount = _headers.Count;
             _row = new double[_headerCount];
+
+            // init variables in this file
+            for (int i = 0; i < _headerCount; i++)
+            {
+                varPool[_headers.ElementAt(i)] = 0;
+            }
 
             // get first data row
             _nextline = ReadLine();

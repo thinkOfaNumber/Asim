@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using SolarLoadModel.Exceptions;
 using SolarLoadModel.Utils;
 using SolarLoadModel.Contracts;
 
@@ -241,7 +242,7 @@ namespace SolarLoadModel.Actors
                 _varStr[i].FuelCons = "Gen" + genNo + "FuelCons";
                 _varStr[i].FuelUsed = "Gen" + genNo + "FuelUsed";
 
-                // create variables in varPool
+                // create variables in varPool for variables we write to
                 varPool[_varStr[i].Pmax] = 0;
                 varPool[_varStr[i].Pact] = 0;
                 varPool[_varStr[i].Nstarts] = 0;
@@ -249,9 +250,21 @@ namespace SolarLoadModel.Actors
                 varPool[_varStr[i].TminRun] = 0;
                 varPool[_varStr[i].LoadFactor] = 0;
                 varPool[_varStr[i].RunTime] = 0;
+                varPool[_varStr[i].KwhTotal] = 0;
+                varPool[_varStr[i].FuelUsed] = 0;
+
+                // test existance of variables we read from
+                TestExistance(varPool, _varStr[i].FuelCons);
             }
+            // create variables in varPool for variables we write to
             varPool["GenPact"] = 0;
             varPool["GenOverload"] = 0;
+
+            // test existance of variables we read from
+            TestExistance(varPool, "StatPact");
+            TestExistance(varPool, "StatPHyst");
+            TestExistance(varPool, "StatPspin");
+            TestExistance(varPool, "GenAvailCfg");
         }
 
         public void Finish()
@@ -260,6 +273,15 @@ namespace SolarLoadModel.Actors
         }
 
         #endregion
+
+        private void TestExistance(Dictionary<string, double> varPool, string s)
+        {
+            double dummy;
+            if (!varPool.TryGetValue(s, out dummy))
+            {
+                throw new VarNotFoundException("GenMgr simulator expected the variable '" + s + "' would exist by now.");
+            }
+        }
 
         private ushort SelectGens()
         {

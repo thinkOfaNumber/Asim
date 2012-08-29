@@ -48,7 +48,7 @@ namespace SolarLoadModel.Utils
 
             _inputActors = null;
             _outputActors = null;
-
+            
             Console.WriteLine("Init...");
             actors.ForEach(a => a.Init(varPool));
             Console.WriteLine("Run " + Iterations + " iterations...");
@@ -88,7 +88,7 @@ namespace SolarLoadModel.Utils
 
         private void OnTimedEvent(object source, ElapsedEventArgs e)
         {
-            Console.Write(string.Format("{0:P0}... ", (float)_iteration / (float)Iterations));
+            Console.WriteLine(string.Format("{0:P0}... ", (float)_iteration / (float)Iterations));
         }
     }
 }
