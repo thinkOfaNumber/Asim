@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using SolarLoadModel.Contracts;
 using SolarLoadModel.Exceptions;
 
@@ -13,12 +14,13 @@ namespace SolarLoadModel.Actors
     {
         private readonly System.IO.StreamWriter _file;
         private readonly string _filename;
-        private readonly string[] _vars;
+        private readonly string[] _varGlobs;
+        private string[] _vars;
+        private int _nvars;
         private double[] _min;
         private double[] _max;
         private double[] _ave;
         private double[] _val;
-        private readonly int _nvars;
         private StringBuilder _row;
         private readonly uint _outputEvery;
         private readonly bool _doStats;
@@ -28,8 +30,7 @@ namespace SolarLoadModel.Actors
         {
             _filename = filename;
             _file = new System.IO.StreamWriter(_filename);
-            _vars = vars;
-            _nvars = vars.Count();
+            _varGlobs = vars;
             _outputEvery = outputEvery;
             _doStats = outputEvery > 1;
         }
@@ -103,6 +104,21 @@ namespace SolarLoadModel.Actors
         public void Init(Dictionary<string, double> varPool)
         {
             _row = new StringBuilder("t");
+
+            // by now all vars will exist in varPool, so expand globs
+            Regex regex;
+            var varList = new HashSet<string>();
+            foreach (string glob in _varGlobs)
+            {
+                regex = new Regex("^" + glob.Replace(@"\*", ".*").Replace(@"\?", ".") + "$", RegexOptions.IgnoreCase | RegexOptions.Singleline);
+                //varList.AddRange(varPool.Keys.Where(var => regex.IsMatch(var)));
+                foreach (string var in varPool.Keys.Where(var => regex.IsMatch(var)))
+                {
+                    varList.Add(var);
+                }
+            }
+            _vars = varList.ToArray();
+            _nvars = varList.Count;
 
             _val = new double[_nvars];
             if (_doStats)

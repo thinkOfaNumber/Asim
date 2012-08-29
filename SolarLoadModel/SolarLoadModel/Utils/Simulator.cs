@@ -21,7 +21,7 @@ namespace SolarLoadModel.Utils
             public uint Period;
         }
 
-        private ulong _iteration;
+        public ulong Iteration { get; private set; }
         private System.Timers.Timer _timer;
         private List<string> _inputActors = new List<string>();
         private List<OutputOption> _outputActors = new List<OutputOption>();
@@ -56,26 +56,27 @@ namespace SolarLoadModel.Utils
             _timer = new System.Timers.Timer(5000);
             _timer.Elapsed += new ElapsedEventHandler(OnTimedEvent);
             _timer.Enabled = true;
-
-            //
-            //
-            //
-            var start = DateTime.Now;
-            for (ulong i = 0; i < Iterations; i++)
+            try
             {
-                _iteration = i;
-                actors.ForEach(a => a.Run(varPool, i));
+                var start = DateTime.Now;
+                for (ulong i = 0; i < Iterations; i++)
+                {
+                    Iteration = i;
+                    actors.ForEach(a => a.Run(varPool, i));
+                }
+                var end = DateTime.Now;
+                Console.WriteLine("100%");
+                actors.ForEach(a => a.Finish());
+                Console.WriteLine(string.Format("inner loop took {0}s", (end - start).TotalSeconds));
             }
-            var end = DateTime.Now;
-            Console.WriteLine("100%");
-            actors.ForEach(a => a.Finish());
-            Console.WriteLine(string.Format("inner loop took {0}s", (end - start).TotalSeconds));
-            //
-            //
-            //
-
-            //PrintState(varPool);
-            //WaitForKeypress("Press any key to continue...");
+            catch(Exception e)
+            {
+                throw new Exception("Error in simulation iteration: " + Iteration, e);
+            }
+            finally
+            {
+                _timer.Enabled = false;
+            }
         }
 
         private void PrintState(IDictionary<string, double> varPool)
@@ -88,7 +89,7 @@ namespace SolarLoadModel.Utils
 
         private void OnTimedEvent(object source, ElapsedEventArgs e)
         {
-            Console.WriteLine(string.Format("{0:P0}... ", (float)_iteration / (float)Iterations));
+            Console.WriteLine(string.Format("{0:P0}... ", (float)Iteration / (float)Iterations));
         }
     }
 }

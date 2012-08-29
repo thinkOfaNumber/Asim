@@ -25,9 +25,10 @@ namespace SolarLoadModel.Actors
     }
 
     /// <summary>
-    /// Basic Generator class.  Locking is not required on state transitions becuase all commands
-    /// happen at specific points in the iteration
+    /// Basic Generator class.
     /// </summary>
+    /// <remarks>Locking is not required on state transitions becuase all commands
+    /// happen at specific points in the iteration</remarks>
     class Generator
     {
         public double Pmax { get; set; }
@@ -44,7 +45,7 @@ namespace SolarLoadModel.Actors
         private readonly Object _genThreadLock = new Object();
         private static readonly ExecutionManager ExecutionManager = new ExecutionManager();
         private bool _busy;
-        private ulong iteration;
+        private static ulong _iteration;
         private int _id;
 
         // counters
@@ -91,9 +92,8 @@ namespace SolarLoadModel.Actors
             }
         }
 
-        public void Tick(ulong iteration)
+        public void Tick()
         {
-            this.iteration = iteration;
             if (State == GeneratorState.RunningOpen)
             {
                 RunTime++;
@@ -104,7 +104,12 @@ namespace SolarLoadModel.Actors
                 KwhTotal += PerHourToSec;
                 FuelUsed += (_fuelConsKws * Pact);   
             }
-            ExecutionManager.RunActions(iteration);
+        }
+
+        public static void UpdateStates(ulong iteration)
+        {
+            _iteration = iteration;
+            ExecutionManager.RunActions(_iteration);
         }
 
         private void TransitionToOnline()
@@ -198,10 +203,11 @@ namespace SolarLoadModel.Actors
             bool overload = false;
             for (int i = 0; i < MaxGens; i++)
             {
-                Gen[i].Tick(iteration);
+                Gen[i].Tick();
                 genPact += Gen[i].Pact;
                 overload = overload || (Gen[i].LoadFactor > 1);
             }
+            Generator.UpdateStates(iteration);
 
             //
             // Set Outputs
