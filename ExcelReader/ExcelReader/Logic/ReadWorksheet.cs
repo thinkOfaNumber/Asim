@@ -1,11 +1,14 @@
-﻿using System.IO;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using OfficeOpenXml;
 
 namespace ExcelReader.Logic
 {
-    class ReadWorksheet
+    class ReadWorksheet : IExcelReader
     {
         #region Variables
         private const char Delimiter = ',';
@@ -15,29 +18,79 @@ namespace ExcelReader.Logic
         private const int PeriodPosition = 3;
         private const int VariablesStartPosition = 4;
 
-        private string _defaultDirectory;
-        private string _defaultFilePrefix;
+        private string _filename;
+        private ConfigSettings _settings;
+        private ExcelWorkbook _book;
 
         #endregion
 
         #region Constructor
-        public ReadWorksheet()
-        {
-        }
 
-        public ReadWorksheet(string defaultDirectory, string defaultFilePrefix)
+        public ReadWorksheet(string filename, ConfigSettings settings)
         {
-            _defaultDirectory = defaultDirectory;
-            _defaultFilePrefix = defaultFilePrefix;
+            _filename = filename;
+            _settings = settings;
         }
 
         #endregion
 
         #region Process Config Sheet
-        public ConfigSettings ProcessConfigSheet(ExcelWorksheets lstSheets)
-        {
-            ConfigSettings settings = new ConfigSettings();
 
+        public void ProcessConfigSheet(bool attachToRunningProcess)
+        {
+            if (attachToRunningProcess)
+            {
+                throw new Exception("not implemented");
+            }
+
+            FileInfo config = new FileInfo(_filename);
+            if (config.Exists)
+            {
+                Directory.SetCurrentDirectory(config.DirectoryName);
+                using (FileStream theFile = new FileStream(config.FullName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+                {
+                    using (ExcelPackage package = new ExcelPackage(theFile))
+                    {
+                        _book = package.Workbook;
+                        if (_book != null)
+                        {
+                            if (_book.Worksheets.Any())
+                            {
+                                // find the config worksheet
+                                try
+                                {
+                                    _settings = ProcessSheet(_book.Worksheets);
+                                }
+                                catch (Exception e)
+                                {
+                                    throw new Exception("Error reading config worksheets: " + e.Message, e);
+                                }
+                                // set the current directory
+                                if (!string.IsNullOrEmpty(_settings.Directory))
+                                {
+                                    try
+                                    {
+                                        Directory.SetCurrentDirectory(_settings.Directory);
+                                    }
+                                    catch (Exception e)
+                                    {
+                                        throw new Exception("Error setting directory: " + e.Message, e);
+                                    }
+                                }
+                                _settings.SplitFilePrefix = config.Name.Replace(config.Extension, "_");
+                            }
+                        }
+                    }
+                }
+            }
+            else
+            {
+                Console.WriteLine("The file '" + config.FullName + "' does not exist.");
+            }
+        }
+
+        private ConfigSettings ProcessSheet(ExcelWorksheets lstSheets)
+        {
             if (lstSheets.Any())
             {
                 foreach (var sheet in lstSheets)
@@ -52,31 +105,31 @@ namespace ExcelReader.Logic
                             switch (RetrieveCellValue(sheet.Cells[i, PropertyPosition].Value).Trim().ToLower())
                             {
                                 case "simulator":
-                                    settings.Simulator = RetrieveCellValue(sheet.Cells[i,AttributePosition].Value);
+                                    _settings.Simulator = RetrieveCellValue(sheet.Cells[i,AttributePosition].Value);
                                     break;
                                 case "directory":
-                                    settings.Directory = RetrieveCellValue(sheet.Cells[i,AttributePosition].Value);
+                                    _settings.Directory = RetrieveCellValue(sheet.Cells[i,AttributePosition].Value);
                                     // ensure ends with \\
-                                    if (!string.IsNullOrEmpty(settings.Directory))
+                                    if (!string.IsNullOrEmpty(_settings.Directory))
                                     {
-                                        if (settings.Directory.StartsWith(WrapperString.ToString()))
+                                        if (_settings.Directory.StartsWith(WrapperString.ToString()))
                                         {
-                                            settings.Directory = settings.Directory.TrimStart(new char[] { WrapperString });
+                                            _settings.Directory = _settings.Directory.TrimStart(new char[] { WrapperString });
                                         }
 
-                                        if (settings.Directory.EndsWith(WrapperString.ToString()))
+                                        if (_settings.Directory.EndsWith(WrapperString.ToString()))
                                         {
-                                            settings.Directory = settings.Directory.TrimEnd(new char[] { WrapperString });
+                                            _settings.Directory = _settings.Directory.TrimEnd(new char[] { WrapperString });
                                         }
 
-                                        if (settings.Directory.EndsWith("\\"))
+                                        if (_settings.Directory.EndsWith("\\"))
                                         {
-                                            settings.Directory = settings.Directory.TrimEnd(new char[] { '\\' });
+                                            _settings.Directory = _settings.Directory.TrimEnd(new char[] { '\\' });
                                         }
                                     }
                                     break;
                                 case "iterations":
-                                    settings.Iterations = RetrieveCellValue(sheet.Cells[i,AttributePosition].Value);
+                                    _settings.Iterations = RetrieveCellValue(sheet.Cells[i,AttributePosition].Value);
                                     break;
                                 case "input":
                                     cellValue = RetrieveCellValue(sheet.Cells[i,AttributePosition].Value);
@@ -92,39 +145,27 @@ namespace ExcelReader.Logic
                                             cellValue = cellValue + WrapperString;
                                         }
 
-                                        settings.InputFiles.Add(cellValue);
+                                        _settings.InputFiles.Add(cellValue);
                                     }
                                     break;
                                 case "output":
                                     OutputInformation info = RetrieveOutputInformation(sheet, i);
                                     if(info != null)
                                     {
-                                        settings.OutputFiles.Add(info);
+                                        _settings.OutputFiles.Add(info);
                                     }
                                     break;
                                 case "runsimulator":
                                     cellValue = RetrieveCellValue(sheet.Cells[i,AttributePosition].Value).ToLower();
-                                    if (cellValue == "false" || cellValue == "f" ||
-                                        cellValue == "no" || cellValue == "n" ||
-                                        cellValue == "0")
-                                    {
-                                        settings.RunSimulator = false;
-                                    }
-                                    else
-                                    {
-                                        settings.RunSimulator = true;
-                                    }
+                                    _settings.RunSimulator = !Helper.IsFalse(cellValue);
                                     break;
                             }
                         }
-
-                        settings.SplitFileDirectory = !string.IsNullOrEmpty(settings.Directory) ? settings.Directory : _defaultDirectory;
-                        settings.SplitFilePrefix = _defaultFilePrefix;
                     }
                 }
             }
 
-            return settings;
+            return _settings;
         }
 
         private string RetrieveCellValue(object cellValue)
@@ -177,8 +218,35 @@ namespace ExcelReader.Logic
         }
         #endregion
 
+        public void ProcessAllWorksheets()
+        {
+            if (_book == null)
+            {
+                return;
+            }
+            // process the other worksheets
+            try
+            {
+                Parallel.ForEach(_book.Worksheets, sheet =>
+                {
+                    string inputFileName = ProcessWorksheet(sheet, _settings.SplitFilePrefix);
+                    if (!string.IsNullOrEmpty(inputFileName))
+                    {
+                        lock (_settings)
+                        {
+                            _settings.InputFiles.Add(WrapperString + inputFileName + WrapperString);
+                        }
+                    }
+                });
+            }
+            catch (Exception e)
+            {
+                throw new Exception("Error splitting worksheets: " + e.Message, e);
+            }
 
-        public string ProcessWorksheets(ExcelWorksheet sheet, string currentDirectory, string prefix)
+        }
+
+        private string ProcessWorksheet(ExcelWorksheet sheet, string prefix)
         {
             // must be t
             var startCell = sheet.GetValue(1, 1);
@@ -186,7 +254,7 @@ namespace ExcelReader.Logic
             {
                 StringBuilder sbRow = new StringBuilder();
                 string outputFileName = prefix + sheet.Name + ".csv";
-                FileStream fs = new FileStream(currentDirectory + "\\" + outputFileName, FileMode.Create);
+                FileStream fs = new FileStream(outputFileName, FileMode.Create);
                 using (StreamWriter streamWriter = new StreamWriter(fs))
                 {
                     int endColumn = sheet.Dimension.End.Column;

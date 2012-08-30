@@ -26,10 +26,6 @@ namespace ExcelReader.Logic
         /// </summary>
         public string Directory { get; set; }
         /// <summary>
-        /// The directory where the split files will be stored.
-        /// </summary>
-        public string SplitFileDirectory { get; set; }
-        /// <summary>
         /// The prefix that is added to the files that are split up from the sheets in the excel document
         /// </summary>
         public string SplitFilePrefix { get; set; }
@@ -39,11 +35,6 @@ namespace ExcelReader.Logic
             InputFiles = new List<string>();
             OutputFiles = new List<OutputInformation>();
             RunSimulator = true;
-        }
-
-        public string SplitOutputFile
-        {
-            get { return SplitFileDirectory + (SplitFilePrefix ?? string.Empty); }
         }
     }
 

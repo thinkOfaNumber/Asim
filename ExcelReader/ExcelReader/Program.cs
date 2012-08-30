@@ -11,13 +11,15 @@ namespace ExcelReader
 {
     class Program
     {
-        private static ConfigSettings _settings;
+        private static readonly ConfigSettings Settings = new ConfigSettings();
         private static string _inputFile;
         private const char WrapperString = '"';
+        private static bool _attach;
 
         enum Arguments
         {
-            Input
+            Input,
+            Attach
         }
 
         public static void Main(string[] args)
@@ -31,107 +33,30 @@ namespace ExcelReader
             {
                 try
                 {
-                    FileInfo config = new FileInfo(_inputFile);
-                    if (config.Exists)
-                    {
-                        using (FileStream theFile = new FileStream(config.FullName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
-                        {
-                            using (ExcelPackage package = new ExcelPackage(theFile))
-                            {
-                                var book = package.Workbook;
-                                if (book != null)
-                                {
-                                    if (book.Worksheets.Any())
-                                    {
-                                        string defaultDirectory = config.Directory + "\\";
-                                        string defaultFilePrefix = config.Name.Replace(config.Extension, string.Empty) + "_";
-
-                                        ReadWorksheet worksheetReader = new ReadWorksheet(defaultDirectory, defaultFilePrefix);
-
-                                        // find the config worksheet
-                                        try
-                                        {
-                                            _settings = worksheetReader.ProcessConfigSheet(book.Worksheets);
-                                        }
-                                        catch (Exception e)
-                                        {
-                                            Error("Error reading config worksheets: " + e.Message);
-                                        }
-                                        // set the current directory
-                                        if (!string.IsNullOrEmpty(_settings.Directory))
-                                        {
-                                            try
-                                            {
-                                                Directory.SetCurrentDirectory(_settings.Directory);
-                                            }
-                                            catch (Exception e)
-                                            {
-                                                Error("Error setting directory: " + e.Message);
-                                            }
-                                        }
-                                        else
-                                        {
-                                            try
-                                            {
-                                                Directory.SetCurrentDirectory(_settings.SplitFileDirectory);
-                                            }
-                                            catch (Exception e)
-                                            {
-                                                Error("Error setting directory: " + e.Message);
-                                            }
-                                        }
-
-
-                                        // process the other worksheets
-                                        string currentDirectory = Directory.GetCurrentDirectory();
-                                        try
-                                        {
-                                            Parallel.ForEach(book.Worksheets, sheet =>
-                                            {
-                                                string inputFileName = worksheetReader.ProcessWorksheets(sheet, currentDirectory, _settings.SplitFilePrefix);
-                                                if (!string.IsNullOrEmpty(inputFileName))
-                                                {
-                                                    lock (_settings)
-                                                    {
-                                                        _settings.InputFiles.Add(WrapperString + inputFileName + WrapperString);
-                                                    }
-                                                }
-                                            });
-                                        }
-                                        catch (Exception e)
-                                        {
-                                            Error("Error splitting worksheets: " + e.Message);
-                                        }
-
-                                        // add the quotes to the directory
-                                        if (!string.IsNullOrEmpty(_settings.Directory))
-                                        {
-                                            _settings.Directory = WrapperString + _settings.Directory + WrapperString;
-                                        }
-
-                                        // call the external system
-                                        try
-                                        {
-                                            new Simulator().Run(_settings);
-                                        }
-                                        catch (Exception e)
-                                        {
-                                            Error("Error running simulation: " + e.Message);
-                                        }
-
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    else
-                    {
-                        Console.WriteLine("The file '" + config.FullName + "' does not exist.");
-                    }
+                    // IExcelReader reader = new ReadWorksheet(_inputFile, Settings);
+                    IExcelReader reader = new AutomateWorksheet(_inputFile, Settings);
+                    reader.ProcessConfigSheet(_attach);
+                    reader.ProcessAllWorksheets();
                 }
                 catch (Exception e)
                 {
                     Error("Error running reader: " + e.Message);
+                }
+
+                // add the quotes to the directory
+                if (!string.IsNullOrEmpty(Settings.Directory))
+                {
+                    Settings.Directory = WrapperString + Settings.Directory + WrapperString;
+                }
+
+                // call the external system
+                try
+                {
+                    new Simulator().Run(Settings);
+                }
+                catch (Exception e)
+                {
+                    Error("Error running simulation: " + e.Message);
                 }
             }
             AnyKey();
@@ -162,6 +87,10 @@ namespace ExcelReader
                     {
                         case Arguments.Input:
                             _inputFile = stack.Pop();
+                            break;
+
+                        case Arguments.Attach:
+                            _attach = true;
                             break;
                     }
                 }
