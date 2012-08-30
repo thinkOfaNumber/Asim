@@ -76,7 +76,14 @@ namespace SolarLoadModel
 
                         case Arguments.Directory:
                             string path = stack.Pop();
-                            Directory.SetCurrentDirectory(path);
+                            try
+                            {
+                                Directory.SetCurrentDirectory(path);
+                            }
+                            catch(Exception e)
+                            {
+                                Error("Couldn't open directory '" + path + "'. " + e.Message);
+                            }
                             break;
 
                         case Arguments.Nopause:
