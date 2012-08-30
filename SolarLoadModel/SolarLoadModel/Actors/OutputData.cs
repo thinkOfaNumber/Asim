@@ -117,7 +117,7 @@ namespace SolarLoadModel.Actors
             var varList = new HashSet<string>();
             foreach (string glob in _varGlobs)
             {
-                regex = new Regex("^" + glob.Replace(@"\*", ".*").Replace(@"\?", ".") + "$", RegexOptions.IgnoreCase | RegexOptions.Singleline);
+                regex = new Regex("^" + glob.Replace("*", ".*").Replace(@"\?", ".") + "$", RegexOptions.IgnoreCase | RegexOptions.Singleline);
                 //varList.AddRange(varPool.Keys.Where(var => regex.IsMatch(var)));
                 foreach (string var in varPool.Keys.Where(var => regex.IsMatch(var)))
                 {
