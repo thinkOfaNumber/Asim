@@ -69,9 +69,9 @@ namespace ExcelReader.Logic
                                             settings.Directory = settings.Directory.TrimEnd(new char[] { WrapperString });
                                         }
 
-                                        if (!settings.Directory.EndsWith("\\"))
+                                        if (settings.Directory.EndsWith("\\"))
                                         {
-                                            settings.Directory = settings.Directory + "\\";
+                                            settings.Directory = settings.Directory.TrimEnd(new char[] { '\\' });
                                         }
                                     }
                                     break;
@@ -178,15 +178,15 @@ namespace ExcelReader.Logic
         #endregion
 
 
-        public string ProcessWorksheets(ExcelWorksheet sheet, string outputFileName)
+        public string ProcessWorksheets(ExcelWorksheet sheet, string currentDirectory, string prefix)
         {
             // must be t
             var startCell = sheet.GetValue(1, 1);
             if (startCell != null && startCell.ToString() == "t")
             {
                 StringBuilder sbRow = new StringBuilder();
-                outputFileName = outputFileName + sheet.Name + ".csv";
-                FileStream fs = new FileStream(outputFileName, FileMode.Create);
+                string outputFileName = prefix + sheet.Name + ".csv";
+                FileStream fs = new FileStream(currentDirectory + "\\" + outputFileName, FileMode.Create);
                 using (StreamWriter streamWriter = new StreamWriter(fs))
                 {
                     int endColumn = sheet.Dimension.End.Column;

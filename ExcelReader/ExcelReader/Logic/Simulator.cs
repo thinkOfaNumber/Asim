@@ -51,6 +51,9 @@ namespace ExcelReader.Logic
         private string GenerateArguments(ConfigSettings settings)
         {
             StringBuilder args = new StringBuilder();
+
+            args.Append(" --nopause ");
+
             if (!string.IsNullOrEmpty(settings.Iterations))
             {
                 args.Append(" --iterations ");
@@ -64,9 +67,7 @@ namespace ExcelReader.Logic
                     if (!string.IsNullOrEmpty(file))
                     {
                         args.Append(" --input ");
-                        args.Append('"');
                         args.Append(file);
-                        args.Append('"');
                     }
                 });
             }
@@ -78,9 +79,7 @@ namespace ExcelReader.Logic
                     if (oi != null && !string.IsNullOrEmpty(oi.Filename))
                     {
                         args.Append(" --output ");
-                        args.Append('"');
                         args.Append(oi.Filename);
-                        args.Append('"');
                         if(!string.IsNullOrEmpty(oi.Period))
                         {
                             args.Append(" ");
@@ -101,8 +100,8 @@ namespace ExcelReader.Logic
                 args.Append(settings.Directory);
             }
 
-            args.Append(" --nopause ");
-
+            
+            //Console.WriteLine(args);
             return args.ToString();
         }
 

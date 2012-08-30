@@ -57,14 +57,38 @@ namespace ExcelReader
                                         {
                                             Error("Error reading config worksheets: " + e.Message);
                                         }
+                                        // set the current directory
+                                        if (!string.IsNullOrEmpty(_settings.Directory))
+                                        {
+                                            try
+                                            {
+                                                Directory.SetCurrentDirectory(_settings.Directory);
+                                            }
+                                            catch (Exception e)
+                                            {
+                                                Error("Error setting directory: " + e.Message);
+                                            }
+                                        }
+                                        else
+                                        {
+                                            try
+                                            {
+                                                Directory.SetCurrentDirectory(_settings.SplitFileDirectory);
+                                            }
+                                            catch (Exception e)
+                                            {
+                                                Error("Error setting directory: " + e.Message);
+                                            }
+                                        }
 
 
                                         // process the other worksheets
+                                        string currentDirectory = Directory.GetCurrentDirectory();
                                         try
                                         {
                                             Parallel.ForEach(book.Worksheets, sheet =>
                                             {
-                                                string inputFileName = worksheetReader.ProcessWorksheets(sheet, _settings.SplitOutputFile);
+                                                string inputFileName = worksheetReader.ProcessWorksheets(sheet, currentDirectory, _settings.SplitFilePrefix);
                                                 if (!string.IsNullOrEmpty(inputFileName))
                                                 {
                                                     lock (_settings)
