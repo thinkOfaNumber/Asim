@@ -29,7 +29,14 @@ namespace SolarLoadModel.Actors
         public OutputData(string filename, string[] vars, uint outputEvery = 1)
         {
             _filename = filename;
-            _file = new System.IO.StreamWriter(_filename);
+            try
+            {
+                _file = new System.IO.StreamWriter(_filename);
+            }
+            catch(Exception e)
+            {
+                throw new Exception("Could not write to file '" + _filename + "'. " + e.Message, e);
+            }
             _varGlobs = vars;
             _outputEvery = outputEvery;
             _doStats = outputEvery > 1;
