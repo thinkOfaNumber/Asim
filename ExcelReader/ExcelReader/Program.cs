@@ -33,8 +33,9 @@ namespace ExcelReader
             {
                 try
                 {
-                    // IExcelReader reader = new ReadWorksheet(_inputFile, Settings);
+                    //IExcelReader reader = new ReadWorksheet(_inputFile, Settings);
                     IExcelReader reader = new AutomateWorksheet(_inputFile, Settings);
+                    //IExcelReader reader = new NpoiWorksheet(_inputFile, Settings);
                     reader.ProcessConfigSheet(_attach);
                     reader.ProcessAllWorksheets();
                 }

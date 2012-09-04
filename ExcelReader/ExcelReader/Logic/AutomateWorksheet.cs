@@ -36,12 +36,14 @@ namespace ExcelReader.Logic
                 Directory.SetCurrentDirectory(fileInfo.DirectoryName);
                 if (_attach)
                 {
-                    _workBook = System.Runtime.InteropServices.Marshal.BindToMoniker(_filename) as Excel.Workbook;
+                    //_workBook = System.Runtime.InteropServices.Marshal.BindToMoniker(_filename) as Excel.Workbook;
+                    _workBook = System.Runtime.InteropServices.Marshal.BindToMoniker(fileInfo.FullName) as Excel.Workbook;
                 }
                 else
                 {
                     var excelApp = new Excel.Application();
-                    _workBook = excelApp.Workbooks.Open(_filename);
+                    //_workBook = excelApp.Workbooks.Open(_filename);
+                    _workBook = excelApp.Workbooks.Open(fileInfo.FullName);
                 }
                 _workBook.Application.StatusBar = "Running Simulation";
             }
