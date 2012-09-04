@@ -95,7 +95,7 @@ namespace ExcelReader.Logic
                         _sheets.Add(sheet);
                         int endRow = sheet.LastRowNum;
                         bool proceedToRead = false;
-                        for (int j = 0; j < endRow; j++)
+                        for (int j = 0; j <= endRow; j++)
                         {
                             row = sheet.GetRow(j);
                             // makes sure that the first cell is 0,0.
@@ -193,6 +193,15 @@ namespace ExcelReader.Logic
                         rVal = cellValue.StringCellValue.Trim();
                         break;
                     case CellType.FORMULA:
+                        switch (cellValue.CachedFormulaResultType)
+                        {
+                            case CellType.NUMERIC:
+                                rVal = cellValue.NumericCellValue.ToString();
+                                break;
+                            case CellType.STRING:
+                                rVal = cellValue.StringCellValue.Trim();
+                                break;
+                        }
                         break;
                     case CellType.BLANK:
                         break;
@@ -289,7 +298,7 @@ namespace ExcelReader.Logic
                 FileStream fs = new FileStream(outputFileName, FileMode.Create);
                 using (StreamWriter streamWriter = new StreamWriter(fs))
                 {
-                    for (int j = 0; j < endRow; j++)
+                    for (int j = 0; j <= endRow; j++)
                     {
                         row = sheet.GetRow(j);
                         sbRow.Clear();
