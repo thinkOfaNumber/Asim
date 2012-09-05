@@ -40,7 +40,7 @@ namespace ExcelReader.Logic
         {
             if (attachToRunningProcess)
             {
-                throw new Exception("not implemented");
+                //throw new Exception("not implemented");
             }
 
             FileInfo config = new FileInfo(_filename);
