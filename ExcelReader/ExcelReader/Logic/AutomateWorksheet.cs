@@ -110,7 +110,13 @@ namespace ExcelReader.Logic
                 return;
             for (int i = 1; i <= data.GetLength(0); i++)
             {
-                switch (data[i,1].ToString().ToLower())
+                var val = data[i, 1];
+                if (val == null)
+                {
+                    continue;
+                }
+                string s = val.ToString().ToLower().TrimStart(new[] { ' ' }).TrimEnd(new[] { ' ' });
+                switch (s)
                 {
                     case "simulator":
                         _settings.Simulator = data[i,2].ToString();
@@ -149,7 +155,9 @@ namespace ExcelReader.Logic
                         };
                         for (int j = 4; j < data.GetLength(1); j++)
                         {
-                            o.Variables.Add(data[i, j].ToString());
+                            var cell = data[i, j];
+                            if (cell != null)
+                                o.Variables.Add(cell.ToString());
                         }
                         _settings.OutputFiles.Add(o);
                         break;
@@ -157,6 +165,10 @@ namespace ExcelReader.Logic
                     case "runsimulator":
                         var cellValue = data[i, 2].ToString();
                         _settings.RunSimulator = !Helper.IsFalse(cellValue);
+                        break;
+
+                    default:
+                        Console.WriteLine("unknown option: '" + s + "'");
                         break;
                 }
             }
