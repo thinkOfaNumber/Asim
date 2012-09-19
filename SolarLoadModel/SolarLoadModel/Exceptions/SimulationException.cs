@@ -5,18 +5,18 @@ using System.Text;
 
 namespace SolarLoadModel.Exceptions
 {
-    class VarNotFoundException : System.Exception
+    class SimulationException : System.Exception
     {
-        public VarNotFoundException()
+        public SimulationException()
         {
         }
 
-        public VarNotFoundException(string message)
+        public SimulationException(string message)
             : base(message)
         {
         }
 
-        public VarNotFoundException(string message,
+        public SimulationException(string message,
             Exception innerException)
             : base(message, innerException)
         {

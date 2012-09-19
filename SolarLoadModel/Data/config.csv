@@ -1,2 +1,0 @@
-t,Gen1Pmax,Gen2Pmax,Gen3Pmax,Gen4Pmax,Gen5Pmax,Gen6Pmax,Gen7Pmax,Gen8Pmax,StatPHyst,GenAvailCfg,Gen1FuelCons,Gen2FuelCons,Gen3FuelCons,Gen4FuelCons,Gen5FuelCons,Gen6FuelCons,Gen7FuelCons,Gen8FuelCons,StatPspin
-0,80,80,80,100,100,100,100,300,30,255,0.3,0.3,0.3,0.3,0.3,0.3,0.3,0.3,50

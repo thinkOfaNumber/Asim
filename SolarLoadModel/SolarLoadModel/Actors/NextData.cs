@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using SolarLoadModel.Contracts;
+using SolarLoadModel.Exceptions;
 
 namespace SolarLoadModel.Actors
 {
@@ -36,7 +37,10 @@ namespace SolarLoadModel.Actors
                     for (int i = 1; i < _cells.Count(); i++)
                     {
                         // ignore first cell
-                        _row[i - 1] = Convert.ToDouble(_cells[i]);
+                        if (!Double.TryParse(_cells[i], out _row[i - 1]))
+                        {
+                            throw new SimulationException(string.Format("Expected Number at Cell {0} line {1} of {2}, got '{3}'", i+1, _lineNo, _filename, _cells[i]));
+                        }
                     }
 
                     _nextline = ReadLine();
@@ -51,9 +55,13 @@ namespace SolarLoadModel.Actors
                     varPool[_headers.ElementAt(j)] = _row[j];
                 }
             }
+            catch (SimulationException e)
+            {
+                throw;
+            }
             catch(Exception e)
             {
-                throw new FormatException(string.Format("Error parsing line {0} of {1}:\n{2}", _lineNo, _filename, e.Message), e);
+                throw new SimulationException(string.Format("Error parsing line {0} of {1}:\n{2}", _lineNo, _filename, e.Message), e);
             }
         }
 

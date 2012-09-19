@@ -58,7 +58,7 @@ namespace SolarLoadModel.Actors
                 }
                 catch
                 {
-                    throw new VarNotFoundException(string.Format("Couldn't write {0} to file {1} because it wasn't in the dictionary.", _vars[i], _filename));
+                    throw new SimulationException(string.Format("Couldn't write {0} to file {1} because it wasn't in the dictionary.", _vars[i], _filename));
                 }
             }
             if (_doStats)
@@ -118,7 +118,6 @@ namespace SolarLoadModel.Actors
             foreach (string glob in _varGlobs)
             {
                 regex = new Regex("^" + glob.Replace("*", ".*").Replace(@"\?", ".") + "$", RegexOptions.IgnoreCase | RegexOptions.Singleline);
-                //varList.AddRange(varPool.Keys.Where(var => regex.IsMatch(var)));
                 foreach (string var in varPool.Keys.Where(var => regex.IsMatch(var)))
                 {
                     varList.Add(var);
@@ -126,6 +125,7 @@ namespace SolarLoadModel.Actors
             }
             _vars = varList.ToArray();
             _nvars = varList.Count;
+            // Console.WriteLine("Output vars: " + string.Join(",", _vars));
 
             _val = new double[_nvars];
             if (_doStats)

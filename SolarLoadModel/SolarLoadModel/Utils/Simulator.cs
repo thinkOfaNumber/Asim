@@ -5,6 +5,7 @@ using System.Text;
 using System.Timers;
 using SolarLoadModel.Actors;
 using SolarLoadModel.Contracts;
+using SolarLoadModel.Exceptions;
 
 namespace SolarLoadModel.Utils
 {
@@ -68,9 +69,13 @@ namespace SolarLoadModel.Utils
                 actors.ForEach(a => a.Finish());
                 Console.WriteLine(string.Format("inner loop took {0}s", (end - start).TotalSeconds));
             }
+            catch(SimulationException e)
+            {
+                throw;
+            }
             catch(Exception e)
             {
-                throw new Exception("Error in simulation iteration: " + Iteration, e);
+                throw new SimulationException("Error in simulation iteration: " + Iteration, e);
             }
             finally
             {

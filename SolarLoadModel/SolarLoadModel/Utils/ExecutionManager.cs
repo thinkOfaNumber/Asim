@@ -21,15 +21,17 @@ namespace SolarLoadModel.Utils
     public class ExecutionManager
     {
         private readonly List<DelayedExecution> _todo = new List<DelayedExecution>();
+        private ulong _thisIter = 0;
 
         public void After(ulong t, Action a)
         {
-            _todo.Add(new DelayedExecution(t, a));
+            _todo.Add(new DelayedExecution(_thisIter + t, a));
         }
 
         // todo: opportunity to speed this up as the number of actions gets larger, _todo is not sorted or searched well
         public void RunActions(ulong iter)
         {
+            _thisIter = iter;
             for (int i = _todo.Count - 1; i >= 0; i--)
             {
                 var todo = _todo.ElementAt(i);

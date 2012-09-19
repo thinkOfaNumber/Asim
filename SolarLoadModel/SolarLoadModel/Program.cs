@@ -8,6 +8,7 @@ using System.Threading;
 using System.Timers;
 using SolarLoadModel.Actors;
 using SolarLoadModel.Contracts;
+using SolarLoadModel.Exceptions;
 using SolarLoadModel.Utils;
 
 namespace SolarLoadModel
@@ -101,6 +102,10 @@ namespace SolarLoadModel
             try
             {
                 _simulator.Simulate();
+            }
+            catch (SimulationException e)
+            {
+                Error(e.Message);
             }
             catch(Exception e)
             {
