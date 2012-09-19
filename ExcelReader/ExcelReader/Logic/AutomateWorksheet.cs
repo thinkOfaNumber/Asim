@@ -153,7 +153,7 @@ namespace ExcelReader.Logic
                             Period = data[i, 3].ToString(),
 
                         };
-                        for (int j = 4; j < data.GetLength(1); j++)
+                        for (int j = 4; j <= data.GetLength(1); j++)
                         {
                             var cell = data[i, j];
                             if (cell != null)
