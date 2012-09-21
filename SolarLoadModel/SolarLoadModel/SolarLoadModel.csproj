@@ -49,7 +49,9 @@
     <Compile Include="Actors\GenMgr.cs" />
     <Compile Include="Actors\NextData.cs" />
     <Compile Include="Actors\OutputData.cs" />
+    <Compile Include="Actors\Station.cs" />
     <Compile Include="Actors\TestActor.cs" />
+    <Compile Include="Contracts\SharedValue.cs" />
     <Compile Include="Exceptions\SimulationException.cs" />
     <Compile Include="Utils\ExecutionManager.cs" />
     <Compile Include="Contracts\IActor.cs" />
