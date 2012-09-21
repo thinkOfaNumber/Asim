@@ -32,15 +32,16 @@ namespace SolarLoadModel.Actors
     /// happen at specific points in the iteration</remarks>
     class Generator
     {
-        public double MaxP { get; set; }
-        public double P { get; set; }
-        public UInt32 MinRunTPa { get; set; }
-        public double LoadFact { get { return P / MaxP; } }
-        public ulong RunCnt { get; private set; }
-        public double ECnt { get; private set; }
-        public double FuelCons { set { _fuelConsKws = value * PerHourToSec; } }
-        public double FuelCnt { get; private set; }
-        public static ushort OnlineCfg { get; private set; }
+        public SharedValue MaxP { get; set; }
+
+        public SharedValue P { get; set; }
+        public SharedValue MinRunTPa { get; set; }
+        public SharedValue LoadFact { get; set; }
+        public SharedValue RunCnt { get; private set; }
+        public SharedValue ECnt { get; private set; }
+        public SharedValue FuelCons { get; set; }
+        public SharedValue FuelCnt { get; private set; }
+        public static SharedValue OnlineCfg { get; private set; }
 
         private const double PerHourToSec = 1 / (60.0 * 60.0);
         private double _fuelConsKws;
@@ -51,8 +52,8 @@ namespace SolarLoadModel.Actors
         private readonly ushort _idBit;
 
         // counters
-        public int StartCnt { get; private set; }
-        public int StopCnt { get; private set; }
+        public SharedValue StartCnt { get; private set; }
+        public SharedValue StopCnt { get; private set; }
         public GeneratorState State { get; private set; }
 
         public Generator(int id)
@@ -60,6 +61,14 @@ namespace SolarLoadModel.Actors
             _id = id;
             _idBit = (ushort)(1 << id);
             State = GeneratorState.Stopped;
+            P = new SharedValue();
+            LoadFact = new SharedValue();
+            RunCnt = new SharedValue();
+            ECnt = new SharedValue();
+            OnlineCfg = new SharedValue();
+            StartCnt = new SharedValue();
+            StopCnt = new SharedValue();
+            FuelCnt = new SharedValue();
         }
 
         public void Start()
@@ -70,7 +79,7 @@ namespace SolarLoadModel.Actors
             if (State == GeneratorState.Stopped)
             {
                 ExecutionManager.After(60, TransitionToOnline);
-                StartCnt++;
+                StartCnt.Val++;
                 _busy = true;
                 State = GeneratorState.RunningOpen;
             }
@@ -84,9 +93,9 @@ namespace SolarLoadModel.Actors
             {
                 _busy = true;
                 ExecutionManager.After(60, TransitionToStop);
-                StopCnt++;
+                StopCnt.Val++;
                 State = GeneratorState.RunningOpen;
-                OnlineCfg &= (ushort)~_idBit;
+                OnlineCfg.Val = (ushort)OnlineCfg.Val & (ushort)~_idBit;
             }
         }
 
@@ -94,13 +103,15 @@ namespace SolarLoadModel.Actors
         {
             if (State == GeneratorState.RunningOpen)
             {
-                RunCnt++;
+                RunCnt.Val++;
             }
             else if (State == GeneratorState.RunningClosed)
             {
-                RunCnt++;
-                ECnt += PerHourToSec;
-                FuelCnt += (_fuelConsKws * P);
+                RunCnt.Val++;
+                ECnt.Val += PerHourToSec;
+                FuelCnt.Val += (_fuelConsKws* P.Val);
+                LoadFact.Val = P.Val / MaxP.Val;
+                _fuelConsKws = FuelCons.Val * PerHourToSec;
             }
         }
 
@@ -114,7 +125,7 @@ namespace SolarLoadModel.Actors
         {
             State = GeneratorState.RunningClosed;
             _busy = false;
-            OnlineCfg |= _idBit;
+            OnlineCfg.Val = (ushort)OnlineCfg.Val | _idBit;
         }
 
         private void TransitionToStop()
@@ -126,7 +137,7 @@ namespace SolarLoadModel.Actors
 
     struct Configuration
     {
-        public ushort GenReg;
+        public SharedValue GenReg;
         public double Pmax;
     }
 
@@ -150,16 +161,18 @@ namespace SolarLoadModel.Actors
         private const ushort MaxCfg = 1 << MaxGens;
 
         private static readonly Generator[] Gen = new Generator[MaxGens];
-        private ushort _currCfg;
-        private double _genCfgSetP;
-        private double _statHystP;
-        private double _statSpinP;
-        private ushort _genAvailCfg;
-        private ushort _genBlackCfg;
-        private ulong  _genMinRunT;
-        private ulong _genMinRunTPa;
+        private SharedValue _currCfg = new SharedValue();
+        private readonly SharedValue _genMinRunT = new SharedValue();
+        private SharedValue _genP;
+        private readonly SharedValue _genOverload = new SharedValue();
+        private SharedValue _genCfgSetP;
+        private SharedValue _statHystP;
+        private SharedValue _statSpinP;
+        private SharedValue _genAvailCfg;
+        private SharedValue _genBlackCfg;
+        private SharedValue _genMinRunTPa;
         private ulong _iteration;
-        private readonly GenStrings[] _varStr = new GenStrings[MaxGens];
+        //private readonly GenStrings[] _varStr = new GenStrings[MaxGens];
         private readonly Configuration[] _configurations = new Configuration[MaxCfg];
         private readonly string[] _configStrings = new string[MaxCfg];
         // temp variables for playing
@@ -169,126 +182,75 @@ namespace SolarLoadModel.Actors
 
         #region Implementation of IActor
 
-        public void Run(Dictionary<string, double> varPool, ulong iteration)
+        public void Run(ulong iteration)
         {
             _iteration = iteration;
-            //
-            // Read Inputs
-            //
-            for (int i = 0; i < MaxGens; i++)
-            {
-                Gen[i].MaxP = varPool[_varStr[i].MaxP];
-                Gen[i].P = varPool[_varStr[i].P];
-                Gen[i].FuelCons = varPool[_varStr[i].FuelCons];
-            }
-            for (int i = 0; i < MaxCfg; i ++)
-            {
-                if (varPool.TryGetValue(_configStrings[i], out _d))
-                {
-                    _configurations[i].GenReg = Convert.ToUInt16(_d);
-                    //_configurations[i].Pmax = TotalPower(_configurations[i].GenReg);
-                }
-                else
-                {
-                    _configurations[i].GenReg = 0;
-                }
-                _configurations[i].Pmax = 0;
-            }
-            _genCfgSetP = varPool["GenCfgSetP"];
-            _statHystP = varPool["StatHystP"];
-            _statSpinP = varPool["StatSpinP"];
-            _genAvailCfg = Convert.ToUInt16(varPool["GenAvailCfg"]);
-            _genBlackCfg = Convert.ToUInt16(varPool["GenBlackCfg"]);
-            _genMinRunTPa = Convert.ToUInt64(varPool["GenMinRunTPa"]);
 
             //
             // Simulate
             //
             Generator.UpdateStates(iteration);
             GeneratorManager();
-            double genPact = 0;
             bool overload = false;
+            double genP = 0;
             for (int i = 0; i < MaxGens; i++)
             {
                 Gen[i].Tick();
-                genPact += Gen[i].P;
-                overload = overload || (Gen[i].LoadFact > 1);
+                genP += Gen[i].P.Val;
+                overload = overload || (Gen[i].LoadFact.Val > 1);
             }
 
             //
             // Set Outputs
             //
-            for (int i = 0; i < MaxGens; i++)
-            {
-                varPool[_varStr[i].MaxP] = Gen[i].MaxP;
-                varPool[_varStr[i].P] = Gen[i].P;
-                varPool[_varStr[i].StartCnt] = Gen[i].StartCnt;
-                varPool[_varStr[i].StopCnt] = Gen[i].StopCnt;
-                varPool[_varStr[i].MinRunTPa] = Gen[i].MinRunTPa;
-                varPool[_varStr[i].LoadFact] = Gen[i].LoadFact;
-                varPool[_varStr[i].RunCnt] = Gen[i].RunCnt;
-                varPool[_varStr[i].ECnt] = Gen[i].ECnt;
-                // don't write FuelCons as it's only read
-                varPool[_varStr[i].FuelCnt] = Gen[i].FuelCnt;
-                varPool[_varStr[i].RunCnt] = Gen[i].RunCnt;
-            }
-            varPool["GenP"] = genPact;
-            varPool["GenOverload"] = overload ? 1.0 : 0.0;
-            varPool["GenMinRunT"] = _genMinRunT;
-            varPool["GenOnlineCfg"] = Generator.OnlineCfg;
-            varPool["GenSetCfg"] = _currCfg;
+            _genP.Val = genP;
+            _genOverload.Val = Convert.ToDouble(overload);
         }
 
-        public void Init(Dictionary<string, double> varPool)
+        public void Init(Dictionary<string, SharedValue> varPool)
         {
             for (int i = 0; i < MaxGens; i++)
             {
                 Gen[i] = new Generator(i);
-                int genNo = i + 1;
-                // create keys (faster than doing concats in the Run() method)
-                _varStr[i].MaxP = "Gen" + genNo + "MaxP";
-                _varStr[i].P = "Gen" + genNo + "P";
-                _varStr[i].StartCnt = "Gen" + genNo + "StartCnt";
-                _varStr[i].StopCnt = "Gen" + genNo + "StopCnt";
-                _varStr[i].MinRunTPa = "Gen" + genNo + "MinRunTPa";
-                _varStr[i].LoadFact = "Gen" + genNo + "LoadFact";
-                _varStr[i].RunCnt = "Gen" + genNo + "RunCnt";
-                _varStr[i].ECnt = "Gen" + genNo + "ECnt";
-                _varStr[i].FuelCons = "Gen" + genNo + "FuelCons";
-                _varStr[i].FuelCnt = "Gen" + genNo + "FuelCnt";
+                int n = i + 1;
 
                 // create variables in varPool for variables we write to
-                varPool[_varStr[i].P] = 0;
-                varPool[_varStr[i].StartCnt] = 0;
-                varPool[_varStr[i].StopCnt] = 0;
-                varPool[_varStr[i].LoadFact] = 0;
-                varPool[_varStr[i].RunCnt] = 0;
-                varPool[_varStr[i].ECnt] = 0;
-                varPool[_varStr[i].FuelCnt] = 0;
+                varPool["Gen" + n + "P"] = Gen[i].P;
+                varPool["Gen" + n + "StartCnt"] = Gen[i].StartCnt;
+                varPool["Gen" + n + "StopCnt"] = Gen[i].StopCnt;
+                varPool["Gen" + n + "LoadFact"] = Gen[i].LoadFact;
+                varPool["Gen" + n + "RunCnt"] = Gen[i].RunCnt;
+                varPool["Gen" + n + "ECnt"] = Gen[i].ECnt;
+                varPool["Gen" + n + "FuelCnt"] = Gen[i].FuelCnt;
 
-                // test existance of variables we read from
-                TestExistance(varPool, _varStr[i].FuelCons);
-                TestExistance(varPool, _varStr[i].MaxP);
-                TestExistance(varPool, _varStr[i].MinRunTPa);
+                // get variables we read from
+                Gen[i].FuelCons = TestExistance(varPool, "Gen" + n + "FuelCons");
+                Gen[i].MaxP = TestExistance(varPool, "Gen" + n + "MaxP");
+                Gen[i].MinRunTPa = TestExistance(varPool, "Gen" + n + "MinRunTPa");
             }
             // create variables in varPool for variables we write to
-            varPool["GenP"] = 0;
-            varPool["GenOverload"] = 0;
-            varPool["GenMinRunT"] = 0;
-            varPool["GenOnlineCfg"] = 0;
-            varPool["GenSetCfg"] = 0;
+            varPool["GenOverload"] = _genOverload;
+            varPool["GenMinRunT"] = _genMinRunT;
+            varPool["GenOnlineCfg"] = Generator.OnlineCfg;
+            varPool["GenSetCfg"] = _currCfg;
 
             // test existance of variables we read from
-            TestExistance(varPool, "StatHystP");
-            TestExistance(varPool, "StatSpinP");
-            TestExistance(varPool, "GenAvailCfg");
-            TestExistance(varPool, "GenBlackCfg");
-            TestExistance(varPool, "GenMinRunTPa");
+            _statHystP = TestExistance(varPool, "StatHystP");
+            _statSpinP = TestExistance(varPool, "StatSpinP");
+            _genAvailCfg = TestExistance(varPool, "GenAvailCfg");
+            _genBlackCfg = TestExistance(varPool, "GenBlackCfg");
+            _genMinRunTPa = TestExistance(varPool, "GenMinRunTPa");
+            _genCfgSetP = TestExistance(varPool, "GenCfgSetP");
+            _genP = TestExistance(varPool, "GenP");
 
-            // build configuration var names
             for (int i = 0; i < MaxCfg; i ++)
             {
-                _configStrings[i] = "GenConfig" + (i + 1);
+                string cstr = "GenConfig" + (i+1);
+                if (!varPool.TryGetValue(cstr, out _configurations[i].GenReg))
+                {
+                    _configurations[i].GenReg = new SharedValue {Val = 0};
+                    varPool[cstr] = _configurations[i].GenReg;
+                }
             }
         }
 
@@ -299,32 +261,33 @@ namespace SolarLoadModel.Actors
 
         #endregion
 
-        private void TestExistance(Dictionary<string, double> varPool, string s)
+        private SharedValue TestExistance(Dictionary<string, SharedValue> varPool, string s)
         {
-            double dummy;
-            if (!varPool.TryGetValue(s, out dummy))
+            SharedValue v;
+            if (!varPool.TryGetValue(s, out v))
             {
                 throw new SimulationException("GenMgr simulator expected the variable '" + s + "' would exist by now.");
             }
+            return v;
         }
 
         private void GeneratorManager()
         {
-            if (_genMinRunT > 0 && (_currCfg & Generator.OnlineCfg) == _currCfg)
+            if (_genMinRunT.Val > 0 && ((ushort)_currCfg.Val & (ushort)Generator.OnlineCfg.Val) == (ushort)_currCfg.Val)
             {
-                _genMinRunT--;
+                _genMinRunT.Val--;
             }
             // black start
-            ushort newCfg = Generator.OnlineCfg == 0 ? _genBlackCfg : SelectGens();
+            ushort newCfg = (ushort)(Generator.OnlineCfg.Val == 0 ? _genBlackCfg.Val : SelectGens());
 
-            if (newCfg != _currCfg)
+            if (newCfg != _currCfg.Val)
             {
                 // prime the minimum run timer on config changes
-                _genMinRunT = MinimumRunTime(newCfg);
+                _genMinRunT.Val = MinimumRunTime(newCfg);
             }
-            _currCfg = newCfg;
+            _currCfg.Val = newCfg;
 
-            StartStopGens(_currCfg);
+            StartStopGens((ushort)_currCfg.Val);
             LoadShare();
         }
 
@@ -332,12 +295,12 @@ namespace SolarLoadModel.Actors
         {
             int found = -1;
             ushort bestCfg = 0;
-            double currCfgPower = TotalPower(_currCfg);
+            double currCfgPower = TotalPower((ushort)_currCfg.Val);
 
             for (int i = 0; i < MaxCfg; i++)
             {
-                _configurations[i].Pmax = TotalPower((ushort)(_configurations[i].GenReg & _genAvailCfg));
-                if (_configurations[i].Pmax >= _genCfgSetP + _statSpinP)
+                _configurations[i].Pmax = TotalPower((ushort)((ushort)_configurations[i].GenReg.Val & (ushort)_genAvailCfg.Val));
+                if (_configurations[i].Pmax >= _genCfgSetP.Val + _statSpinP.Val)
                 {
                     found = i;
                     break;
@@ -345,22 +308,22 @@ namespace SolarLoadModel.Actors
             }
             // if nothing was found, switch on everything as a fallback
             if (found == -1)
-                bestCfg = _genAvailCfg;
+                bestCfg = (ushort)_genAvailCfg.Val;
             // if no change is required, stay at current config
             else if (_configurations[found].GenReg == _currCfg)
-                bestCfg = _currCfg;
+                bestCfg = (ushort)_currCfg.Val;
             // switch to a higher configuration without waiting
             else if (_configurations[found].Pmax > currCfgPower)
-                bestCfg = _configurations[found].GenReg;
+                bestCfg = (ushort)_configurations[found].GenReg.Val;
             // only switch to a lower configurations if min run timer is expired
-            else if (_genMinRunT > 0)
-                bestCfg = _currCfg;
+            else if (_genMinRunT.Val > 0)
+                bestCfg = (ushort)_currCfg.Val;
             // only switch to a lower configuration if it is below the hysteresis of the current configuration
-            else if (_configurations[found].Pmax < (currCfgPower - _statHystP))
-                bestCfg = _configurations[found].GenReg;
+            else if (_configurations[found].Pmax < (currCfgPower - _statHystP.Val))
+                bestCfg = (ushort)_configurations[found].GenReg.Val;
             // don't switch to a smaller configuration as Hysteresis wasn't satisfied
             else
-                bestCfg = _currCfg;
+                bestCfg = (ushort)_currCfg.Val;
 
             return bestCfg;
         }
@@ -373,10 +336,10 @@ namespace SolarLoadModel.Actors
                 ushort genBit = (ushort)(1 << i);
                 if ((genBit & cfg) == genBit)
                 {
-                    minRunTime = Math.Max(minRunTime, Gen[i].MinRunTPa);
+                    minRunTime = Math.Max(minRunTime, (ulong)Gen[i].MinRunTPa.Val);
                 }
             }
-            return Math.Max(minRunTime, _genMinRunTPa);
+            return Math.Max(minRunTime, (ulong)_genMinRunTPa.Val);
         }
 
         private double TotalPower(ushort cfg)
@@ -387,7 +350,7 @@ namespace SolarLoadModel.Actors
                 ushort genBit = (ushort)(1 << i);
                 if ((genBit & cfg) == genBit)
                 {
-                    power += Gen[i].MaxP;
+                    power += Gen[i].MaxP.Val;
                 }
             }
             return power;
@@ -395,7 +358,7 @@ namespace SolarLoadModel.Actors
 
         private void StartStopGens(ushort cfg)
         {
-            bool canStop = (cfg & Generator.OnlineCfg) == cfg;
+            bool canStop = (cfg & (ushort)Generator.OnlineCfg.Val) == cfg;
             for (ushort i = 0; i < MaxGens; i++)
             {
                 ushort genBit = (ushort)(1<<i);
@@ -422,18 +385,18 @@ namespace SolarLoadModel.Actors
             for (int i = 0; i < MaxGens; i++)
             {
                 if (Gen[i].State == GeneratorState.RunningClosed)
-                    onlineCap += Gen[i].MaxP;
+                    onlineCap += Gen[i].MaxP.Val;
             }
 
             for (ushort i = 0; i < MaxGens; i++)
             {
                 if (Gen[i].State == GeneratorState.RunningClosed)
                 {
-                    Gen[i].P = Gen[i].MaxP / onlineCap * _genCfgSetP;
+                    Gen[i].P.Val = Gen[i].MaxP.Val / onlineCap * _genCfgSetP.Val;
                 }
                 else
                 {
-                    Gen[i].P = 0;
+                    Gen[i].P.Val = 0;
                 }
             }
         }

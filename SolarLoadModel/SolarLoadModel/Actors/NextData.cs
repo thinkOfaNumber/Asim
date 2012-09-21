@@ -12,6 +12,7 @@ namespace SolarLoadModel.Actors
         private readonly IList<string> _headers = new List<string>();
         private double[] _row;
         private string[] _cells;
+        private SharedValue[] _values;
 
         private readonly System.IO.StreamReader _file;
         private readonly string _filename;
@@ -27,7 +28,7 @@ namespace SolarLoadModel.Actors
             _file = new System.IO.StreamReader(_filename);
         }
 
-        public void Run(Dictionary<string, double> varPool, ulong iteration)
+        public void Run(ulong iteration)
         {
             try
             {
@@ -52,7 +53,7 @@ namespace SolarLoadModel.Actors
 
                 for (int j = 0; j < _headerCount; j++)
                 {
-                    varPool[_headers.ElementAt(j)] = _row[j];
+                    _values[j].Val = _row[j];
                 }
             }
             catch (SimulationException e)
@@ -65,7 +66,7 @@ namespace SolarLoadModel.Actors
             }
         }
 
-        public void Init(Dictionary<string, double> varPool)
+        public void Init(Dictionary<string, SharedValue> varPool)
         {
             // get headers
             _nextline = ReadLine();
@@ -82,11 +83,14 @@ namespace SolarLoadModel.Actors
             data.ForEach(_headers.Add);
             _headerCount = _headers.Count;
             _row = new double[_headerCount];
+            _values = new SharedValue[_headerCount];
 
             // init variables in this file
             for (int i = 0; i < _headerCount; i++)
             {
-                varPool[_headers.ElementAt(i)] = 0;
+                _values[i] = new SharedValue();
+                varPool[_headers.ElementAt(i)] = _values[i];
+                _values[i].Val = 0;
             }
 
             // get first data row

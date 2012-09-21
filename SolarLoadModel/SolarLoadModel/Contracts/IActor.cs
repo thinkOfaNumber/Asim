@@ -8,8 +8,8 @@ namespace SolarLoadModel.Contracts
 {
     public interface IActor
     {
-        void Run(Dictionary<string, double> varPool, ulong iteration);
-        void Init(Dictionary<string, double> varPool);
+        void Run(ulong iteration);
+        void Init(Dictionary<string, SharedValue> varPool);
         void Finish();
     }
 }

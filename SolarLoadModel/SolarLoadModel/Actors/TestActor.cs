@@ -9,12 +9,12 @@ namespace SolarLoadModel.Actors
     {
         #region Implementation of IActor
 
-        public void Run(Dictionary<string, double> varPool, ulong iteration)
+        public void Run(ulong iteration)
         {
             Console.WriteLine("1: hello, world!");
         }
 
-        public void Init(Dictionary<string, double> varPool)
+        public void Init(Dictionary<string, SharedValue> varPool)
         {
             Console.WriteLine("1: init.");
         }

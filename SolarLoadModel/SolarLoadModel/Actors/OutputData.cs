@@ -15,12 +15,14 @@ namespace SolarLoadModel.Actors
         private readonly System.IO.StreamWriter _file;
         private readonly string _filename;
         private readonly string[] _varGlobs;
-        private string[] _vars;
         private int _nvars;
         private double[] _min;
         private double[] _max;
         private double[] _ave;
-        private double[] _val;
+        /// <summary>
+        /// list of references to dictionary items
+        /// </summary>
+        private SharedValue[] _val;
         private StringBuilder _row;
         private readonly uint _outputEvery;
         private readonly bool _doStats;
@@ -44,37 +46,25 @@ namespace SolarLoadModel.Actors
 
         #region Implementation of IActor
 
-        public void Run(Dictionary<string, double> varPool, ulong iteration)
+        public void Run(ulong iteration)
         {
             // write output every "_outputEvery" samples, or always if that is 1.
             bool write = !_doStats || ((iteration % _outputEvery) == (_outputEvery - 1));
 
-            for (int i = 0; i < _nvars; i++)
-            {
-                // cache current value to avoid looking up constantly
-                try
-                {
-                    _val[i] = varPool[_vars[i]];
-                }
-                catch
-                {
-                    throw new SimulationException(string.Format("Couldn't write {0} to file {1} because it wasn't in the dictionary.", _vars[i], _filename));
-                }
-            }
             if (_doStats)
             {
                 for (int i = 0; i < _nvars; i++)
                 {
                     if (_initStats)
                     {
-                        _max[i] = _min[i] = _ave[i] = _val[i];
+                        _max[i] = _min[i] = _ave[i] = _val[i].Val;
                     }
                     else
                     {
-                        _max[i] = Math.Max(_max[i], _val[i]);
-                        _min[i] = Math.Min(_min[i], _val[i]);
+                        _max[i] = Math.Max(_max[i], _val[i].Val);
+                        _min[i] = Math.Min(_min[i], _val[i].Val);
                         // use ave to store the sum
-                        _ave[i] = _ave[i] + _val[i];
+                        _ave[i] = _ave[i] + _val[i].Val;
                     }
                 }
                 _initStats = false;
@@ -99,7 +89,7 @@ namespace SolarLoadModel.Actors
                     else
                     {
                         _row.Append(',');
-                        _row.Append(_val[i]);
+                        _row.Append(_val[i].Val);
                     }
                 }
 
@@ -108,26 +98,27 @@ namespace SolarLoadModel.Actors
             }
         }
 
-        public void Init(Dictionary<string, double> varPool)
+        public void Init(Dictionary<string, SharedValue> varPool)
         {
             _row = new StringBuilder("t");
 
             // by now all vars will exist in varPool, so expand globs
             Regex regex;
-            var varList = new HashSet<string>();
+            var varList = new List<string>();
             foreach (string glob in _varGlobs)
             {
                 regex = new Regex("^" + glob.Replace("*", ".*").Replace(@"\?", ".") + "$", RegexOptions.IgnoreCase | RegexOptions.Singleline);
-                foreach (string var in varPool.Keys.Where(var => regex.IsMatch(var)))
-                {
-                    varList.Add(var);
-                }
+                varList.AddRange(varPool.Keys.Where(var => regex.IsMatch(var)));
             }
-            _vars = varList.ToArray();
             _nvars = varList.Count;
             // Console.WriteLine("Output vars: " + string.Join(",", _vars));
 
-            _val = new double[_nvars];
+            _val = new SharedValue[_nvars];
+            for (int i = 0; i < _nvars; i ++)
+            {
+                _val[i] = varPool[varList[i]];
+            }
+
             if (_doStats)
             {
                 _min = new double[_nvars];
@@ -136,18 +127,18 @@ namespace SolarLoadModel.Actors
                 for (int i = 0; i < _nvars; i++)
                 {
                     _row.Append(',');
-                    _row.Append(_vars[i]);
+                    _row.Append(varList[i]);
                     _row.Append("_min,");
-                    _row.Append(_vars[i]);
+                    _row.Append(varList[i]);
                     _row.Append("_max,");
-                    _row.Append(_vars[i]);
+                    _row.Append(varList[i]);
                     _row.Append("_ave");
                 }
             }
             else
             {
                 _row.Append(',');
-                _row.Append(string.Join(",", _vars));
+                _row.Append(string.Join(",", varList));
             }
             _file.WriteLine(_row);
         }

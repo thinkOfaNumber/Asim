@@ -9,36 +9,28 @@ namespace SolarLoadModel.Actors
 {
     class Station : IActor
     {
-        private double _pvP;
-        private double _loadP;
-        private double _genCfgSetP;
-        private double _genP;
-        private double _statP;
+        private SharedValue _pvP;
+        private SharedValue _loadP;
+        private readonly SharedValue _genCfgSetP = new SharedValue();
+        private readonly SharedValue _genP = new SharedValue();
+        private readonly SharedValue _statP = new SharedValue();
         #region Implementation of IActor
 
-        public void Run(Dictionary<string, double> varPool, ulong iteration)
+        public void Run(ulong iteration)
         {
-            // inputs
-            _loadP = varPool["LoadP"];
-            _pvP = varPool["PvP"];
-            _genP = varPool["GenP"];
-
             // calc
-            _genCfgSetP = Math.Max(0, _loadP - _pvP);
-            _statP = _genP + _pvP;
-
-            // outputs
-            varPool["GenCfgSetP"] = _genCfgSetP;
-            varPool["StatP"] = _statP;
+            _genCfgSetP.Val = Math.Max(0, _loadP.Val - _pvP.Val);
+            _statP.Val = _genP.Val + _pvP.Val;
         }
 
-        public void Init(Dictionary<string, double> varPool)
+        public void Init(Dictionary<string, SharedValue> varPool)
         {
-            varPool["StatP"] = 0;
-            varPool["GenCfgSetP"] = 0;
+            varPool["StatP"] = _statP;
+            varPool["GenCfgSetP"] = _genCfgSetP;
+            varPool["GenP"] = _genP;
             // only test variables read from input files, not created by other actors
-            TestExistance(varPool, "LoadP");
-            TestExistance(varPool, "PvP");
+            _loadP = TestExistance(varPool, "LoadP");
+            _pvP = TestExistance(varPool, "PvP");
         }
 
         public void Finish()
@@ -48,13 +40,14 @@ namespace SolarLoadModel.Actors
 
         #endregion
 
-        private void TestExistance(Dictionary<string, double> varPool, string s)
+        private SharedValue TestExistance(Dictionary<string, SharedValue> varPool, string s)
         {
-            double dummy;
-            if (!varPool.TryGetValue(s, out dummy))
+            SharedValue v;
+            if (!varPool.TryGetValue(s, out v))
             {
                 throw new SimulationException("Station simulator expected the variable '" + s + "' would exist by now.");
             }
+            return v;
         }
     }
 }
