@@ -51,6 +51,7 @@
     <Compile Include="Actors\OutputData.cs" />
     <Compile Include="Actors\Station.cs" />
     <Compile Include="Actors\TestActor.cs" />
+    <Compile Include="Utils\Generator.cs" />
     <Compile Include="Utils\SharedValue.cs" />
     <Compile Include="Exceptions\SimulationException.cs" />
     <Compile Include="Utils\ExecutionManager.cs" />
