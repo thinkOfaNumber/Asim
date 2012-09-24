@@ -7,6 +7,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using SolarLoadModel.Contracts;
 using SolarLoadModel.Exceptions;
+using SolarLoadModel.Utils;
 
 namespace SolarLoadModel.Actors
 {
@@ -22,7 +23,7 @@ namespace SolarLoadModel.Actors
         /// <summary>
         /// list of references to dictionary items
         /// </summary>
-        private SharedValue[] _val;
+        private Shared[] _val;
         private StringBuilder _row;
         private readonly uint _outputEvery;
         private readonly bool _doStats;
@@ -98,25 +99,26 @@ namespace SolarLoadModel.Actors
             }
         }
 
-        public void Init(Dictionary<string, SharedValue> varPool)
+        public void Init()
         {
             _row = new StringBuilder("t");
 
             // by now all vars will exist in varPool, so expand globs
             Regex regex;
             var varList = new List<string>();
+
             foreach (string glob in _varGlobs)
             {
                 regex = new Regex("^" + glob.Replace("*", ".*").Replace(@"\?", ".") + "$", RegexOptions.IgnoreCase | RegexOptions.Singleline);
-                varList.AddRange(varPool.Keys.Where(var => regex.IsMatch(var)));
+                varList.AddRange(SharedContainer.GetAllNames().Where(var => regex.IsMatch(var)));
             }
             _nvars = varList.Count;
             // Console.WriteLine("Output vars: " + string.Join(",", _vars));
 
-            _val = new SharedValue[_nvars];
+            _val = new Shared[_nvars];
             for (int i = 0; i < _nvars; i ++)
             {
-                _val[i] = varPool[varList[i]];
+                _val[i] = SharedContainer.GetOrNew(varList[i]);
             }
 
             if (_doStats)

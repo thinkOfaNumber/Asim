@@ -4,16 +4,19 @@ using System.Linq;
 using System.Text;
 using SolarLoadModel.Contracts;
 using SolarLoadModel.Exceptions;
+using SolarLoadModel.Utils;
 
 namespace SolarLoadModel.Actors
 {
     class Station : IActor
     {
-        private SharedValue _pvP;
-        private SharedValue _loadP;
-        private readonly SharedValue _genCfgSetP = new SharedValue();
-        private readonly SharedValue _genP = new SharedValue();
-        private readonly SharedValue _statP = new SharedValue();
+        private readonly Shared _pvP = SharedContainer.GetOrNew("PvP");
+        private readonly Shared _loadP = SharedContainer.GetOrNew("LoadP");
+        private readonly Shared _genCfgSetP = SharedContainer.GetOrNew("GenCfgSetP");
+        private readonly Shared _genP = SharedContainer.GetOrNew("GenP");
+        private readonly Shared _statP = SharedContainer.GetOrNew("StatP");
+        private readonly Shared _statBlack = SharedContainer.GetOrNew("StatBlack");
+
         #region Implementation of IActor
 
         public void Run(ulong iteration)
@@ -21,16 +24,12 @@ namespace SolarLoadModel.Actors
             // calc
             _genCfgSetP.Val = Math.Max(0, _loadP.Val - _pvP.Val);
             _statP.Val = _genP.Val + _pvP.Val;
+            _statBlack.Val = Convert.ToDouble(_genP.Val <= 0);
         }
 
-        public void Init(Dictionary<string, SharedValue> varPool)
+        public void Init()
         {
-            varPool["StatP"] = _statP;
-            varPool["GenCfgSetP"] = _genCfgSetP;
-            varPool["GenP"] = _genP;
-            // only test variables read from input files, not created by other actors
-            _loadP = TestExistance(varPool, "LoadP");
-            _pvP = TestExistance(varPool, "PvP");
+
         }
 
         public void Finish()
@@ -39,15 +38,5 @@ namespace SolarLoadModel.Actors
         }
 
         #endregion
-
-        private SharedValue TestExistance(Dictionary<string, SharedValue> varPool, string s)
-        {
-            SharedValue v;
-            if (!varPool.TryGetValue(s, out v))
-            {
-                throw new SimulationException("Station simulator expected the variable '" + s + "' would exist by now.");
-            }
-            return v;
-        }
     }
 }

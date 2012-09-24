@@ -39,7 +39,6 @@ namespace SolarLoadModel.Utils
         public void Simulate()
         {
             var actors = new List<IActor>();
-            var varPool = new Dictionary<string, SharedValue>();
 
             _inputActors.ForEach(s => actors.Add(new NextData(s)));
             // add extra simulation actors here.  Order is important:
@@ -51,7 +50,7 @@ namespace SolarLoadModel.Utils
             _outputActors = null;
             
             Console.WriteLine("Init...");
-            actors.ForEach(a => a.Init(varPool));
+            actors.ForEach(a => a.Init());
             Console.WriteLine("Run " + Iterations + " iterations...");
 
             _timer = new System.Timers.Timer(5000);

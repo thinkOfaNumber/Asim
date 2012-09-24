@@ -32,16 +32,77 @@ namespace SolarLoadModel.Actors
     /// happen at specific points in the iteration</remarks>
     class Generator
     {
-        public SharedValue MaxP { get; set; }
+        public double MaxP
+        {
+            get { return _maxP.Val; }
+            set { _maxP.Val = value; }
+        }
+        public double P
+        {
+            get { return _p.Val; }
+            set { _p.Val = value; }
+        }
+        public ulong MinRunTPa
+        {
+            get { return (ulong)_minRunTPa.Val; }
+            set { _minRunTPa.Val = value; }
+        }
+        public double LoadFact
+        {
+            get { return _loadFact.Val; }
+            set { _loadFact.Val = value; }
+        }
+        public double FuelCons
+        {
+            get { return _fuelCons.Val; }
+            set { _fuelCons.Val = value; }
+        }
+        public static ushort OnlineCfg
+        {
+            get { return (ushort)_onlineCfg.Val; }
+            private set { _onlineCfg.Val = value; }
+        }
+        // counters
+        public ulong StartCnt
+        {
+            get { return (ulong)_startCnt.Val; }
+            private set { _startCnt.Val = value; }
+        }
+        public ulong StopCnt
+        {
+            get { return (ulong)_stopCnt.Val; }
+            private set { _stopCnt.Val = value; }
+        }
+        public double FuelCnt
+        {
+            get { return _fuelCnt.Val; }
+            private set { _fuelCnt.Val = value; }
+        }
+        public ulong RunCnt
+        {
+            get { return (ulong)_runCnt.Val; }
+            private set { _runCnt.Val = value; }
+        }
+        public double ECnt
+        {
+            get { return _eCnt.Val; }
+            private set { _eCnt.Val = value; }
+        }
 
-        public SharedValue P { get; set; }
-        public SharedValue MinRunTPa { get; set; }
-        public SharedValue LoadFact { get; set; }
-        public SharedValue RunCnt { get; private set; }
-        public SharedValue ECnt { get; private set; }
-        public SharedValue FuelCons { get; set; }
-        public SharedValue FuelCnt { get; private set; }
-        public static SharedValue OnlineCfg { get; private set; }
+        private readonly Shared _maxP;
+        private readonly Shared _p;
+        private readonly Shared _minRunTPa;
+        private readonly Shared _loadFact;
+        private readonly Shared _fuelCons;
+        private static readonly  Shared _onlineCfg;
+        // counters
+        private readonly Shared _startCnt;
+        private readonly Shared _stopCnt;
+        private readonly Shared _fuelCnt;
+        private readonly Shared _runCnt;
+        private readonly Shared _eCnt;
+
+        public GeneratorState State { get; private set; }
 
         private const double PerHourToSec = 1 / (60.0 * 60.0);
         private double _fuelConsKws;
@@ -51,24 +112,32 @@ namespace SolarLoadModel.Actors
         private int _id;
         private readonly ushort _idBit;
 
-        // counters
-        public SharedValue StartCnt { get; private set; }
-        public SharedValue StopCnt { get; private set; }
-        public GeneratorState State { get; private set; }
 
         public Generator(int id)
         {
             _id = id;
             _idBit = (ushort)(1 << id);
             State = GeneratorState.Stopped;
-            P = new SharedValue();
-            LoadFact = new SharedValue();
-            RunCnt = new SharedValue();
-            ECnt = new SharedValue();
-            OnlineCfg = new SharedValue();
-            StartCnt = new SharedValue();
-            StopCnt = new SharedValue();
-            FuelCnt = new SharedValue();
+
+            int n = id + 1;
+            _p = SharedContainer.GetOrNew("Gen" + n + "P");
+            _startCnt = SharedContainer.GetOrNew("Gen" + n + "StartCnt");
+            _stopCnt = SharedContainer.GetOrNew("Gen" + n + "StopCnt");
+            _loadFact = SharedContainer.GetOrNew("Gen" + n + "LoadFact");
+            _runCnt = SharedContainer.GetOrNew("Gen" + n + "RunCnt");
+            _eCnt = SharedContainer.GetOrNew("Gen" + n + "ECnt");
+            _fuelCnt = SharedContainer.GetOrNew("Gen" + n + "FuelCnt");
+            _fuelCons = SharedContainer.GetOrNew("Gen" + n + "FuelCons");
+            _maxP = SharedContainer.GetOrNew("Gen" + n + "MaxP");
+            _minRunTPa = SharedContainer.GetOrNew("Gen" + n + "MinRunTPa");
+
+            // create variables in varPool for variables we write to
+        }
+
+        static Generator()
+        {
+            _onlineCfg = SharedContainer.GetOrNew("GenOnlineCfg");
+            _onlineCfg.Val = 0;
         }
 
         public void Start()
@@ -79,11 +148,11 @@ namespace SolarLoadModel.Actors
             if (State == GeneratorState.Stopped)
             {
                 ExecutionManager.After(60, TransitionToOnline);
-                StartCnt.Val++;
                 _busy = true;
                 State = GeneratorState.RunningOpen;
             }
         }
+
         public void Stop()
         {
             if (_busy)
@@ -93,25 +162,31 @@ namespace SolarLoadModel.Actors
             {
                 _busy = true;
                 ExecutionManager.After(60, TransitionToStop);
-                StopCnt.Val++;
                 State = GeneratorState.RunningOpen;
-                OnlineCfg.Val = (ushort)OnlineCfg.Val & (ushort)~_idBit;
+                OnlineCfg &= (ushort)~_idBit;
             }
+        }
+
+        public void Overload()
+        {
+            if (_busy)
+                return;
+            TransitionToStop();
         }
 
         public void Tick()
         {
             if (State == GeneratorState.RunningOpen)
             {
-                RunCnt.Val++;
+                RunCnt++;
             }
             else if (State == GeneratorState.RunningClosed)
             {
-                RunCnt.Val++;
-                ECnt.Val += PerHourToSec;
-                FuelCnt.Val += (_fuelConsKws* P.Val);
-                LoadFact.Val = P.Val / MaxP.Val;
-                _fuelConsKws = FuelCons.Val * PerHourToSec;
+                RunCnt++;
+                ECnt += PerHourToSec;
+                FuelCnt += (_fuelConsKws* P);
+                LoadFact = P / MaxP;
+                _fuelConsKws = FuelCons * PerHourToSec;
             }
         }
 
@@ -124,20 +199,22 @@ namespace SolarLoadModel.Actors
         private void TransitionToOnline()
         {
             State = GeneratorState.RunningClosed;
+            StartCnt++;
             _busy = false;
-            OnlineCfg.Val = (ushort)OnlineCfg.Val | _idBit;
+            OnlineCfg |= _idBit;
         }
 
         private void TransitionToStop()
         {
             State = GeneratorState.Stopped;
+            StopCnt++;
             _busy = false;
         }
     }
 
     struct Configuration
     {
-        public SharedValue GenReg;
+        public Shared GenReg;
         public double Pmax;
     }
 
@@ -161,22 +238,20 @@ namespace SolarLoadModel.Actors
         private const ushort MaxCfg = 1 << MaxGens;
 
         private static readonly Generator[] Gen = new Generator[MaxGens];
-        private SharedValue _currCfg = new SharedValue();
-        private readonly SharedValue _genMinRunT = new SharedValue();
-        private SharedValue _genP;
-        private readonly SharedValue _genOverload = new SharedValue();
-        private SharedValue _genCfgSetP;
-        private SharedValue _statHystP;
-        private SharedValue _statSpinP;
-        private SharedValue _genAvailCfg;
-        private SharedValue _genBlackCfg;
-        private SharedValue _genMinRunTPa;
+
+        private readonly Shared _currCfg = SharedContainer.GetOrNew("GenSetCfg");
+        private readonly Shared _genMinRunT = SharedContainer.GetOrNew("GenMinRunT");
+        private readonly Shared _genP = SharedContainer.GetOrNew("GenP");
+        private readonly Shared _genOverload = SharedContainer.GetOrNew("GenOverload");
+        private readonly Shared _genCfgSetP = SharedContainer.GetOrNew("GenCfgSetP");
+        private readonly Shared _statHystP = SharedContainer.GetOrNew("StatHystP");
+        private readonly Shared _statSpinP = SharedContainer.GetOrNew("StatSpinP");
+        private readonly Shared _genAvailCfg = SharedContainer.GetOrNew("GenAvailCfg");
+        private readonly Shared _genBlackCfg = SharedContainer.GetOrNew("GenBlackCfg");
+        private readonly Shared _genMinRunTPa = SharedContainer.GetOrNew("GenMinRunTPa");
+
         private ulong _iteration;
-        //private readonly GenStrings[] _varStr = new GenStrings[MaxGens];
         private readonly Configuration[] _configurations = new Configuration[MaxCfg];
-        private readonly string[] _configStrings = new string[MaxCfg];
-        // temp variables for playing
-        private double _d;
 
         //private readonly ExecutionManager _executionManager = new ExecutionManager();
 
@@ -196,8 +271,8 @@ namespace SolarLoadModel.Actors
             for (int i = 0; i < MaxGens; i++)
             {
                 Gen[i].Tick();
-                genP += Gen[i].P.Val;
-                overload = overload || (Gen[i].LoadFact.Val > 1);
+                genP += Gen[i].P;
+                overload = overload || (Gen[i].LoadFact > 1);
             }
 
             //
@@ -207,50 +282,20 @@ namespace SolarLoadModel.Actors
             _genOverload.Val = Convert.ToDouble(overload);
         }
 
-        public void Init(Dictionary<string, SharedValue> varPool)
+        public void Init()
         {
             for (int i = 0; i < MaxGens; i++)
             {
                 Gen[i] = new Generator(i);
                 int n = i + 1;
-
-                // create variables in varPool for variables we write to
-                varPool["Gen" + n + "P"] = Gen[i].P;
-                varPool["Gen" + n + "StartCnt"] = Gen[i].StartCnt;
-                varPool["Gen" + n + "StopCnt"] = Gen[i].StopCnt;
-                varPool["Gen" + n + "LoadFact"] = Gen[i].LoadFact;
-                varPool["Gen" + n + "RunCnt"] = Gen[i].RunCnt;
-                varPool["Gen" + n + "ECnt"] = Gen[i].ECnt;
-                varPool["Gen" + n + "FuelCnt"] = Gen[i].FuelCnt;
-
-                // get variables we read from
-                Gen[i].FuelCons = TestExistance(varPool, "Gen" + n + "FuelCons");
-                Gen[i].MaxP = TestExistance(varPool, "Gen" + n + "MaxP");
-                Gen[i].MinRunTPa = TestExistance(varPool, "Gen" + n + "MinRunTPa");
             }
-            // create variables in varPool for variables we write to
-            varPool["GenOverload"] = _genOverload;
-            varPool["GenMinRunT"] = _genMinRunT;
-            varPool["GenOnlineCfg"] = Generator.OnlineCfg;
-            varPool["GenSetCfg"] = _currCfg;
 
             // test existance of variables we read from
-            _statHystP = TestExistance(varPool, "StatHystP");
-            _statSpinP = TestExistance(varPool, "StatSpinP");
-            _genAvailCfg = TestExistance(varPool, "GenAvailCfg");
-            _genBlackCfg = TestExistance(varPool, "GenBlackCfg");
-            _genMinRunTPa = TestExistance(varPool, "GenMinRunTPa");
-            _genCfgSetP = TestExistance(varPool, "GenCfgSetP");
-            _genP = TestExistance(varPool, "GenP");
-
             for (int i = 0; i < MaxCfg; i ++)
             {
                 string cstr = "GenConfig" + (i+1);
-                if (!varPool.TryGetValue(cstr, out _configurations[i].GenReg))
-                {
-                    _configurations[i].GenReg = new SharedValue {Val = 0};
-                    varPool[cstr] = _configurations[i].GenReg;
-                }
+                _configurations[i].GenReg = SharedContainer.GetOrNew(cstr);
+                _configurations[i].GenReg.Val = 0;
             }
         }
 
@@ -261,9 +306,9 @@ namespace SolarLoadModel.Actors
 
         #endregion
 
-        private SharedValue TestExistance(Dictionary<string, SharedValue> varPool, string s)
+        private Shared TestExistance(Dictionary<string, Shared> varPool, string s)
         {
-            SharedValue v;
+            Shared v;
             if (!varPool.TryGetValue(s, out v))
             {
                 throw new SimulationException("GenMgr simulator expected the variable '" + s + "' would exist by now.");
@@ -273,12 +318,12 @@ namespace SolarLoadModel.Actors
 
         private void GeneratorManager()
         {
-            if (_genMinRunT.Val > 0 && ((ushort)_currCfg.Val & (ushort)Generator.OnlineCfg.Val) == (ushort)_currCfg.Val)
+            if (_genMinRunT.Val > 0 && ((ushort)_currCfg.Val & Generator.OnlineCfg) == (ushort)_currCfg.Val)
             {
                 _genMinRunT.Val--;
             }
             // black start
-            ushort newCfg = (ushort)(Generator.OnlineCfg.Val == 0 ? _genBlackCfg.Val : SelectGens());
+            ushort newCfg = (ushort)(Generator.OnlineCfg == 0 ? _genBlackCfg.Val : SelectGens());
 
             if (newCfg != _currCfg.Val)
             {
@@ -336,7 +381,7 @@ namespace SolarLoadModel.Actors
                 ushort genBit = (ushort)(1 << i);
                 if ((genBit & cfg) == genBit)
                 {
-                    minRunTime = Math.Max(minRunTime, (ulong)Gen[i].MinRunTPa.Val);
+                    minRunTime = Math.Max(minRunTime, (ulong)Gen[i].MinRunTPa);
                 }
             }
             return Math.Max(minRunTime, (ulong)_genMinRunTPa.Val);
@@ -350,7 +395,7 @@ namespace SolarLoadModel.Actors
                 ushort genBit = (ushort)(1 << i);
                 if ((genBit & cfg) == genBit)
                 {
-                    power += Gen[i].MaxP.Val;
+                    power += Gen[i].MaxP;
                 }
             }
             return power;
@@ -358,7 +403,7 @@ namespace SolarLoadModel.Actors
 
         private void StartStopGens(ushort cfg)
         {
-            bool canStop = (cfg & (ushort)Generator.OnlineCfg.Val) == cfg;
+            bool canStop = (cfg & (ushort)Generator.OnlineCfg) == cfg;
             for (ushort i = 0; i < MaxGens; i++)
             {
                 ushort genBit = (ushort)(1<<i);
@@ -385,18 +430,26 @@ namespace SolarLoadModel.Actors
             for (int i = 0; i < MaxGens; i++)
             {
                 if (Gen[i].State == GeneratorState.RunningClosed)
-                    onlineCap += Gen[i].MaxP.Val;
+                    onlineCap += Gen[i].MaxP;
             }
 
             for (ushort i = 0; i < MaxGens; i++)
             {
                 if (Gen[i].State == GeneratorState.RunningClosed)
                 {
-                    Gen[i].P.Val = Gen[i].MaxP.Val / onlineCap * _genCfgSetP.Val;
+                    double setP = Gen[i].MaxP / onlineCap * _genCfgSetP.Val;
+                    if (setP > Gen[i].MaxP)
+                    {
+                        Gen[i].Overload();
+                    }
+                    else
+                    {
+                        Gen[i].P = setP;
+                    }
                 }
                 else
                 {
-                    Gen[i].P.Val = 0;
+                    Gen[i].P = 0;
                 }
             }
         }

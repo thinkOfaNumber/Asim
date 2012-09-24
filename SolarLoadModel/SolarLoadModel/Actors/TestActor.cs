@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using SolarLoadModel.Contracts;
+using SolarLoadModel.Utils;
 
 namespace SolarLoadModel.Actors
 {
@@ -14,7 +15,7 @@ namespace SolarLoadModel.Actors
             Console.WriteLine("1: hello, world!");
         }
 
-        public void Init(Dictionary<string, SharedValue> varPool)
+        public void Init()
         {
             Console.WriteLine("1: init.");
         }

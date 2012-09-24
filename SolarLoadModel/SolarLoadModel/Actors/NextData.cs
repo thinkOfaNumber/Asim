@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using SolarLoadModel.Contracts;
 using SolarLoadModel.Exceptions;
+using SolarLoadModel.Utils;
 
 namespace SolarLoadModel.Actors
 {
@@ -12,7 +13,7 @@ namespace SolarLoadModel.Actors
         private readonly IList<string> _headers = new List<string>();
         private double[] _row;
         private string[] _cells;
-        private SharedValue[] _values;
+        private Shared[] _values;
 
         private readonly System.IO.StreamReader _file;
         private readonly string _filename;
@@ -20,9 +21,9 @@ namespace SolarLoadModel.Actors
         private string _nextline;
         private ulong _lineNo;
         private int _headerCount;
-        #region Implementation of IActor
 
-        public NextData(string filename)
+        #region Implementation of IActor
+                public NextData(string filename)
         {
             _filename = filename;
             _file = new System.IO.StreamReader(_filename);
@@ -66,7 +67,7 @@ namespace SolarLoadModel.Actors
             }
         }
 
-        public void Init(Dictionary<string, SharedValue> varPool)
+        public void Init()
         {
             // get headers
             _nextline = ReadLine();
@@ -83,13 +84,12 @@ namespace SolarLoadModel.Actors
             data.ForEach(_headers.Add);
             _headerCount = _headers.Count;
             _row = new double[_headerCount];
-            _values = new SharedValue[_headerCount];
+            _values = new Shared[_headerCount];
 
             // init variables in this file
             for (int i = 0; i < _headerCount; i++)
             {
-                _values[i] = new SharedValue();
-                varPool[_headers.ElementAt(i)] = _values[i];
+                _values[i] = SharedContainer.GetOrNew(_headers.ElementAt(i));
                 _values[i].Val = 0;
             }
 
