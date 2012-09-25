@@ -1,8 +1,5 @@
 ﻿using System;
-using System.Collections;
-using System.Collections.Generic;
 using SolarLoadModel.Contracts;
-using SolarLoadModel.Utils;
 
 namespace SolarLoadModel.Actors
 {

@@ -1,9 +1,4 @@
 ﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using SolarLoadModel.Exceptions;
 using SolarLoadModel.Utils;
 using SolarLoadModel.Contracts;
 
@@ -84,7 +79,6 @@ namespace SolarLoadModel.Actors
             for (int i = 0; i < MaxGens; i++)
             {
                 Gen[i] = new Generator(i);
-                int n = i + 1;
             }
 
             // test existance of variables we read from
@@ -168,7 +162,7 @@ namespace SolarLoadModel.Actors
                 ushort genBit = (ushort)(1 << i);
                 if ((genBit & cfg) == genBit)
                 {
-                    minRunTime = Math.Max(minRunTime, (ulong)Gen[i].MinRunTPa);
+                    minRunTime = Math.Max(minRunTime, Gen[i].MinRunTPa);
                 }
             }
             return Math.Max(minRunTime, (ulong)_genMinRunTPa.Val);
@@ -190,7 +184,7 @@ namespace SolarLoadModel.Actors
 
         private void StartStopGens(ushort cfg)
         {
-            bool canStop = (cfg & (ushort)Generator.OnlineCfg) == cfg;
+            bool canStop = (cfg & Generator.OnlineCfg) == cfg;
             for (ushort i = 0; i < MaxGens; i++)
             {
                 ushort genBit = (ushort)(1<<i);
@@ -225,9 +219,10 @@ namespace SolarLoadModel.Actors
                 if (Gen[i].State == GeneratorState.RunningClosed)
                 {
                     double setP = Gen[i].MaxP / onlineCap * _genCfgSetP.Val;
-                    if (setP > Gen[i].MaxP)
+                    if (setP > Gen[i].MaxP || setP < 0)
                     {
-                        Gen[i].Overload();
+                        Gen[i].CriticalStop();
+                        Gen[i].P = 0;
                     }
                     else
                     {

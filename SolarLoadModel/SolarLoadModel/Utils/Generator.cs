@@ -163,11 +163,12 @@ namespace SolarLoadModel.Utils
             }
         }
 
-        public void Overload()
+        public void CriticalStop()
         {
             if (_busy)
                 return;
             TransitionToStop();
+            OnlineCfg &= (ushort)~_idBit;
         }
 
         public void Tick()

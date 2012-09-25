@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using SolarLoadModel.Contracts;
@@ -57,7 +56,7 @@ namespace SolarLoadModel.Actors
                     _values[j].Val = _row[j];
                 }
             }
-            catch (SimulationException e)
+            catch (SimulationException)
             {
                 throw;
             }

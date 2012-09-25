@@ -1,12 +1,9 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using SolarLoadModel.Contracts;
-using SolarLoadModel.Exceptions;
 using SolarLoadModel.Utils;
 
 namespace SolarLoadModel.Actors
