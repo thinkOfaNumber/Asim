@@ -31,7 +31,6 @@ namespace SolarLoadModel.Utils
         public double MaxP
         {
             get { return _maxP.Val; }
-            set { _maxP.Val = value; }
         }
         public double P
         {
@@ -41,22 +40,44 @@ namespace SolarLoadModel.Utils
         public ulong MinRunTPa
         {
             get { return (ulong)_minRunTPa.Val; }
-            set { _minRunTPa.Val = value; }
+        }
+        public double IdealPctP
+        {
+            get { return _idealPctP.Val; }
+        }
+        public double IdealP
+        {
+            get { return _idealP.Val; }
+            private set { _idealP.Val = value; }
         }
         public double LoadFact
         {
             get { return _loadFact.Val; }
-            set { _loadFact.Val = value; }
+            private set { _loadFact.Val = value; }
         }
         public double FuelCons
         {
             get { return _fuelCons.Val; }
-            set { _fuelCons.Val = value; }
         }
         public static ushort OnlineCfg
         {
             get { return (ushort)_onlineCfg.Val; }
             private set { _onlineCfg.Val = value; }
+        }
+        public static double GenIdealP
+        {
+            get { return _genIdealP.Val; }
+            private set { _genIdealP.Val = value; }
+        }
+        public static double GenP
+        {
+            get { return _genP.Val; }
+            private set { _genP.Val = value; }
+        }
+        public static bool Overload
+        {
+            get { return Convert.ToBoolean(_overload.Val); }
+            private set { _overload.Val = Convert.ToDouble(value); }
         }
         // counters
         public ulong StartCnt
@@ -88,9 +109,14 @@ namespace SolarLoadModel.Utils
         private readonly Shared _maxP;
         private readonly Shared _p;
         private readonly Shared _minRunTPa;
+        private readonly Shared _idealPctP;
+        private readonly Shared _idealP;
         private readonly Shared _loadFact;
         private readonly Shared _fuelCons;
-        private static readonly  Shared _onlineCfg;
+        private static readonly Shared _onlineCfg;
+        private static readonly Shared _genIdealP;
+        private static readonly Shared _genP;
+        private static readonly Shared _overload;
         // counters
         private readonly Shared _startCnt;
         private readonly Shared _stopCnt;
@@ -108,6 +134,7 @@ namespace SolarLoadModel.Utils
         private int _id;
         private readonly ushort _idBit;
 
+        private static readonly Generator[] Gen = new Generator[Settings.MAX_GENS];
 
         public Generator(int id)
         {
@@ -126,14 +153,36 @@ namespace SolarLoadModel.Utils
             _fuelCons = SharedContainer.GetOrNew("Gen" + n + "FuelCons");
             _maxP = SharedContainer.GetOrNew("Gen" + n + "MaxP");
             _minRunTPa = SharedContainer.GetOrNew("Gen" + n + "MinRunTPa");
+            _idealPctP = SharedContainer.GetOrNew("Gen" + n + "IdealPctP");
+            _idealP = SharedContainer.GetOrNew("Gen" + n + "IdealP");
 
-            // create variables in varPool for variables we write to
+            Gen[id] = this;
         }
 
         static Generator()
         {
             _onlineCfg = SharedContainer.GetOrNew("GenOnlineCfg");
             _onlineCfg.Val = 0;
+            _genIdealP = SharedContainer.GetOrNew("GenIdealP");
+            _genIdealP.Val = 0;
+            _genP = SharedContainer.GetOrNew("GenP");
+            _genP.Val = 0;
+            _overload = SharedContainer.GetOrNew("Overload");
+            _overload.Val = 0;
+        }
+
+        public static void RunAll()
+        {
+            GenIdealP = 0;
+            GenP = 0;
+            Overload = false;
+            for (int i = 0; i < Settings.MAX_GENS; i ++)
+            {
+                Gen[i].Run();
+                GenIdealP += Gen[i].IdealP;
+                GenP += Gen[i].P;
+                Overload = Overload || (Gen[i].LoadFact > 1);
+            }
         }
 
         public void Start()
@@ -171,12 +220,14 @@ namespace SolarLoadModel.Utils
             OnlineCfg &= (ushort)~_idBit;
         }
 
-        public void Tick()
+        private void Run()
         {
+            LoadFact = 0;
+            IdealP = 0;
+
             if (State == GeneratorState.RunningOpen)
             {
                 RunCnt++;
-                LoadFact = 0;
             }
             else if (State == GeneratorState.RunningClosed)
             {
@@ -185,10 +236,7 @@ namespace SolarLoadModel.Utils
                 FuelCnt += (_fuelConsKws * P);
                 LoadFact = P / MaxP;
                 _fuelConsKws = FuelCons * PerHourToSec;
-            }
-            else
-            {
-                LoadFact = 0;
+                IdealP = P / IdealPctP * 100;
             }
         }
 

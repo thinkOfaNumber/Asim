@@ -26,10 +26,7 @@ namespace SolarLoadModel.Actors
 
     public class GenMgr : IActor
     {
-        private const ushort MaxGens = 8;
-        private const ushort MaxCfg = 1 << MaxGens;
-
-        private static readonly Generator[] Gen = new Generator[MaxGens];
+        private static readonly Generator[] Gen = new Generator[Settings.MAX_GENS];
 
         private readonly Shared _currCfg = SharedContainer.GetOrNew("GenSetCfg");
         private readonly Shared _genMinRunT = SharedContainer.GetOrNew("GenMinRunT");
@@ -43,8 +40,8 @@ namespace SolarLoadModel.Actors
         private readonly Shared _genMinRunTPa = SharedContainer.GetOrNew("GenMinRunTPa");
 
         private ulong _iteration;
-        private readonly Configuration[] _configurations = new Configuration[MaxCfg];
-        private readonly Double?[] _configurationPower = new Double?[MaxCfg];
+        private readonly Configuration[] _configurations = new Configuration[Settings.MAX_CFG];
+        private readonly Double?[] _configurationPower = new Double?[Settings.MAX_CFG];
 
         //private readonly ExecutionManager _executionManager = new ExecutionManager();
 
@@ -59,31 +56,25 @@ namespace SolarLoadModel.Actors
             //
             Generator.UpdateStates(iteration);
             GeneratorManager();
-            bool overload = false;
-            double genP = 0;
-            for (int i = 0; i < MaxGens; i++)
-            {
-                Gen[i].Tick();
-                genP += Gen[i].P;
-                overload = overload || (Gen[i].LoadFact > 1);
-            }
+
+            Generator.RunAll();
 
             //
             // Set Outputs
             //
-            _genP.Val = genP;
-            _genOverload.Val = Convert.ToDouble(overload);
+            _genP.Val = Generator.GenP;
+            _genOverload.Val = Convert.ToDouble(Generator.Overload);
         }
 
         public void Init()
         {
-            for (int i = 0; i < MaxGens; i++)
+            for (int i = 0; i < Settings.MAX_GENS; i++)
             {
                 Gen[i] = new Generator(i);
             }
 
             // test existance of variables we read from
-            for (int i = 0; i < MaxCfg; i ++)
+            for (int i = 0; i < Settings.MAX_CFG; i++)
             {
                 string cstr = "GenConfig" + (i+1);
                 _configurations[i].GenReg = SharedContainer.GetOrNew(cstr);
@@ -128,7 +119,7 @@ namespace SolarLoadModel.Actors
             ushort bestCfg = 0;
             double currCfgPower = TotalPower((ushort)_currCfg.Val);
 
-            for (int i = 0; i < MaxCfg; i++)
+            for (int i = 0; i < Settings.MAX_CFG; i++)
             {
                 _configurations[i].Pmax = TotalPower((ushort)((ushort)_configurations[i].GenReg.Val & (ushort)_genAvailCfg.Val));
                 if (_configurations[i].Pmax >= _genCfgSetP.Val + _statSpinP.Val)
@@ -162,7 +153,7 @@ namespace SolarLoadModel.Actors
         public ulong MinimumRunTime(ushort cfg)
         {
             ulong minRunTime = 0;
-            for (ushort i = 0; i < MaxGens; i++)
+            for (ushort i = 0; i < Settings.MAX_GENS; i++)
             {
                 ushort genBit = (ushort)(1 << i);
                 if ((genBit & cfg) == genBit)
@@ -178,7 +169,7 @@ namespace SolarLoadModel.Actors
             if (_configurationPower[cfg] == null)
             {
                 double power = 0;
-                for (ushort i = 0; i < MaxGens; i++)
+                for (ushort i = 0; i < Settings.MAX_GENS; i++)
                 {
                     ushort genBit = (ushort) (1 << i);
                     if ((genBit & cfg) == genBit)
@@ -194,7 +185,7 @@ namespace SolarLoadModel.Actors
         private void StartStopGens(ushort cfg)
         {
             bool canStop = (cfg & Generator.OnlineCfg) == cfg;
-            for (ushort i = 0; i < MaxGens; i++)
+            for (ushort i = 0; i < Settings.MAX_GENS; i++)
             {
                 ushort genBit = (ushort)(1<<i);
                 if ((genBit & cfg) == genBit && Gen[i].State != GeneratorState.RunningClosed)
@@ -217,13 +208,13 @@ namespace SolarLoadModel.Actors
 
             // figure out actual online capacity
             double onlineCap = 0;
-            for (int i = 0; i < MaxGens; i++)
+            for (int i = 0; i < Settings.MAX_GENS; i++)
             {
                 if (Gen[i].State == GeneratorState.RunningClosed)
                     onlineCap += Gen[i].MaxP;
             }
 
-            for (ushort i = 0; i < MaxGens; i++)
+            for (ushort i = 0; i < Settings.MAX_GENS; i++)
             {
                 if (Gen[i].State == GeneratorState.RunningClosed)
                 {
