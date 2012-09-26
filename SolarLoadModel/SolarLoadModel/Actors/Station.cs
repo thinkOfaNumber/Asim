@@ -12,7 +12,9 @@ namespace SolarLoadModel.Actors
         private readonly Shared _genP = SharedContainer.GetOrNew("GenP");
         private readonly Shared _statP = SharedContainer.GetOrNew("StatP");
         private readonly Shared _statBlackCnt = SharedContainer.GetOrNew("StatBlackCnt");
+        private readonly Shared _genOnlineCfg = SharedContainer.GetOrNew("GenOnlineCfg");
         private bool _lastStatBlack = false;
+        private bool _thisStatBlack = false;
 
         #region Implementation of IActor
 
@@ -21,11 +23,13 @@ namespace SolarLoadModel.Actors
             // calc
             _genCfgSetP.Val = _loadP.Val - _pvP.Val;
             _statP.Val = _genP.Val + _pvP.Val;
-            if (!_lastStatBlack && _statP.Val > 0)
+
+            _thisStatBlack = _genOnlineCfg.Val <= 0;
+            if (_thisStatBlack && !_lastStatBlack)
             {
                 _statBlackCnt.Val++;
             }
-            _lastStatBlack = _statP.Val <= 0;
+            _lastStatBlack = _thisStatBlack;
         }
 
         public void Init()

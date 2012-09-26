@@ -44,6 +44,7 @@ namespace SolarLoadModel.Actors
 
         private ulong _iteration;
         private readonly Configuration[] _configurations = new Configuration[MaxCfg];
+        private readonly Double?[] _configurationPower = new Double?[MaxCfg];
 
         //private readonly ExecutionManager _executionManager = new ExecutionManager();
 
@@ -103,10 +104,14 @@ namespace SolarLoadModel.Actors
             {
                 _genMinRunT.Val--;
             }
-            // black start
+            // black start or select
+            for (int i = 0; i < _configurationPower.Length; i++ )
+            {
+                _configurationPower[i] = null;
+            }
             ushort newCfg = (ushort)(Generator.OnlineCfg == 0 ? _genBlackCfg.Val : SelectGens());
 
-            if (newCfg != _currCfg.Val)
+            if (newCfg != (ushort)_currCfg.Val)
             {
                 // prime the minimum run timer on config changes
                 _genMinRunT.Val = MinimumRunTime(newCfg);
@@ -170,16 +175,20 @@ namespace SolarLoadModel.Actors
 
         private double TotalPower(ushort cfg)
         {
-            double power = 0;
-            for (ushort i = 0; i < MaxGens; i++)
+            if (_configurationPower[cfg] == null)
             {
-                ushort genBit = (ushort)(1 << i);
-                if ((genBit & cfg) == genBit)
+                double power = 0;
+                for (ushort i = 0; i < MaxGens; i++)
                 {
-                    power += Gen[i].MaxP;
+                    ushort genBit = (ushort) (1 << i);
+                    if ((genBit & cfg) == genBit)
+                    {
+                        power += Gen[i].MaxP;
+                    }
                 }
+                _configurationPower[cfg] = power;
             }
-            return power;
+            return _configurationPower[cfg].Value;
         }
 
         private void StartStopGens(ushort cfg)

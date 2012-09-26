@@ -176,6 +176,7 @@ namespace SolarLoadModel.Utils
             if (State == GeneratorState.RunningOpen)
             {
                 RunCnt++;
+                LoadFact = 0;
             }
             else if (State == GeneratorState.RunningClosed)
             {
@@ -184,6 +185,10 @@ namespace SolarLoadModel.Utils
                 FuelCnt += (_fuelConsKws * P);
                 LoadFact = P / MaxP;
                 _fuelConsKws = FuelCons * PerHourToSec;
+            }
+            else
+            {
+                LoadFact = 0;
             }
         }
 
