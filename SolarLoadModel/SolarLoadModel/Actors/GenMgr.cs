@@ -31,7 +31,6 @@ namespace SolarLoadModel.Actors
         private readonly Shared _currCfg = SharedContainer.GetOrNew("GenSetCfg");
         private readonly Shared _genMinRunT = SharedContainer.GetOrNew("GenMinRunT");
         private readonly Shared _genP = SharedContainer.GetOrNew("GenP");
-        private readonly Shared _genOverload = SharedContainer.GetOrNew("GenOverload");
         private readonly Shared _genCfgSetP = SharedContainer.GetOrNew("GenCfgSetP");
         private readonly Shared _statHystP = SharedContainer.GetOrNew("StatHystP");
         private readonly Shared _statSpinSetP = SharedContainer.GetOrNew("StatSpinSetP");
@@ -62,7 +61,6 @@ namespace SolarLoadModel.Actors
             // Set Outputs
             //
             _genP.Val = Generator.GenP;
-            _genOverload.Val = Convert.ToDouble(Generator.Overload);
         }
 
         public void Init()

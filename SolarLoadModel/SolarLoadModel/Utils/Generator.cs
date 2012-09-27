@@ -74,10 +74,10 @@ namespace SolarLoadModel.Utils
             get { return _genP.Val; }
             private set { _genP.Val = value; }
         }
-        public static bool Overload
+        private static bool Overload
         {
-            get { return Convert.ToBoolean(_overload.Val); }
-            private set { _overload.Val = Convert.ToDouble(value); }
+            get { return Convert.ToBoolean(_genOverload.Val); }
+            set { _genOverload.Val = Convert.ToDouble(value); }
         }
         // counters
         public ulong StartCnt
@@ -116,7 +116,7 @@ namespace SolarLoadModel.Utils
         private static readonly Shared _onlineCfg = SharedContainer.GetOrNew("GenOnlineCfg");
         private static readonly Shared _genIdealP = SharedContainer.GetOrNew("GenIdealP");
         private static readonly Shared _genP = SharedContainer.GetOrNew("GenP");
-        private static readonly Shared _overload = SharedContainer.GetOrNew("Overload");
+        private static readonly Shared _genOverload = SharedContainer.GetOrNew("GenOverload");
         private static readonly Shared _genSpinP = SharedContainer.GetOrNew("GenSpinP");
         // counters
         private readonly Shared _startCnt;
@@ -165,7 +165,7 @@ namespace SolarLoadModel.Utils
             _onlineCfg.Val = 0;
             _genIdealP.Val = 0;
             _genP.Val = 0;
-            _overload.Val = 0;
+            _genOverload.Val = 0;
         }
 
         public static void RunAll()
