@@ -76,7 +76,7 @@ namespace SolarLoadModel.Utils
         }
         private static bool Overload
         {
-            get { return Convert.ToBoolean(_genOverload.Val); }
+            get { return _genOverload.Val != 0.0f; }
             set { _genOverload.Val = Convert.ToDouble(value); }
         }
         // counters

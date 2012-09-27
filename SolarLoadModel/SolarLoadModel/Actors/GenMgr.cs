@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.InteropServices;
 using SolarLoadModel.Utils;
 using SolarLoadModel.Contracts;
 
@@ -40,7 +41,7 @@ namespace SolarLoadModel.Actors
 
         private ulong _iteration;
         private readonly Configuration[] _configurations = new Configuration[Settings.MAX_CFG];
-        private readonly Double?[] _configurationPower = new Double?[Settings.MAX_CFG];
+        private Double?[] _configurationPower = new Double?[Settings.MAX_CFG];
 
         //private readonly ExecutionManager _executionManager = new ExecutionManager();
 
@@ -93,10 +94,12 @@ namespace SolarLoadModel.Actors
                 _genMinRunT.Val--;
             }
             // black start or select
-            for (int i = 0; i < _configurationPower.Length; i++ )
-            {
-                _configurationPower[i] = null;
-            }
+            _configurationPower = new double?[Settings.MAX_CFG];
+            //for (int i = 0; i < _configurationPower.Length; i++ )
+            //{
+            //    _configurationPower[i] = null;
+            //}
+
             ushort newCfg = (ushort)(Generator.OnlineCfg == 0 ? _genBlackCfg.Val : SelectGens());
 
             if (newCfg != (ushort)_currCfg.Val)
