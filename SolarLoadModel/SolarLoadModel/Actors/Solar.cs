@@ -21,33 +21,28 @@ namespace SolarLoadModel.Actors
         private readonly Shared _genP = SharedContainer.GetOrNew("GenP");
         private readonly Shared _genIdealP = SharedContainer.GetOrNew("GenIdealP");
 
-        private double _wantedSetP = 0;
         private double _deltaSetP = 0;
-        private const double PerHourToSec = 1 / (60.0 * 60.0);
 
         #region Implementation of IActor
 
         public void Run(ulong iteration)
         {
             // calculate desired setpoint
-            _wantedSetP = Math.Min(_statSpinP.Val, _genP.Val - _genIdealP.Val);
+            _deltaSetP = Math.Min(_statSpinP.Val, _genP.Val - _genIdealP.Val);
 
-            // limit setpoint to available solar power
-            _wantedSetP = Math.Min(_wantedSetP, _pvAvailP.Val);
-
-            // limit setpoint change up/down per second
-            _deltaSetP = _pvSetP.Val - _wantedSetP;
             if (_deltaSetP > 0)
             {
                 _deltaSetP = Math.Min(_deltaSetP, _pvSetMaxUpP.Val);
             }
             if (_deltaSetP < 0)
             {
-                _deltaSetP = Math.Min(_deltaSetP, _pvSetMaxDownP.Val);
+                _deltaSetP = Math.Max(_deltaSetP, -_pvSetMaxDownP.Val);
             }
 
             // apply ramp limited setpoint
-            _pvSetP.Val += _deltaSetP;
+            _pvSetP.Val = Math.Max(0, _pvSetP.Val + _deltaSetP);
+            // limit setpoint to available solar power
+            _pvSetP.Val = Math.Min(_pvSetP.Val, _pvAvailP.Val);
 
             // assume solar farm outputs this immediatly
             _pvP.Val = _pvSetP.Val;
@@ -56,12 +51,12 @@ namespace SolarLoadModel.Actors
             _pvSpillP.Val = _pvAvailP.Val - _pvP.Val;
 
             // calculate energy
-            _pvECnt.Val += (_pvP.Val * PerHourToSec);
+            _pvECnt.Val += (_pvP.Val * Settings.PerHourToSec);
         }
 
         public void Init()
         {
-
+            _pvSetP.Val = 0;
         }
 
         public void Finish()

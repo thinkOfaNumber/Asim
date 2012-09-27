@@ -34,7 +34,7 @@ namespace SolarLoadModel.Actors
         private readonly Shared _genOverload = SharedContainer.GetOrNew("GenOverload");
         private readonly Shared _genCfgSetP = SharedContainer.GetOrNew("GenCfgSetP");
         private readonly Shared _statHystP = SharedContainer.GetOrNew("StatHystP");
-        private readonly Shared _statSpinP = SharedContainer.GetOrNew("StatSpinP");
+        private readonly Shared _statSpinSetP = SharedContainer.GetOrNew("StatSpinSetP");
         private readonly Shared _genAvailCfg = SharedContainer.GetOrNew("GenAvailCfg");
         private readonly Shared _genBlackCfg = SharedContainer.GetOrNew("GenBlackCfg");
         private readonly Shared _genMinRunTPa = SharedContainer.GetOrNew("GenMinRunTPa");
@@ -56,7 +56,6 @@ namespace SolarLoadModel.Actors
             //
             Generator.UpdateStates(iteration);
             GeneratorManager();
-
             Generator.RunAll();
 
             //
@@ -122,7 +121,7 @@ namespace SolarLoadModel.Actors
             for (int i = 0; i < Settings.MAX_CFG; i++)
             {
                 _configurations[i].Pmax = TotalPower((ushort)((ushort)_configurations[i].GenReg.Val & (ushort)_genAvailCfg.Val));
-                if (_configurations[i].Pmax >= _genCfgSetP.Val + _statSpinP.Val)
+                if (_configurations[i].Pmax >= _genCfgSetP.Val + _statSpinSetP.Val)
                 {
                     found = i;
                     break;
@@ -132,7 +131,7 @@ namespace SolarLoadModel.Actors
             if (found == -1)
                 bestCfg = (ushort)_genAvailCfg.Val;
             // if no change is required, stay at current config
-            else if (_configurations[found].GenReg == _currCfg)
+            else if (_configurations[found].GenReg.Val == _currCfg.Val)
                 bestCfg = (ushort)_currCfg.Val;
             // switch to a higher configuration without waiting
             else if (_configurations[found].Pmax > currCfgPower)

@@ -113,10 +113,11 @@ namespace SolarLoadModel.Utils
         private readonly Shared _idealP;
         private readonly Shared _loadFact;
         private readonly Shared _fuelCons;
-        private static readonly Shared _onlineCfg;
-        private static readonly Shared _genIdealP;
-        private static readonly Shared _genP;
-        private static readonly Shared _overload;
+        private static readonly Shared _onlineCfg = SharedContainer.GetOrNew("GenOnlineCfg");
+        private static readonly Shared _genIdealP = SharedContainer.GetOrNew("GenIdealP");
+        private static readonly Shared _genP = SharedContainer.GetOrNew("GenP");
+        private static readonly Shared _overload = SharedContainer.GetOrNew("Overload");
+        private static readonly Shared _genSpinP = SharedContainer.GetOrNew("GenSpinP");
         // counters
         private readonly Shared _startCnt;
         private readonly Shared _stopCnt;
@@ -126,13 +127,13 @@ namespace SolarLoadModel.Utils
 
         public GeneratorState State { get; private set; }
 
-        private const double PerHourToSec = 1 / (60.0 * 60.0);
         private double _fuelConsKws;
         private static readonly ExecutionManager ExecutionManager = new ExecutionManager();
         private bool _busy;
         private static ulong _iteration;
         private int _id;
         private readonly ushort _idBit;
+        private double _spinP;
 
         private static readonly Generator[] Gen = new Generator[Settings.MAX_GENS];
 
@@ -161,13 +162,9 @@ namespace SolarLoadModel.Utils
 
         static Generator()
         {
-            _onlineCfg = SharedContainer.GetOrNew("GenOnlineCfg");
             _onlineCfg.Val = 0;
-            _genIdealP = SharedContainer.GetOrNew("GenIdealP");
             _genIdealP.Val = 0;
-            _genP = SharedContainer.GetOrNew("GenP");
             _genP.Val = 0;
-            _overload = SharedContainer.GetOrNew("Overload");
             _overload.Val = 0;
         }
 
@@ -176,12 +173,14 @@ namespace SolarLoadModel.Utils
             GenIdealP = 0;
             GenP = 0;
             Overload = false;
+            _genSpinP.Val = 0;
             for (int i = 0; i < Settings.MAX_GENS; i ++)
             {
                 Gen[i].Run();
                 GenIdealP += Gen[i].IdealP;
                 GenP += Gen[i].P;
                 Overload = Overload || (Gen[i].LoadFact > 1);
+                _genSpinP.Val += Gen[i]._spinP;
             }
         }
 
@@ -224,7 +223,7 @@ namespace SolarLoadModel.Utils
         {
             LoadFact = 0;
             IdealP = 0;
-
+            _spinP = 0;
             if (State == GeneratorState.RunningOpen)
             {
                 RunCnt++;
@@ -232,11 +231,12 @@ namespace SolarLoadModel.Utils
             else if (State == GeneratorState.RunningClosed)
             {
                 RunCnt++;
-                ECnt += PerHourToSec;
+                ECnt += Settings.PerHourToSec;
                 FuelCnt += (_fuelConsKws * P);
                 LoadFact = P / MaxP;
-                _fuelConsKws = FuelCons * PerHourToSec;
-                IdealP = P / IdealPctP * 100;
+                _fuelConsKws = FuelCons * Settings.PerHourToSec;
+                IdealP = MaxP * IdealPctP / 100;
+                _spinP = MaxP - P;
             }
         }
 
