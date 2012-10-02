@@ -8,19 +8,28 @@ using SolarLoadModel.Utils;
 
 namespace SolarLoadModel.Actors
 {
+    struct Variable
+    {
+        public double Min;
+        public ulong MinT;
+        public double Max;
+        public ulong MaxT;
+        public double Ave;
+        public bool DoStats;
+        public Shared svar;
+        public double Val
+        {
+            get { return svar.Val; }
+        }
+    }
+
     public class OutputData : IActor
     {
         private readonly System.IO.StreamWriter _file;
         private readonly string _filename;
         private readonly string[] _varGlobs;
         private int _nvars;
-        private double[] _min;
-        private double[] _max;
-        private double[] _ave;
-        /// <summary>
-        /// list of references to dictionary items
-        /// </summary>
-        private Shared[] _val;
+        private Variable[] _outVars;
         private StringBuilder _row;
         private readonly uint _outputEvery;
         private readonly bool _doStats;
@@ -49,20 +58,29 @@ namespace SolarLoadModel.Actors
             // write output every "_outputEvery" samples, or always if that is 1.
             bool write = !_doStats || ((iteration % _outputEvery) == (_outputEvery - 1));
 
-            if (_doStats)
+            for (int i = 0; i < _nvars; i++)
             {
-                for (int i = 0; i < _nvars; i++)
+                if (_outVars[i].DoStats)
                 {
                     if (_initStats)
                     {
-                        _max[i] = _min[i] = _ave[i] = _val[i].Val;
+                        _outVars[i].Max = _outVars[i].Min = _outVars[i].Ave = _outVars[i].Val;
+                        _outVars[i].MinT = _outVars[i].MaxT = iteration;
                     }
                     else
                     {
-                        _max[i] = Math.Max(_max[i], _val[i].Val);
-                        _min[i] = Math.Min(_min[i], _val[i].Val);
+                        if (_outVars[i].Val < _outVars[i].Min)
+                        {
+                            _outVars[i].Min = _outVars[i].Val;
+                            _outVars[i].MinT = iteration;
+                        }
+                        else if (_outVars[i].Val > _outVars[i].Min)
+                        {
+                            _outVars[i].Max = _outVars[i].Val;
+                            _outVars[i].MaxT = iteration;
+                        }
                         // use ave to store the sum
-                        _ave[i] = _ave[i] + _val[i].Val;
+                        _outVars[i].Ave = _outVars[i].Ave + _outVars[i].Val;
                     }
                 }
                 _initStats = false;
@@ -74,20 +92,24 @@ namespace SolarLoadModel.Actors
                 _row.Append(iteration);
                 for (int i = 0; i < _nvars; i++)
                 {
-                    if (_doStats)
+                    if (_outVars[i].DoStats)
                     {
-                        _ave[i] = _ave[i] / _outputEvery;
+                        _outVars[i].Ave = _outVars[i].Ave/_outputEvery;
                         _row.Append(',');
-                        _row.Append(_min[i]);
+                        _row.Append(_outVars[i].Min);
                         _row.Append(',');
-                        _row.Append(_max[i]);
+                        _row.Append(_outVars[i].MinT);
                         _row.Append(',');
-                        _row.Append(_ave[i]);
+                        _row.Append(_outVars[i].Max);
+                        _row.Append(',');
+                        _row.Append(_outVars[i].MaxT);
+                        _row.Append(',');
+                        _row.Append(_outVars[i].Ave);
                     }
                     else
                     {
                         _row.Append(',');
-                        _row.Append(_val[i].Val);
+                        _row.Append(_outVars[i].Val);
                     }
                 }
 
@@ -110,35 +132,37 @@ namespace SolarLoadModel.Actors
                 varList.AddRange(SharedContainer.GetAllNames().Where(var => regex.IsMatch(var)));
             }
             _nvars = varList.Count;
-            // Console.WriteLine("Output vars: " + string.Join(",", _vars));
 
-            _val = new Shared[_nvars];
-            for (int i = 0; i < _nvars; i ++)
+            _outVars = new Variable[_nvars];
+            for (int i = 0; i < _nvars; i++)
             {
-                _val[i] = SharedContainer.GetOrNew(varList[i]);
+                _outVars[i].svar = SharedContainer.GetOrNew(varList[i]);
+                _outVars[i].DoStats = _doStats && !varList[i].EndsWith("Cnt");
             }
 
-            if (_doStats)
+            for (int i = 0; i < _nvars; i++)
             {
-                _min = new double[_nvars];
-                _max = new double[_nvars];
-                _ave = new double[_nvars];
-                for (int i = 0; i < _nvars; i++)
+                if (_outVars[i].DoStats)
                 {
                     _row.Append(',');
                     _row.Append(varList[i]);
                     _row.Append("_min,");
                     _row.Append(varList[i]);
+                    _row.Append("_minT,");
+                    _row.Append(varList[i]);
                     _row.Append("_max,");
+                    _row.Append(varList[i]);
+                    _row.Append("_maxT,");
                     _row.Append(varList[i]);
                     _row.Append("_ave");
                 }
+                else
+                {
+                    _row.Append(',');
+                    _row.Append(varList[i]);
+                }
             }
-            else
-            {
-                _row.Append(',');
-                _row.Append(string.Join(",", varList));
-            }
+
             _file.WriteLine(_row);
         }
 
