@@ -30,30 +30,29 @@ namespace SolarLoadModel.Actors
 
         public void Run(ulong iteration)
         {
+            if (iteration != _nextT || _nextline == null)
+                return;
+
             try
             {
-                if (iteration == _nextT && _nextline != null)
+                _cells = _nextline.Split(',');
+                for (int i = 0; i < _headerCount; i++)
                 {
-                    _cells = _nextline.Split(',');
-                    for (int i = 1; i < _cells.Count(); i++)
+                    // ignore first cell
+                    if (Double.TryParse(_cells[i + 1], out _row[i]))
                     {
-                        // ignore first cell
-                        if (!Double.TryParse(_cells[i], out _row[i - 1]))
-                        {
-                            throw new SimulationException(string.Format("Expected Number at Cell {0} line {1} of {2}, got '{3}'", i+1, _lineNo, _filename, _cells[i]));
-                        }
+                        _values[i].Val = _row[i];
                     }
-
-                    _nextline = ReadLine();
-                    if (_nextline != null)
+                    else
                     {
-                        _nextT = Convert.ToUInt64(_nextline.Substring(0, _nextline.IndexOf(',')));
+                        throw new SimulationException(string.Format("Expected Number at Cell {0} line {1} of {2}, got '{3}'", i + 1, _lineNo, _filename, _cells[i]));
                     }
                 }
 
-                for (int j = 0; j < _headerCount; j++)
+                _nextline = ReadLine();
+                if (_nextline != null)
                 {
-                    _values[j].Val = _row[j];
+                    _nextT = Convert.ToUInt64(_nextline.Substring(0, _nextline.IndexOf(',')));
                 }
             }
             catch (SimulationException)
