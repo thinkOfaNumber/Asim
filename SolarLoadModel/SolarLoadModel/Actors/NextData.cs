@@ -39,13 +39,13 @@ namespace SolarLoadModel.Actors
                 for (int i = 0; i < _headerCount; i++)
                 {
                     // ignore first cell
-                    if (Double.TryParse(_cells[i + 1], out _row[i]))
+                    try
                     {
-                        _values[i].Val = _row[i];
+                        _values[i].Val = Convert.ToDouble(_cells[i + 1]);
                     }
-                    else
+                    catch (Exception e)
                     {
-                        throw new SimulationException(string.Format("Expected Number at Cell {0} line {1} of {2}, got '{3}'", i + 1, _lineNo, _filename, _cells[i]));
+                        throw new SimulationException(string.Format("Expected Number at Cell {0} line {1} of {2}, got '{3}'", i + 1, _lineNo, _filename, _cells[i]), e);
                     }
                 }
 
