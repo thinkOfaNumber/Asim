@@ -167,6 +167,10 @@ namespace ExcelReader.Logic
                         _settings.RunSimulator = !Helper.IsFalse(cellValue);
                         break;
 
+                    case "community name":
+                        _settings.CommunityName = data[i, 2].ToString();
+                        break;
+
                     default:
                         Console.WriteLine("unknown option: '" + s + "'");
                         break;

@@ -29,6 +29,10 @@ namespace ExcelReader.Logic
         /// The prefix that is added to the files that are split up from the sheets in the excel document
         /// </summary>
         public string SplitFilePrefix { get; set; }
+        /// <summary>
+        /// The community name will be prefixed to all output files.
+        /// </summary>
+        public string CommunityName { get; set; }
 
         public ConfigSettings()
         {

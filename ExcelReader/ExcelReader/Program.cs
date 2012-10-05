@@ -50,6 +50,14 @@ namespace ExcelReader
                     Settings.Directory = WrapperString + Settings.Directory + WrapperString;
                 }
 
+                // prefix the community name.
+                if (!string.IsNullOrEmpty(Settings.CommunityName) && 
+                    Settings.OutputFiles != null && 
+                    Settings.OutputFiles.Any())
+                {
+                    Settings.OutputFiles.ForEach(o => o.Filename = Settings.CommunityName + "_" + o.Filename);
+                }
+
                 // call the external system
                 try
                 {
