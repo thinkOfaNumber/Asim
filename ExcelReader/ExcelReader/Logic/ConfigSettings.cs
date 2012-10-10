@@ -34,10 +34,13 @@ namespace ExcelReader.Logic
         /// </summary>
         public string CommunityName { get; set; }
 
+        public List<TemplateInformation> TemplateFiles { get; set; }
+
         public ConfigSettings()
         {
             InputFiles = new List<string>();
             OutputFiles = new List<OutputInformation>();
+            TemplateFiles = new List<TemplateInformation>();
             RunSimulator = true;
         }
     }
@@ -52,5 +55,11 @@ namespace ExcelReader.Logic
         {
             Variables = new List<string>();
         }
+    }
+
+    public class TemplateInformation
+    {
+        public string TemplateName { get; set; }
+        public string OutputName { get; set; }
     }
 }

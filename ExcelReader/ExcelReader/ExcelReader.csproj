@@ -46,7 +46,7 @@
     <Compile Include="Logic\AutomateWorksheet.cs" />
     <Compile Include="Logic\ConfigSettings.cs" />
     <Compile Include="Logic\Helper.cs" />
-    <Compile Include="Logic\IExcelReader.cs" />
+    <Compile Include="Interface\IExcelReader.cs" />
     <Compile Include="Logic\Simulator.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

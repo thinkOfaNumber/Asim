@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using ExcelReader.Interface;
 using ExcelReader.Logic;
-using OfficeOpenXml;
 using System.IO;
 
 namespace ExcelReader
@@ -33,9 +33,7 @@ namespace ExcelReader
             {
                 try
                 {
-                    //IExcelReader reader = new ReadWorksheet(_inputFile, Settings);
                     IExcelReader reader = new AutomateWorksheet(_inputFile, Settings);
-                    //IExcelReader reader = new NpoiWorksheet(_inputFile, Settings);
                     reader.ProcessConfigSheet(_attach);
                     reader.ProcessAllWorksheets();
                 }
@@ -66,6 +64,16 @@ namespace ExcelReader
                 catch (Exception e)
                 {
                     Error("Error running simulation: " + e.Message);
+                }
+
+                try
+                {
+                    IExcelReader reader = new AutomateWorksheet(_inputFile, Settings);
+                    Settings.TemplateFiles.ForEach(tf => reader.GenerateGraphs(tf.TemplateName, tf.OutputName));
+                }
+                catch (Exception e)
+                {
+                    Error("Error: " + e.Message);
                 }
             }
             AnyKey();

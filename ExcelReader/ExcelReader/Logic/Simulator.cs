@@ -20,6 +20,7 @@ namespace ExcelReader.Logic
                         Process simulator = new Process();
                         ProcessStartInfo psi = new ProcessStartInfo(settings.Simulator);
                         psi.Arguments = GenerateArguments(settings);
+
                         psi.CreateNoWindow = true;
                         psi.UseShellExecute = false;
                         psi.RedirectStandardOutput = true;
