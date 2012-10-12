@@ -352,6 +352,10 @@ namespace ExcelReader.Logic
             }
             catch (Exception e)
             {
+                if (e.Message.Contains("0x800A03EC"))
+                {
+                    throw new Exception("Too many rows have been generated, please reduce the number of rows in the output.", e);
+                }
                 throw new Exception("Error opening workbook: " + e.Message, e);
             }
             finally
