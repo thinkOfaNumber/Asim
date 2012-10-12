@@ -36,6 +36,8 @@ namespace ExcelReader.Logic
 
         public List<TemplateInformation> TemplateFiles { get; set; }
 
+        public LogFileInformation LogInformation { get; set; }
+
         public ConfigSettings()
         {
             InputFiles = new List<string>();
@@ -62,4 +64,16 @@ namespace ExcelReader.Logic
         public string TemplateName { get; set; }
         public string OutputName { get; set; }
     }
+
+    public class LogFileInformation
+    {
+        public string LogFile { get; set; }
+        public List<string> Globs { get; set; }
+
+        public LogFileInformation()
+        {
+            Globs = new List<string>();
+        }
+    }
+    
 }

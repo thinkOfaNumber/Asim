@@ -76,6 +76,9 @@ namespace ExcelReader.Logic
                         throw new Exception("Error setting directory: " + e.Message, e);
                     }
                 }
+
+                new LogFile(_workBook, _settings).Run();
+
                 _settings.SplitFilePrefix = fileInfo.Name.Replace(fileInfo.Extension, "_");
             }
             catch (Exception e)
@@ -182,6 +185,21 @@ namespace ExcelReader.Logic
                         };
 
                         _settings.TemplateFiles.Add(t);
+                        break;
+
+                    case "log file":
+                        var lf = new LogFileInformation()
+                        {
+                            LogFile = data[i, 2].ToString()
+                        };
+
+                        for (int j = 3; j <= data.GetLength(1); j++)
+                        {
+                            var cell = data[i, j];
+                            if (cell != null)
+                                lf.Globs.Add(cell.ToString());
+                        }
+                        _settings.LogInformation = lf;
                         break;
 
                     default:
