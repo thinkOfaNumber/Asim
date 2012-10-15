@@ -10,7 +10,6 @@ namespace ExcelReader.Logic
 {
     public class LogFile
     {
-        private Dictionary<string, Dictionary<long, string>> _logInformation = new Dictionary<string, Dictionary<long, string>>();
         private ConfigSettings _settings;
         private Workbook _workBook;
 
@@ -25,30 +24,24 @@ namespace ExcelReader.Logic
             if (_workBook != null)
             {
                 if (_settings.LogInformation != null &&
+                    !string.IsNullOrEmpty(_settings.LogInformation.LogFile) &&
                     _settings.LogInformation.Globs != null &&
                     _settings.LogInformation.Globs.Any())
                 {
-                    // process each of the append information
-                    _logInformation = new Dictionary<string, Dictionary<long, string>>();
-                    RetrieveInformation();
-                    ProcessInformation();
+                    foreach (Worksheet sheet in _workBook.Sheets)
+                    {
+                        List<List<string>> sheetInformation = RetrieveInformation(sheet);
+                        if (sheetInformation != null && sheetInformation.Any())
+                        {
+                            ProcessInformation(sheetInformation);
+                        }
+                    }
                 }
             }
         }
-
-        private long FindMaxTime()
+        
+        private void ProcessInformation(List<List<string>> sheetInformation)
         {
-            long maxValue = 0;
-            if (_logInformation != null && _logInformation.Any())
-            {
-                maxValue = _logInformation.Values.ToList().Max(v => v.Keys.Max());
-            }
-            return maxValue;
-        }
-
-        private void ProcessInformation()
-        {
-            StringBuilder currentLine = new StringBuilder();
             StringBuilder information = new StringBuilder(DateTime.Now.ToString());
 
             if (!string.IsNullOrEmpty(_settings.CommunityName))
@@ -57,75 +50,55 @@ namespace ExcelReader.Logic
                 information.Append(_settings.CommunityName);
             }
             information.Append(Environment.NewLine);
-            information.Append("t," + string.Join(",", _logInformation.Keys));
-            information.Append(Environment.NewLine);
-
-            long maxNumber = FindMaxTime();
-            string theValue;
-
-            for (long i = 0; i <= maxNumber; i++)
+            foreach (List<string> list in sheetInformation)
             {
-                currentLine.Clear();
-                currentLine.Append(i);
-                bool writeRow = false;
-
-                foreach (KeyValuePair<string, Dictionary<long, string>> keyValuePair in _logInformation)
-                {
-                    currentLine.Append(",");
-                    if (keyValuePair.Value.TryGetValue(i, out theValue))
-                    {
-                        currentLine.Append(theValue);
-                        writeRow = true;
-                    }
-                }
-
-                if (writeRow)
-                {
-                    information.Append(currentLine);
-                }
+                information.Append(string.Join(",", list));
+                information.Append(Environment.NewLine);
             }
+            
+            File.AppendAllText(_settings.LogInformation.LogFile, information.ToString());
         }
 
-        private void RetrieveInformation()
+        private List<List<string>> RetrieveInformation(Worksheet sheet)
         {
-            if (_workBook != null)
+            if (sheet != null)
             {
                 // create regex globs
                 List<Regex> regexPatterns = _settings.LogInformation.Globs.Select(glob => new Regex("^" + glob.Replace("*", ".*").Replace(@"\?", ".") + "$", RegexOptions.IgnoreCase | RegexOptions.Singleline)).ToList();
 
-                foreach (Worksheet sheet in _workBook.Sheets)
+                if (sheet.Cells[1, 1].Value.ToString() != "t")
                 {
-                    if (sheet.Cells[1,1].Value.ToString() != "t")
+                    return null;
+                }
+
+                Range excelRange = sheet.UsedRange;
+                object[,] valueArray = (object[,]) excelRange.Value[XlRangeValueDataType.xlRangeValueDefault];
+
+                int rows = valueArray.GetLength(0);
+                int columns = valueArray.GetLength(1);
+                List<List<string>> values = new List<List<string>>(rows);
+
+                for (int i = 0; i < rows; i++)
+                {
+                    values.Add(new List<string>());
+                }
+
+                for (int i = 1; i <= columns; i++)
+                {
+                    string headerValue = valueArray[1, i].ToString();
+                    if (headerValue == "t" || regexPatterns.Any(glob => glob.IsMatch(headerValue)))
                     {
-                       continue;
-                    }
-
-                    Range excelRange = sheet.UsedRange;
-                    object[,] valueArray = (object[,])excelRange.Value[XlRangeValueDataType.xlRangeValueDefault];
-                    
-                    List<List<string>> values = new List<List<string>>();
-                    int rows = valueArray.GetLength(0);
-
-                    for (int i = 0; i < rows; i++)
-                    {
-                        //values.Add((List<string>)valueArray.GetValue(i));
-                    }
-
-                    int columns = valueArray.GetLength(1);
-                    
-
-                    for (int i = 1; i < columns; i++)
-                    {
-                        string headerValue = values[1][i];
-
-                        if (!regexPatterns.Any(glob => glob.IsMatch(headerValue)))
+                        for (int j = 1; j <= rows; j++)
                         {
-                            
+                            values[j - 1].Add(valueArray[j, i].ToString());
                         }
                     }
-
                 }
+
+                return values;
             }
+
+            return null;
         }
     }
 }
