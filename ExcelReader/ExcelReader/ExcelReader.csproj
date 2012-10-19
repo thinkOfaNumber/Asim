@@ -43,8 +43,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Interface\MyWorksheet.cs" />
     <Compile Include="Logic\AutomateWorksheet.cs" />
-    <Compile Include="Logic\ConfigSettings.cs" />
+    <Compile Include="Interface\ConfigSettings.cs" />
     <Compile Include="Logic\Helper.cs" />
     <Compile Include="Interface\IExcelReader.cs" />
     <Compile Include="Logic\LogFile.cs" />

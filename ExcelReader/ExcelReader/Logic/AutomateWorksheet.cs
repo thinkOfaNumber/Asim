@@ -21,7 +21,8 @@ namespace ExcelReader.Logic
         Workbook _workBook;
         private const char q = '"';
         private const char delim = ',';
-        private bool _attach;
+        private bool _weOpened;
+        private List<MyWorksheet> _workBookData;
 
         public AutomateWorksheet(string inputFile, ConfigSettings settings)
         {
@@ -32,86 +33,76 @@ namespace ExcelReader.Logic
 
         public void ProcessConfigSheet(bool attachToRunningProcess)
         {
-            _attach = attachToRunningProcess;
             var fileInfo = new FileInfo(_filename);
             try
             {
                 Directory.SetCurrentDirectory(fileInfo.DirectoryName);
-                if (_attach)
-                {
-                    //_workBook = System.Runtime.InteropServices.Marshal.BindToMoniker(_filename) as Excel.Workbook;
-                    _workBook = System.Runtime.InteropServices.Marshal.BindToMoniker(fileInfo.FullName) as Excel.Workbook;
-                }
-                else
-                {
-                    var excelApp = new Excel.Application();
-                    //_workBook = excelApp.Workbooks.Open(_filename);
-                    _workBook = excelApp.Workbooks.Open(fileInfo.FullName);
-                }
-                _workBook.Application.StatusBar = "Running Simulation";
+                _weOpened = !IsFileOpen(fileInfo.FullName);
+                _workBook = System.Runtime.InteropServices.Marshal.BindToMoniker(fileInfo.FullName) as Excel.Workbook;
+
+                GetWorkbookData();
             }
             catch (Exception e)
             {
                 throw new Exception(String.Format("couldn't {0} Excel workbook: {1}",
-                    _attach ? "attach to running" : "open",
+                    _weOpened ? "attach to running" : "open",
                     e.Message));
+            }
+            finally
+            {
+                if (_weOpened && _workBook != null)
+                {
+                    _workBook.Close(false, _filename, null);
+                }
             }
 
             try
             {
-                object[,] config = GetConfigSheetData();
-                if (config != null)
-                {
-                    ParseConfigData(config);
-                }
-                // set the current directory
-                if (!string.IsNullOrEmpty(_settings.Directory))
-                {
-                    try
-                    {
-                        Directory.SetCurrentDirectory(_settings.Directory);
-                    }
-                    catch (Exception e)
-                    {
-                        throw new Exception("Error setting directory: " + e.Message, e);
-                    }
-                }
-
-                new LogFile(_workBook, _settings).Run();
-
-                _settings.SplitFilePrefix = fileInfo.Name.Replace(fileInfo.Extension, "_");
+                ParseConfigData(_workBookData.First(s => s.Name.Equals("config")));
             }
             catch (Exception e)
             {
-                if (!_attach)
-                {
-                    _workBook.Close(false, _filename, null);
-                }
-                //Marshal.ReleaseComObject(_workBook);
-                throw new Exception("Error opening workbook: " + e.Message, e);
+                throw new Exception("Couldn't find config tab.", e);
             }
-        }
+            // set the current directory
+            if (!string.IsNullOrEmpty(_settings.Directory))
+            {
+                try
+                {
+                    Directory.SetCurrentDirectory(_settings.Directory);
+                }
+                catch (Exception e)
+                {
+                    throw new Exception("Error setting directory: " + e.Message, e);
+                }
+            }
 
-        private object[,] GetConfigSheetData()
+            new LogFile(_workBookData, _settings).Run();
+
+            _settings.SplitFilePrefix = fileInfo.Name.Replace(fileInfo.Extension, "_");
+        }
+        
+        private void GetWorkbookData()
         {
+            _workBookData = new List<MyWorksheet>();
             int numSheets = _workBook.Sheets.Count;
             // sheet index starts at 1
             for (int i = 1; i < numSheets + 1; i++)
             {
                 var sheet = (Worksheet)_workBook.Sheets[i];
-                if (sheet.Name == "config")
+                var ws = new MyWorksheet()
                 {
-                    Range excelRange = sheet.UsedRange;
-                    object[,] valueArray = (object[,])excelRange.Value[XlRangeValueDataType.xlRangeValueDefault];
-                    return valueArray;
-                }
+                    Name = sheet.Name
+                };
+                Range excelRange = sheet.UsedRange;
+                ws.Data = (object[,])excelRange.Value[XlRangeValueDataType.xlRangeValueDefault];
+                _workBookData.Add(ws);
             }
-            throw new Exception("Couldn't find config tab.");
-            return null;
         }
 
-        private void ParseConfigData(object[,] data)
+        private void ParseConfigData(MyWorksheet worksheet)
         {
+            var data = worksheet.Data;
             if (!data[1, 1].Equals("config"))
                 return;
             for (int i = 1; i <= data.GetLength(0); i++)
@@ -211,20 +202,10 @@ namespace ExcelReader.Logic
 
         public void ProcessAllWorksheets()
         {
-            if (_workBook == null)
+            if (_workBookData == null)
                 return;
 
-            int numSheets = _workBook.Sheets.Count;
-            var sheets = new List<Worksheet>();
-            // sheet index starts at 1
-            for (int i = 1; i < numSheets + 1; i++)
-            {
-                var sheet = (Worksheet)_workBook.Sheets[i];
-                if (sheet.Name != "config")
-                {
-                    sheets.Add(sheet);
-                }
-            }
+            var sheets = _workBookData.Where(s => !s.Name.Equals("config"));
             
             try
             {
@@ -246,7 +227,7 @@ namespace ExcelReader.Logic
             }
             finally
             {
-                if (!_attach)
+                if (!_weOpened)
                 {
                     _workBook.Close(false, _filename, null);
                 }
@@ -254,11 +235,9 @@ namespace ExcelReader.Logic
             }
         }
 
-        private string SheetToCsv(Worksheet sheet)
+        private string SheetToCsv(MyWorksheet sheet)
         {
-            Range excelRange = sheet.UsedRange;
-            object[,] data = (object[,])excelRange.Value[XlRangeValueDataType.xlRangeValueDefault];
-            
+            var data = sheet.Data;
             
             if (!data[1,1].Equals("t"))
                 return null;
@@ -300,12 +279,13 @@ namespace ExcelReader.Logic
             }
 
             Excel.Application excelApp = null;
+            Workbook outputBook = null;
 
             try
             {
                 excelApp = new Excel.Application();
                 Workbook templateBook = excelApp.Workbooks.Open(templateInfo.FullName);
-                Workbook outputBook = excelApp.Workbooks.Open(outputInfo.FullName);
+                outputBook = excelApp.Workbooks.Open(outputInfo.FullName);
                 Worksheet autofill = null;
 
                 // have we got data to copy?
@@ -370,6 +350,7 @@ namespace ExcelReader.Logic
                 }
 
                 templateBook.SaveAs(templateInfo.DirectoryName + "\\" + DateTime.Now.ToString("yyyyMMdd_HHmm.ss_") + templateInfo.Name);
+                excelApp.Visible = true;
             }
             catch (Exception e)
             {
@@ -377,10 +358,7 @@ namespace ExcelReader.Logic
                 {
                     throw new Exception("Too many rows have been generated, please reduce the number of rows in the output.", e);
                 }
-                throw new Exception("Error opening workbook: " + e.Message, e);
-            }
-            finally
-            {
+
                 if (excelApp != null)
                 {
                     foreach (Workbook book in excelApp.Workbooks)
@@ -389,7 +367,16 @@ namespace ExcelReader.Logic
                     }
                     excelApp.Quit();
                 }
+                throw new Exception("Error opening workbook: " + e.Message, e);
             }
+            finally
+            {
+                if (outputBook != null)
+                {
+                    outputBook.Close();
+                }
+            }
+            // leave Excel open and visible
         }
 
         private string UpdateFormulaRange(string formula, long rowNumber)
@@ -435,5 +422,23 @@ namespace ExcelReader.Logic
             return formula;
         }
 
+        public bool IsFileOpen(string path)
+        {
+            FileStream fs = null;
+            try
+            {
+                fs = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.None);
+                return false;
+            }
+            catch (IOException ex)
+            {
+                return true;
+            }
+            finally
+            {
+                if (fs != null)
+                    fs.Close();
+            }
+        }
     }
 }

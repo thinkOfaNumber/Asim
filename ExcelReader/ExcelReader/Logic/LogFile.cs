@@ -4,16 +4,16 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
-using Microsoft.Office.Interop.Excel;
+using ExcelReader.Interface;
 
 namespace ExcelReader.Logic
 {
     public class LogFile
     {
-        private ConfigSettings _settings;
-        private Workbook _workBook;
+        private readonly ConfigSettings _settings;
+        private readonly List<MyWorksheet> _workBook;
 
-        public LogFile(Workbook workbook, ConfigSettings settings)
+        public LogFile(List<MyWorksheet> workbook, ConfigSettings settings)
         {
             _settings = settings;
             _workBook = workbook;
@@ -28,7 +28,7 @@ namespace ExcelReader.Logic
                     _settings.LogInformation.Globs != null &&
                     _settings.LogInformation.Globs.Any())
                 {
-                    foreach (Worksheet sheet in _workBook.Sheets)
+                    foreach (MyWorksheet sheet in _workBook)
                     {
                         List<List<string>> sheetInformation = RetrieveInformation(sheet);
                         if (sheetInformation != null && sheetInformation.Any())
@@ -59,23 +59,20 @@ namespace ExcelReader.Logic
             File.AppendAllText(_settings.LogInformation.LogFile, information.ToString());
         }
 
-        private List<List<string>> RetrieveInformation(Worksheet sheet)
+        private List<List<string>> RetrieveInformation(MyWorksheet sheet)
         {
             if (sheet != null)
             {
                 // create regex globs
                 List<Regex> regexPatterns = _settings.LogInformation.Globs.Select(glob => new Regex("^" + glob.Replace("*", ".*").Replace(@"\?", ".") + "$", RegexOptions.IgnoreCase | RegexOptions.Singleline)).ToList();
 
-                if (sheet.Cells[1, 1].Value.ToString() != "t")
+                if (sheet.Data[1, 1].ToString() != "t")
                 {
                     return null;
                 }
 
-                Range excelRange = sheet.UsedRange;
-                object[,] valueArray = (object[,]) excelRange.Value[XlRangeValueDataType.xlRangeValueDefault];
-
-                int rows = valueArray.GetLength(0);
-                int columns = valueArray.GetLength(1);
+                int rows = sheet.Data.GetLength(0);
+                int columns = sheet.Data.GetLength(1);
                 List<List<string>> values = new List<List<string>>(rows);
 
                 for (int i = 0; i < rows; i++)
@@ -85,12 +82,12 @@ namespace ExcelReader.Logic
 
                 for (int i = 1; i <= columns; i++)
                 {
-                    string headerValue = valueArray[1, i].ToString();
+                    string headerValue = sheet.Data[1, i].ToString();
                     if (headerValue == "t" || regexPatterns.Any(glob => glob.IsMatch(headerValue)))
                     {
                         for (int j = 1; j <= rows; j++)
                         {
-                            values[j - 1].Add(valueArray[j, i].ToString());
+                            values[j - 1].Add(sheet.Data[j, i].ToString());
                         }
                     }
                 }
