@@ -11,11 +11,14 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Office.Interop.Excel;
+using Action = System.Action;
 
 namespace ExcelReader.Logic
 {
     public class AutomateWorksheet : IExcelReader
     {
+        public Action<string> ShowSimOutput { get; set; }
+
         private ConfigSettings _settings;
         private string _filename;
         Workbook _workBook;
@@ -23,13 +26,16 @@ namespace ExcelReader.Logic
         private const char delim = ',';
         private bool _weOpened;
         private List<MyWorksheet> _workBookData;
+        private static readonly object LockResults = new Object();
+        private Worksheet _resultsSheet;
+        private int _resultsCell = 1;
 
         public AutomateWorksheet(string inputFile, ConfigSettings settings)
         {
             _settings = settings;
             _filename = inputFile;
+            ShowSimOutput = ShowSimResults;
         }
-
 
         public void ProcessConfigSheet(bool attachToRunningProcess)
         {
@@ -39,21 +45,12 @@ namespace ExcelReader.Logic
                 Directory.SetCurrentDirectory(fileInfo.DirectoryName);
                 _weOpened = !IsFileOpen(fileInfo.FullName);
                 _workBook = System.Runtime.InteropServices.Marshal.BindToMoniker(fileInfo.FullName) as Excel.Workbook;
-
                 GetWorkbookData();
             }
             catch (Exception e)
             {
                 throw new Exception(String.Format("couldn't {0} Excel workbook: {1}",
-                    _weOpened ? "attach to running" : "open",
-                    e.Message));
-            }
-            finally
-            {
-                if (_weOpened && _workBook != null)
-                {
-                    _workBook.Close(false, _filename, null);
-                }
+                    _weOpened ? "attach to running" : "open", e.Message));
             }
 
             try
@@ -225,13 +222,40 @@ namespace ExcelReader.Logic
             {
                 throw new Exception("Error splitting worksheets: " + e.Message, e);
             }
-            finally
+        }
+
+        public void ShowSimResults(string message)
+        {
+            lock (LockResults)
             {
-                if (!_weOpened)
+                if (_workBook == null || _weOpened)
+                    return;
+
+                if (_resultsSheet == null)
                 {
-                    _workBook.Close(false, _filename, null);
+                    _resultsSheet = _workBook.Sheets.Cast<Worksheet>()
+                        .FirstOrDefault(sheet => sheet.Name.Equals("SimResults"));
+                    if (_resultsSheet == null)
+                    {
+                        _resultsSheet = _workBook.Sheets.Add();
+                        _resultsSheet.Name = "SimResults";
+                    }
+                    _resultsSheet.Cells.Clear();
+                    _resultsSheet.Cells[_resultsCell++, 1] = "This sheet is automatically filled.  Any edits will be lost each time you run the Simulator";
                 }
-                //Marshal.ReleaseComObject(_workBook);
+                try
+                {
+                    _workBook.Application.Visible = true;
+                    _resultsSheet.Activate();
+                    _resultsSheet.Cells[_resultsCell++, 1] = message;
+
+                    // accidentally discovered how to make a cell corner note:
+                    // bool result = excelApp.Dialogs[Excel.XlBuiltInDialog.xlDialogNote].Show();
+                }
+                catch
+                {
+
+                }
             }
         }
 
@@ -239,7 +263,7 @@ namespace ExcelReader.Logic
         {
             var data = sheet.Data;
             
-            if (!data[1,1].Equals("t"))
+            if (data == null || !data[1,1].Equals("t"))
                 return null;
 
             StringBuilder row = new StringBuilder();
@@ -263,7 +287,7 @@ namespace ExcelReader.Logic
             return outputFileName;
         }
 
-        public void OpenResults()
+        public void ShowAnalyst()
         {
             foreach (var t in _settings.TemplateFiles)
             {
@@ -430,7 +454,21 @@ namespace ExcelReader.Logic
             return formula;
         }
 
-        public bool IsFileOpen(string path)
+        public void Finalise()
+        {
+            var excelApp = _workBook.Application;
+            if (_weOpened && _workBook != null)
+            {
+                _workBook.Close(false, _filename, null);
+            }
+            if (_weOpened && excelApp != null)
+            {
+                excelApp.Quit();
+            }
+            _workBook = null;
+        }
+
+        private bool IsFileOpen(string path)
         {
             FileStream fs = null;
             try

@@ -8,18 +8,25 @@ namespace ExcelReader.Logic
 {
     class Simulator
     {
-        public void Run(ConfigSettings settings)
+        private ConfigSettings _settings;
+
+        public Simulator(ConfigSettings settings)
         {
-            if (settings != null && settings.RunSimulator)
+            _settings = settings;
+        }
+
+        public void Run(Action<string> onOutputData)
+        {
+            if (_settings != null && _settings.RunSimulator)
             {
-                if (!string.IsNullOrEmpty(settings.Simulator))
+                if (!string.IsNullOrEmpty(_settings.Simulator))
                 {
-                    FileInfo simulatorLocation = new FileInfo(settings.Simulator);
+                    FileInfo simulatorLocation = new FileInfo(_settings.Simulator);
                     if (simulatorLocation.Exists)
                     {
                         Process simulator = new Process();
-                        ProcessStartInfo psi = new ProcessStartInfo(settings.Simulator);
-                        psi.Arguments = GenerateArguments(settings);
+                        ProcessStartInfo psi = new ProcessStartInfo(_settings.Simulator);
+                        psi.Arguments = GenerateArguments(_settings);
 
                         psi.CreateNoWindow = true;
                         psi.UseShellExecute = false;
@@ -27,8 +34,8 @@ namespace ExcelReader.Logic
                         psi.RedirectStandardError = true;
 
                         simulator.StartInfo = psi;
-                        simulator.OutputDataReceived += (sender, args) => Console.WriteLine(args.Data);
-                        simulator.ErrorDataReceived += (sender, args) => Console.WriteLine(args.Data);
+                        simulator.OutputDataReceived += (sender, args) => onOutputData(args.Data);
+                        simulator.ErrorDataReceived += (sender, args) => onOutputData(args.Data);
                         simulator.Start();
                         simulator.BeginOutputReadLine();
                         simulator.BeginErrorReadLine();

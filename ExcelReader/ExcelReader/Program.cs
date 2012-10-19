@@ -60,7 +60,9 @@ namespace ExcelReader
                 // call the external system
                 try
                 {
-                    new Simulator().Run(Settings);
+                    var sim = new Simulator(Settings);
+                    sim.Run(reader.ShowSimOutput);
+                    reader.Finalise();
                 }
                 catch (Exception e)
                 {
@@ -69,14 +71,13 @@ namespace ExcelReader
 
                 try
                 {
-                    reader.OpenResults();
+                    reader.ShowAnalyst();
                 }
                 catch (Exception e)
                 {
                     Error("Error: " + e.Message);
                 }
             }
-            AnyKey();
         }
 
         static void GetOpts(string[] args)

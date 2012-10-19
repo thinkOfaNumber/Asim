@@ -66,7 +66,7 @@ namespace ExcelReader.Logic
                 // create regex globs
                 List<Regex> regexPatterns = _settings.LogInformation.Globs.Select(glob => new Regex("^" + glob.Replace("*", ".*").Replace(@"\?", ".") + "$", RegexOptions.IgnoreCase | RegexOptions.Singleline)).ToList();
 
-                if (sheet.Data[1, 1].ToString() != "t")
+                if (sheet.Data == null || sheet.Data[1, 1].ToString() != "t")
                 {
                     return null;
                 }
