@@ -24,6 +24,7 @@ namespace ExcelReader
 
         public static void Main(string[] args)
         {
+            IExcelReader reader = null;
             GetOpts(args);
             if (string.IsNullOrEmpty(_inputFile))
             {
@@ -33,7 +34,7 @@ namespace ExcelReader
             {
                 try
                 {
-                    IExcelReader reader = new AutomateWorksheet(_inputFile, Settings);
+                    reader = new AutomateWorksheet(_inputFile, Settings);
                     reader.ProcessConfigSheet(_attach);
                     reader.ProcessAllWorksheets();
                 }
@@ -68,8 +69,7 @@ namespace ExcelReader
 
                 try
                 {
-                    IExcelReader reader = new AutomateWorksheet(_inputFile, Settings);
-                    Settings.TemplateFiles.ForEach(tf => reader.GenerateGraphs(tf.TemplateName, tf.OutputName));
+                    reader.OpenResults();
                 }
                 catch (Exception e)
                 {

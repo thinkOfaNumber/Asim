@@ -263,7 +263,15 @@ namespace ExcelReader.Logic
             return outputFileName;
         }
 
-        public void GenerateGraphs(string template, string output)
+        public void OpenResults()
+        {
+            foreach (var t in _settings.TemplateFiles)
+            {
+                ProcessTemplate(t.TemplateName, t.OutputName);
+            }
+        }
+
+        private void ProcessTemplate(string template, string output)
         {
             if (string.IsNullOrEmpty(template) || string.IsNullOrEmpty(output))
             {
