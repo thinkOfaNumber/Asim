@@ -13,7 +13,6 @@ namespace ExcelReader
     {
         private static readonly ConfigSettings Settings = new ConfigSettings();
         private static string _inputFile;
-        private const char WrapperString = '"';
         private static bool _attach;
 
         enum Arguments
@@ -41,20 +40,6 @@ namespace ExcelReader
                 catch (Exception e)
                 {
                     Error("Error running reader: " + e.Message);
-                }
-
-                // add the quotes to the directory
-                if (!string.IsNullOrEmpty(Settings.Directory))
-                {
-                    Settings.Directory = WrapperString + Settings.Directory + WrapperString;
-                }
-
-                // prefix the community name.
-                if (!string.IsNullOrEmpty(Settings.CommunityName) && 
-                    Settings.OutputFiles != null && 
-                    Settings.OutputFiles.Any())
-                {
-                    Settings.OutputFiles.ForEach(o => o.Filename = Settings.CommunityName + "_" + o.Filename);
                 }
 
                 // call the external system

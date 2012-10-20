@@ -77,6 +77,20 @@ namespace ExcelReader.Logic
             new LogFile(_workBookData, _settings).Run();
 
             _settings.SplitFilePrefix = fileInfo.Name.Replace(fileInfo.Extension, "_");
+
+            // add the quotes to the directory
+            if (!string.IsNullOrEmpty(_settings.Directory))
+            {
+                _settings.Directory = q + _settings.Directory + q;
+            }
+
+            // prefix the community name.
+            if (!string.IsNullOrEmpty(_settings.CommunityName) &&
+                _settings.OutputFiles != null &&
+                _settings.OutputFiles.Any())
+            {
+                _settings.OutputFiles.ForEach(o => o.Filename = _settings.CommunityName + "_" + o.Filename);
+            }
         }
         
         private void GetWorkbookData()
@@ -247,7 +261,11 @@ namespace ExcelReader.Logic
                 {
                     _workBook.Application.Visible = true;
                     _resultsSheet.Activate();
-                    _resultsSheet.Cells[_resultsCell++, 1] = message;
+                    _resultsSheet.Cells[_resultsCell, 1] = message;
+                    if (!message.EndsWith("%..."))
+                    {
+                        _resultsCell++;
+                    }
 
                     // accidentally discovered how to make a cell corner note:
                     // bool result = excelApp.Dialogs[Excel.XlBuiltInDialog.xlDialogNote].Show();
