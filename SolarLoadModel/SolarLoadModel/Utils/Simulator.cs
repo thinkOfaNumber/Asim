@@ -94,7 +94,7 @@ namespace SolarLoadModel.Utils
 
         private void OnTimedEvent(object source, ElapsedEventArgs e)
         {
-            Console.WriteLine(string.Format("{0:P0}... ", (float)Iteration / (float)Iterations));
+            Console.WriteLine(string.Format("{0:P0}", (float)Iteration / (float)Iterations));
         }
     }
 }

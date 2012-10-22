@@ -27,8 +27,12 @@ namespace ExcelReader.Logic
         private bool _weOpened;
         private List<MyWorksheet> _workBookData;
         private static readonly object LockResults = new Object();
+
+        // sim results sheet:
         private Worksheet _resultsSheet;
         private int _resultsCell = 1;
+        Excel.Chart _resultChartPage;
+        private Excel.Range _resultChartRange;
 
         public AutomateWorksheet(string inputFile, ConfigSettings settings)
         {
@@ -242,29 +246,71 @@ namespace ExcelReader.Logic
         {
             lock (LockResults)
             {
-                if (_workBook == null || _weOpened)
+                if (_workBook == null || _weOpened || message == null)
                     return;
 
-                if (_resultsSheet == null)
-                {
-                    _resultsSheet = _workBook.Sheets.Cast<Worksheet>()
-                        .FirstOrDefault(sheet => sheet.Name.Equals("SimResults"));
-                    if (_resultsSheet == null)
-                    {
-                        _resultsSheet = _workBook.Sheets.Add();
-                        _resultsSheet.Name = "SimResults";
-                    }
-                    _resultsSheet.Cells.Clear();
-                    _resultsSheet.Cells[_resultsCell++, 1] = "This sheet is automatically filled.  Any edits will be lost each time you run the Simulator";
-                }
                 try
                 {
-                    _workBook.Application.Visible = true;
-                    _resultsSheet.Activate();
-                    _resultsSheet.Cells[_resultsCell, 1] = message;
-                    if (!message.EndsWith("%..."))
+                    if (_resultsSheet == null)
                     {
-                        _resultsCell++;
+                        _resultsSheet = _workBook.Sheets.Cast<Worksheet>()
+                            .FirstOrDefault(sheet => sheet.Name.Equals("SimResults"));
+                        if (_resultsSheet == null)
+                        {
+                            _resultsSheet = _workBook.Sheets.Add();
+                            _resultsSheet.Name = "SimResults";
+                        }
+                        _resultsSheet.Cells.Clear();
+                        _resultsSheet.get_Range("A1").Select();
+                        _resultsSheet.Cells[_resultsCell++, 1] = "This sheet is automatically filled.  Any edits will be lost each time you run the Simulator";
+
+                        var resultCharts = (ChartObjects)_resultsSheet.ChartObjects();
+                        foreach (ChartObject ch in resultCharts)
+                        {
+                            ch.Delete();
+                        }
+                        ChartObject resultChart = resultCharts.Add(150, 40, 300, 100);
+                        _resultChartPage = resultChart.Chart;
+
+                        Axis axis = resultChart.Chart.Axes(
+                            XlAxisType.xlValue,
+                            XlAxisGroup.xlPrimary);
+                        axis.MaximumScaleIsAuto = false;
+                        axis.MaximumScale = 1; // 1 ~ 100%
+                        axis.MinimumScaleIsAuto = false;
+                        axis.MinimumScale = 0;
+                        axis.HasTitle = false;
+
+                        _resultsSheet.Activate();
+                        _workBook.Application.Visible = true;
+                    }
+
+                    if (message.Contains("%"))
+                    {
+                        _resultsSheet.Cells[_resultsCell, 1] = "Percent Complete";
+                        _resultsSheet.Cells[_resultsCell, 2] = message;
+                        if (_resultChartRange == null)
+                        {
+                            _resultChartRange = _resultsSheet.get_Range("A" + _resultsCell, "B" + _resultsCell);
+                            _resultChartPage.SetSourceData(_resultChartRange);
+                            _resultChartPage.ChartType = Excel.XlChartType.xlBarStacked;
+                            _resultChartPage.HasLegend = false;
+                        }
+                        _resultChartPage.Refresh();
+                        if (message.StartsWith("100"))
+                        {
+                            _resultsCell++;
+                            _resultsSheet.Activate();
+                            _workBook.Application.StatusBar = "";
+                        }
+                        else
+                        {
+                            _workBook.Application.StatusBar = "Running Simulation: " + message;
+                        }
+                    }
+                    else
+                    {
+                        _resultsSheet.Cells[_resultsCell++, 1] = message;
                     }
 
                     // accidentally discovered how to make a cell corner note:
