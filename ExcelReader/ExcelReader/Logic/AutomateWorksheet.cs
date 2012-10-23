@@ -261,8 +261,9 @@ namespace ExcelReader.Logic
                             _resultsSheet.Name = "SimResults";
                         }
                         _resultsSheet.Cells.Clear();
-                        _resultsSheet.get_Range("A1").Select();
+                        //_resultsSheet.get_Range("A1").Select(); // fails?
                         _resultsSheet.Cells[_resultsCell++, 1] = "This sheet is automatically filled.  Any edits will be lost each time you run the Simulator";
+                        _resultsSheet.Cells[_resultsCell++, 1] = "Run started on " + DateTime.Now;
 
                         var resultCharts = (ChartObjects)_resultsSheet.ChartObjects();
                         foreach (ChartObject ch in resultCharts)
