@@ -74,7 +74,7 @@ namespace SolarLoadModel.Actors
                             _outVars[i].Min = _outVars[i].Val;
                             _outVars[i].MinT = iteration;
                         }
-                        else if (_outVars[i].Val > _outVars[i].Min)
+                        else if (_outVars[i].Val > _outVars[i].Max)
                         {
                             _outVars[i].Max = _outVars[i].Val;
                             _outVars[i].MaxT = iteration;
@@ -83,8 +83,8 @@ namespace SolarLoadModel.Actors
                         _outVars[i].Ave = _outVars[i].Ave + _outVars[i].Val;
                     }
                 }
-                _initStats = false;
             }
+            _initStats = false;
 
             if (write)
             {
