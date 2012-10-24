@@ -89,11 +89,11 @@ namespace ExcelReader.Logic
             }
 
             // prefix the community name.
-            if (!string.IsNullOrEmpty(_settings.CommunityName) &&
-                _settings.OutputFiles != null &&
+            if (_settings.OutputFiles != null &&
                 _settings.OutputFiles.Any())
             {
-                _settings.OutputFiles.ForEach(o => o.Filename = _settings.CommunityName + "_" + o.Filename);
+                string prefixFileName = (_settings.CommunityName + _settings.DateSimulatorRun.ToString(" yyyy-MM-dd-HH-mm-ss")).Trim();
+                _settings.OutputFiles.ForEach(o => o.Filename = q + prefixFileName + " " + o.Period + " " + o.Filename + q);
             }
         }
         
@@ -446,7 +446,9 @@ namespace ExcelReader.Logic
                     }
                 }
 
-                templateBook.SaveAs(templateInfo.DirectoryName + "\\" + DateTime.Now.ToString("yyyyMMdd_HHmm.ss_") + templateInfo.Name);
+                templateBook.SaveAs(templateInfo.DirectoryName + "\\" + 
+                                    (!string.IsNullOrEmpty(_settings.CommunityName) ? _settings.CommunityName + " " : "") + 
+                                    _settings.DateSimulatorRun.ToString("yyyy-MM-dd-HH-mm-ss ") + templateInfo.Name);
                 excelApp.Visible = true;
             }
             catch (Exception e)

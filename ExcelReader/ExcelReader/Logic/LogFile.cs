@@ -42,20 +42,22 @@ namespace ExcelReader.Logic
         
         private void ProcessInformation(List<List<string>> sheetInformation)
         {
-            StringBuilder information = new StringBuilder(DateTime.Now.ToString());
+            StringBuilder information = new StringBuilder();
 
             if (!string.IsNullOrEmpty(_settings.CommunityName))
             {
-                information.Append(" - Community Name: ");
                 information.Append(_settings.CommunityName);
+                information.Append(" ");
             }
+            information.Append(_settings.DateSimulatorRun.ToString("yyyy-MM-dd HH:mm:ss"));
             information.Append(Environment.NewLine);
             foreach (List<string> list in sheetInformation)
             {
                 information.Append(string.Join(",", list));
                 information.Append(Environment.NewLine);
             }
-            
+            information.Append(Environment.NewLine);
+
             File.AppendAllText(_settings.LogInformation.LogFile, information.ToString());
         }
 
@@ -65,6 +67,7 @@ namespace ExcelReader.Logic
             {
                 // create regex globs
                 List<Regex> regexPatterns = _settings.LogInformation.Globs.Select(glob => new Regex("^" + glob.Replace("*", ".*").Replace(@"\?", ".") + "$", RegexOptions.IgnoreCase | RegexOptions.Singleline)).ToList();
+                bool globMatches = false; // this is to make sure that there were at least some headers that matched.
 
                 if (sheet.Data == null || sheet.Data[1, 1].ToString() != "t")
                 {
@@ -83,7 +86,14 @@ namespace ExcelReader.Logic
                 for (int i = 1; i <= columns; i++)
                 {
                     string headerValue = sheet.Data[1, i].ToString();
-                    if (headerValue == "t" || regexPatterns.Any(glob => glob.IsMatch(headerValue)))
+                    bool isGlobMatch = false;
+                    if (regexPatterns.Any(glob => glob.IsMatch(headerValue)))
+                    {
+                        isGlobMatch = true;
+                        globMatches = true;
+                    }
+
+                    if (headerValue == "t" || isGlobMatch)
                     {
                         for (int j = 1; j <= rows; j++)
                         {
@@ -92,7 +102,10 @@ namespace ExcelReader.Logic
                     }
                 }
 
-                return values;
+                if (globMatches)
+                {
+                    return values;
+                }
             }
 
             return null;

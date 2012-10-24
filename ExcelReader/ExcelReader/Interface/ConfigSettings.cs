@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace ExcelReader.Logic
 {
@@ -38,12 +39,16 @@ namespace ExcelReader.Logic
 
         public LogFileInformation LogInformation { get; set; }
 
+        private DateTime _dateSimulatorRun;
+        public DateTime DateSimulatorRun { get { return _dateSimulatorRun; } }
+
         public ConfigSettings()
         {
             InputFiles = new List<string>();
             OutputFiles = new List<OutputInformation>();
             TemplateFiles = new List<TemplateInformation>();
             RunSimulator = true;
+            _dateSimulatorRun = DateTime.Now;
         }
     }
 
