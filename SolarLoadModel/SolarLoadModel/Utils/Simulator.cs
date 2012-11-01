@@ -22,6 +22,7 @@ namespace SolarLoadModel.Utils
         }
 
         public ulong Iteration { get; private set; }
+        public DateTime StartTime { get; set; }
         private System.Timers.Timer _timer;
         private List<string> _inputActors = new List<string>();
         private List<OutputOption> _outputActors = new List<OutputOption>();
@@ -40,12 +41,12 @@ namespace SolarLoadModel.Utils
         {
             var actors = new List<IActor>();
 
-            _inputActors.ForEach(s => actors.Add(new NextData(s)));
+            _inputActors.ForEach(s => actors.Add(new NextData(s, StartTime)));
             // add extra simulation actors here.  Order is important:
             actors.Add(new Station());
             actors.Add(new GenMgr());
             actors.Add(new Solar());
-            _outputActors.ForEach(o => actors.Add(new OutputData(o.Filename, o.Vars, o.Period)));
+            _outputActors.ForEach(o => actors.Add(new OutputData(o.Filename, o.Vars, o.Period, StartTime, DateFormat.Other)));
 
             _inputActors = null;
             _outputActors = null;

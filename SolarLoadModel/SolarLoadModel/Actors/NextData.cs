@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using SolarLoadModel.Contracts;
 using SolarLoadModel.Exceptions;
@@ -7,10 +8,22 @@ using SolarLoadModel.Utils;
 
 namespace SolarLoadModel.Actors
 {
+    /// <summary>
+    /// Reads from input files with format:
+    /// t,'name1','name2',...
+    /// time,'value1','value2',... 
+    /// 
+    /// Time stamps can be written in either IS8601, seconds since the Epoch (Jan 1, 1970),
+    /// seconds since the simulation start, or 'human readable' non-ambiguous time with automatic
+    /// detection.  Typical time stamps include values such as 1997-07-16T19:20:30.45 or
+    /// 12345566.849 or 100.
+    /// 
+    /// If the first time sample is a "seconds" value, and it is less that the simulation start
+    /// time since the Epoch, it is interpreted as relative to the start of the simulation.
+    /// </summary>
     public class NextData : IActor
     {
         private readonly IList<string> _headers = new List<string>();
-        private double[] _row;
         private string[] _cells;
         private Shared[] _values;
 
@@ -21,13 +34,19 @@ namespace SolarLoadModel.Actors
         private ulong _lineNo;
         private int _headerCount;
 
-        #region Implementation of IActor
-                public NextData(string filename)
+        private DateFormat _dateFormat;
+        private readonly DateTime _simStartTime;
+        private readonly ulong _simOffset;
+
+        public NextData(string filename, DateTime? simStartTime = null)
         {
             _filename = filename;
             _file = new System.IO.StreamReader(_filename);
+            _simStartTime = simStartTime.HasValue ? simStartTime.Value : Settings.Epoch;
+            _simOffset = Convert.ToUInt64((_simStartTime - Settings.Epoch).TotalSeconds);
         }
 
+        #region Implementation of IActor
         public void Run(ulong iteration)
         {
             if (iteration != _nextT || _nextline == null)
@@ -52,7 +71,7 @@ namespace SolarLoadModel.Actors
                 _nextline = ReadLine();
                 if (_nextline != null)
                 {
-                    _nextT = Convert.ToUInt64(_nextline.Substring(0, _nextline.IndexOf(',')));
+                    _nextT = DateToUInt64(_nextline.Substring(0, _nextline.IndexOf(',')));
                 }
             }
             catch (SimulationException)
@@ -81,7 +100,6 @@ namespace SolarLoadModel.Actors
             data.RemoveAt(0);
             data.ForEach(_headers.Add);
             _headerCount = _headers.Count;
-            _row = new double[_headerCount];
             _values = new Shared[_headerCount];
 
             // init variables in this file
@@ -93,7 +111,9 @@ namespace SolarLoadModel.Actors
 
             // get first data row
             _nextline = ReadLine();
-            _nextT = Convert.ToUInt64(_nextline.Substring(0, _nextline.IndexOf(',')));
+            string time = _nextline.Substring(0, _nextline.IndexOf(','));
+            _dateFormat = GetDateFormat(time);
+            _nextT = DateToUInt64(time);
         }
 
         public void Finish()
@@ -108,6 +128,46 @@ namespace SolarLoadModel.Actors
             var s = _file.ReadLine();
             _lineNo++;
             return s;
+        }
+
+        private UInt64 DateToUInt64(string time)
+        {
+            try
+            {
+                switch (_dateFormat)
+                {
+                    case DateFormat.RelativeToEpoch:
+                        return Convert.ToUInt64(time) - _simOffset;
+                        break;
+
+                    case DateFormat.RelativeToSim:
+                        return Convert.ToUInt64(time);
+                        break;
+
+                    case DateFormat.Other:
+                        var datetime = Convert.ToDateTime(time);
+                        return Convert.ToUInt64((datetime - _simStartTime).TotalSeconds);
+                        break;
+                }
+            }
+            catch (Exception e)
+            {
+                throw new SimulationException(_filename + ": Couldn't parse date on line " + _lineNo, e);
+            }
+            return 0;
+        }
+
+        private DateFormat GetDateFormat(string s)
+        {
+            double var;
+            if (Double.TryParse(s, out var))
+            {
+                if (var < _simOffset)
+                    return DateFormat.RelativeToSim;
+                else
+                    return DateFormat.RelativeToEpoch;
+            }
+            return DateFormat.Other;
         }
     }
 }

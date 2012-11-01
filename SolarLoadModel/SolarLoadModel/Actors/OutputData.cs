@@ -34,8 +34,10 @@ namespace SolarLoadModel.Actors
         private readonly uint _outputEvery;
         private readonly bool _doStats;
         private bool _initStats = true;
+        private readonly DateFormat _outputFormat;
+        private readonly DateTime _simStartTime;
 
-        public OutputData(string filename, string[] vars, uint outputEvery = 1)
+        public OutputData(string filename, string[] vars, uint outputEvery = 1, DateTime? simStartTime = null, DateFormat outputFormat = DateFormat.Other)
         {
             _filename = filename;
             try
@@ -49,6 +51,8 @@ namespace SolarLoadModel.Actors
             _varGlobs = vars;
             _outputEvery = outputEvery;
             _doStats = outputEvery > 1;
+            _outputFormat = outputFormat;
+            _simStartTime = simStartTime.HasValue ? simStartTime.Value : Settings.Epoch;
         }
 
         #region Implementation of IActor
@@ -89,7 +93,18 @@ namespace SolarLoadModel.Actors
             if (write)
             {
                 _row.Clear();
-                _row.Append(iteration);
+                switch (_outputFormat)
+                {
+                    case DateFormat.RelativeToEpoch:
+                        _row.Append((_simStartTime.AddSeconds(iteration) - Settings.Epoch).TotalSeconds);
+                        break;
+                    case DateFormat.RelativeToSim:
+                        _row.Append(iteration);
+                        break;
+                    default:
+                        _row.Append(_simStartTime.AddSeconds(iteration));
+                        break;
+                }
                 for (int i = 0; i < _nvars; i++)
                 {
                     if (_outVars[i].DoStats)
