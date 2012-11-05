@@ -9,7 +9,14 @@ namespace SolarLoadModel.Utils
 {
     public class Shared
     {
+        public Func<double, double> ScaleFunction { get; set; }
         public double Val { get; set; }
+
+        internal string Name;
+        public Shared()
+        {
+            ScaleFunction = null;
+        }
     }
 
     public class SharedContainer
@@ -22,6 +29,7 @@ namespace SolarLoadModel.Utils
             if (!SharedValues.TryGetValue(name, out s))
             {
                 s = new Shared();
+                s.Name = name;
                 SharedValues[name] = s;
             }
             return s;

@@ -23,17 +23,23 @@ namespace SolarLoadModel.Actors
     /// </summary>
     public class NextData : IActor
     {
-        private readonly IList<string> _headers = new List<string>();
+        struct ValueContainer
+        {
+            public bool DoScale;
+            public Shared Update;
+        };
+
         private string[] _cells;
-        private Shared[] _values;
+        private ValueContainer[] _values;
 
         private readonly System.IO.StreamReader _file;
         private readonly string _filename;
         private UInt64 _nextT;
         private string _nextline;
         private ulong _lineNo;
-        private int _headerCount;
-
+        private int _columnCount;
+        private readonly char[] _scaleChars = new[] { '*', '+' };
+        
         private DateFormat _dateFormat;
         private readonly DateTime _simStartTime;
         private readonly ulong _simOffset;
@@ -55,16 +61,29 @@ namespace SolarLoadModel.Actors
             try
             {
                 _cells = _nextline.Split(',');
-                for (int i = 0; i < _headerCount; i++)
+                for (int i = 0; i < _columnCount; i++)
                 {
-                    // ignore first cell
                     try
                     {
-                        _values[i].Val = Convert.ToDouble(_cells[i + 1]);
+                        if (_values[i].DoScale)
+                        {
+                            string[] func = _cells[i + 1].Split(_scaleChars, StringSplitOptions.RemoveEmptyEntries);
+                            // update the translation function which will be used to translate this
+                            // variable the next time it is read.  Essentially it is (d * x + k)
+                            _values[i].Update.ScaleFunction = v => v * Convert.ToDouble(func[0]) + Convert.ToDouble(func[1]);
+                        }
+                        else
+                        {
+                            // ignore first cell
+                            // note the scaling is not done here
+                            _values[i].Update.Val = Convert.ToDouble(_cells[i + 1]);
+                        }
                     }
                     catch (Exception e)
                     {
-                        throw new SimulationException(string.Format("Expected Number at Cell {0} line {1} of {2}, got '{3}'", i + 1, _lineNo, _filename, _cells[i]), e);
+                        throw new SimulationException(
+                            string.Format("Expected Number at Cell {0} line {1} of {2}, got '{3}'", i + 1, _lineNo, _filename, _cells[i]),
+                            e);
                     }
                 }
 
@@ -88,25 +107,32 @@ namespace SolarLoadModel.Actors
         {
             // get headers
             _nextline = ReadLine();
-            List<string> data = _nextline.Split(',').ToList();
-            if (!data[0].Equals("t"))
+            List<string> headers = _nextline.Split(',').ToList();
+            if (!headers[0].Equals("t"))
             {
                 throw new FormatException(_filename + ": Cell 0,0 must contain 't' to be a valid input file");
             }
-            if (data.Count <= 1)
+            if (headers.Count <= 1)
             {
                 throw new FormatException(_filename + ": Header row must contain at least one variable besides 't'.");
             }
-            data.RemoveAt(0);
-            data.ForEach(_headers.Add);
-            _headerCount = _headers.Count;
-            _values = new Shared[_headerCount];
+            headers.RemoveAt(0);
+            _columnCount = headers.Count;
+            _values = new ValueContainer[_columnCount];
 
-            // init variables in this file
-            for (int i = 0; i < _headerCount; i++)
+            for (int i = 0; i < _columnCount; i++)
             {
-                _values[i] = SharedContainer.GetOrNew(_headers.ElementAt(i));
-                _values[i].Val = 0;
+                if (headers[i][0] == '>')
+                {
+                    _values[i].DoScale = true;
+                    _values[i].Update = SharedContainer.GetOrNew(headers[i].Substring(1));
+                    _values[i].Update.ScaleFunction = v => v;
+                }
+                else
+                {
+                    _values[i].Update = SharedContainer.GetOrNew(headers[i]);
+                    _values[i].Update.Val = 0;
+                }
             }
 
             // get first data row
