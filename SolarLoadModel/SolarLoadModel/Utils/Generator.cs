@@ -55,10 +55,6 @@ namespace SolarLoadModel.Utils
             get { return _loadFact.Val; }
             private set { _loadFact.Val = value; }
         }
-        public double FuelCons
-        {
-            get { return _fuelCons.Val; }
-        }
         public static ushort OnlineCfg
         {
             get { return (ushort)_onlineCfg.Val; }
@@ -95,9 +91,9 @@ namespace SolarLoadModel.Utils
             get { return _fuelCnt.Val; }
             private set { _fuelCnt.Val = value; }
         }
-        public ulong RunCnt
+        public double RunCnt
         {
-            get { return (ulong)_runCnt.Val; }
+            get { return _runCnt.Val; }
             private set { _runCnt.Val = value; }
         }
         public double ECnt
@@ -112,7 +108,8 @@ namespace SolarLoadModel.Utils
         private readonly Shared _idealPctP;
         private readonly Shared _idealP;
         private readonly Shared _loadFact;
-        private readonly Shared _fuelCons;
+        private readonly Shared[] _fuelCurveP = new Shared[Settings.FuelCurvePoints];
+        private readonly Shared[] _fuelCurveL = new Shared[Settings.FuelCurvePoints];
         private static readonly Shared _onlineCfg = SharedContainer.GetOrNew("GenOnlineCfg");
         private static readonly Shared _genIdealP = SharedContainer.GetOrNew("GenIdealP");
         private static readonly Shared _genP = SharedContainer.GetOrNew("GenP");
@@ -151,12 +148,16 @@ namespace SolarLoadModel.Utils
             _runCnt = SharedContainer.GetOrNew("Gen" + n + "RunCnt");
             _eCnt = SharedContainer.GetOrNew("Gen" + n + "ECnt");
             _fuelCnt = SharedContainer.GetOrNew("Gen" + n + "FuelCnt");
-            _fuelCons = SharedContainer.GetOrNew("Gen" + n + "FuelCons");
             _maxP = SharedContainer.GetOrNew("Gen" + n + "MaxP");
             _minRunTPa = SharedContainer.GetOrNew("Gen" + n + "MinRunTPa");
             _idealPctP = SharedContainer.GetOrNew("Gen" + n + "IdealPctP");
             _idealP = SharedContainer.GetOrNew("Gen" + n + "IdealP");
-
+            for (int i = 0; i < Settings.FuelCurvePoints; i++)
+            {
+                // Gen1Cons1P, Gen1Cons1L; Gen1Cons2P, Gen1Cons2L; ...
+                _fuelCurveP[i] = SharedContainer.GetOrNew("Gen" + n + "FuelCons" + (i + 1) + "P");
+                _fuelCurveL[i] = SharedContainer.GetOrNew("Gen" + n + "FuelCons" + (i + 1) + "L");
+            }
             Gen[id] = this;
         }
 
@@ -226,18 +227,57 @@ namespace SolarLoadModel.Utils
             _spinP = 0;
             if (State == GeneratorState.RunningOpen)
             {
-                RunCnt++;
+                RunCnt += Settings.PerHourToSec;
             }
             else if (State == GeneratorState.RunningClosed)
             {
-                RunCnt++;
-                ECnt += Settings.PerHourToSec;
-                FuelCnt += (_fuelConsKws * P);
+                RunCnt += Settings.PerHourToSec;
+                ECnt += P * Settings.PerHourToSec;
                 LoadFact = P / MaxP;
-                _fuelConsKws = FuelCons * Settings.PerHourToSec;
+                FuelCnt += FuelConsumptionSecond();
                 IdealP = MaxP * IdealPctP / 100;
                 _spinP = MaxP - P;
             }
+        }
+
+        /// <summary>
+        /// Calculates fuel consumption for one second of operation at the current load factor.
+        /// </summary>
+        /// <returns>Fuel used this second, in L</returns>
+        private double FuelConsumptionSecond()
+        {
+            // y = mx + b
+            double m;
+            double b;
+            // look closely before you turn this into a loop: edge cases are different.
+            if (LoadFact < _fuelCurveP[1].Val)
+            {
+                m = (_fuelCurveL[1].Val - _fuelCurveL[0].Val)/(_fuelCurveP[1].Val - _fuelCurveP[0].Val);
+                b = _fuelCurveL[0].Val - m * _fuelCurveP[0].Val;
+            }
+            else if (LoadFact >= _fuelCurveP[1].Val && LoadFact < _fuelCurveP[2].Val)
+            {
+                m = (_fuelCurveL[2].Val - _fuelCurveL[1].Val)/(_fuelCurveP[2].Val - _fuelCurveP[1].Val);
+                b = _fuelCurveL[1].Val - m * _fuelCurveP[1].Val;
+            }
+            else if (LoadFact >= _fuelCurveP[2].Val && LoadFact < _fuelCurveP[3].Val)
+            {
+                m = (_fuelCurveL[3].Val - _fuelCurveL[2].Val)/(_fuelCurveP[3].Val - _fuelCurveP[2].Val);
+                b = _fuelCurveL[2].Val - m * _fuelCurveP[2].Val;
+            }
+            else if (LoadFact >= _fuelCurveP[3].Val)
+            {
+                m = (_fuelCurveL[4].Val - _fuelCurveL[3].Val) / (_fuelCurveP[4].Val - _fuelCurveP[3].Val);
+                b = _fuelCurveL[3].Val - m * _fuelCurveP[3].Val;
+            }
+            else
+            {
+                m = 0;
+                b = double.MinValue;
+            }
+
+            double lPerkWs = (m * LoadFact + b) * MaxP * Settings.PerHourToSec;
+            return lPerkWs;
         }
 
         public static void UpdateStates(ulong iteration)

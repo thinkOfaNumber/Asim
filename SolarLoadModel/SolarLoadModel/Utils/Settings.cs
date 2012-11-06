@@ -9,6 +9,7 @@ namespace SolarLoadModel.Utils
     {
         public const int MAX_GENS = 8;
         public const int MAX_CFG = 1 << MAX_GENS;
+        public const int FuelCurvePoints = 5;
         public const double PerHourToSec = 1 / (60.0 * 60.0);
         public const int SecondsInAMinute = 60 * 60;
         public const int SecondsInAnHour  = 60 * SecondsInAMinute;

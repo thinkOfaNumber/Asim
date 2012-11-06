@@ -9,30 +9,32 @@ namespace SolarLoadModel.Actors
 {
     class ScaleValues : IActor
     {
-        private Shared[] _values;
-        private int _total;
+        private List<Shared> _toScale;
 
         #region Implementation of IActor
 
         public void Run(ulong iteration)
         {
-            if (_values == null)
+            if (_toScale == null)
             {
+                _toScale = new List<Shared>();
                 var names = SharedContainer.GetAllNames();
-                _total = names.Count;
-
-                _values = new Shared[_total];
-                for (int i = 0; i < _total; i++)
+                foreach (string name in names)
                 {
-                    _values[i] = SharedContainer.GetExisting(names[i]);
+                    var s = SharedContainer.GetExisting(name);
+                    if (s.ScaleFunction != null)
+                    {
+                        _toScale.Add(s);
+                    }
                 }
             }
-            for (int i = 0; i < _total; i++)
+
+            foreach (var shared in _toScale)
             {
-                if (_values[i].ScaleFunction != null)
+                if (shared.ScaleFunction != null)
                 {
-                    _values[i].Val = _values[i].ScaleFunction(_values[i].Val);
-                    _values[i].ScaleFunction = null;
+                    shared.Val = shared.ScaleFunction(shared.Val);
+                    shared.ScaleFunction = null;
                 }
             }
         }
