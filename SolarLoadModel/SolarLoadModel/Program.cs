@@ -128,6 +128,7 @@ namespace SolarLoadModel
                 Error("Error running simulation: " +  e.Message);
             }
             AnyKey();
+            Environment.Exit(Convert.ToInt32(ExitCode.Success));
         }
 
         static void Error(string s)
@@ -156,7 +157,7 @@ SolarLoadModel.exe --iterations 100000 --path C:\\Users\\Joe\\Data
             Console.WriteLine("Error: " + s);
             Console.WriteLine(usage);
             AnyKey();
-            Environment.Exit(-1);
+            Environment.Exit(Convert.ToInt32(ExitCode.Failure));
         }
 
         static void AnyKey()

@@ -124,7 +124,6 @@ namespace SolarLoadModel.Utils
 
         public GeneratorState State { get; private set; }
 
-        private double _fuelConsKws;
         private static readonly ExecutionManager ExecutionManager = new ExecutionManager();
         private bool _busy;
         private static ulong _iteration;

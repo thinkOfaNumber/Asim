@@ -24,4 +24,10 @@ namespace SolarLoadModel.Utils
         RelativeToSim,
         Other
     }
+
+    public enum ExitCode
+    {
+        Success = 0,
+        Failure = 1
+    }
 }

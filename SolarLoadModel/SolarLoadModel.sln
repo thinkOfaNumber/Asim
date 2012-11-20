@@ -3,6 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SolarLoadModel", "SolarLoadModel\SolarLoadModel.csproj", "{F871DB06-EB95-4326-9DB9-7AF31EEAE5D5}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConsoleTests", "ConsoleTests\ConsoleTests.csproj", "{AFFB328B-9B93-4FB4-ABB8-A1170CEAFA86}"
+	ProjectSection(ProjectDependencies) = postProject
+		{F871DB06-EB95-4326-9DB9-7AF31EEAE5D5} = {F871DB06-EB95-4326-9DB9-7AF31EEAE5D5}
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -23,6 +28,16 @@ Global
 		{F871DB06-EB95-4326-9DB9-7AF31EEAE5D5}.Release|Mixed Platforms.Build.0 = Release|x86
 		{F871DB06-EB95-4326-9DB9-7AF31EEAE5D5}.Release|x86.ActiveCfg = Release|x86
 		{F871DB06-EB95-4326-9DB9-7AF31EEAE5D5}.Release|x86.Build.0 = Release|x86
+		{AFFB328B-9B93-4FB4-ABB8-A1170CEAFA86}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AFFB328B-9B93-4FB4-ABB8-A1170CEAFA86}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AFFB328B-9B93-4FB4-ABB8-A1170CEAFA86}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{AFFB328B-9B93-4FB4-ABB8-A1170CEAFA86}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{AFFB328B-9B93-4FB4-ABB8-A1170CEAFA86}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{AFFB328B-9B93-4FB4-ABB8-A1170CEAFA86}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AFFB328B-9B93-4FB4-ABB8-A1170CEAFA86}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AFFB328B-9B93-4FB4-ABB8-A1170CEAFA86}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{AFFB328B-9B93-4FB4-ABB8-A1170CEAFA86}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{AFFB328B-9B93-4FB4-ABB8-A1170CEAFA86}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
