@@ -247,37 +247,31 @@ namespace SolarLoadModel.Utils
         private double FuelConsumptionSecond()
         {
             // y = mx + b
-            double m;
-            double b;
-            // look closely before you turn this into a loop: edge cases are different.
-            if (LoadFact < _fuelCurveP[1].Val)
+            double m = 0;
+            double b = double.NaN;
+            for (int i = 1; i < Settings.FuelCurvePoints - 1; i++)
             {
-                m = (_fuelCurveL[1].Val - _fuelCurveL[0].Val)/(_fuelCurveP[1].Val - _fuelCurveP[0].Val);
-                b = _fuelCurveL[0].Val - m * _fuelCurveP[0].Val;
-            }
-            else if (LoadFact >= _fuelCurveP[1].Val && LoadFact < _fuelCurveP[2].Val)
-            {
-                m = (_fuelCurveL[2].Val - _fuelCurveL[1].Val)/(_fuelCurveP[2].Val - _fuelCurveP[1].Val);
-                b = _fuelCurveL[1].Val - m * _fuelCurveP[1].Val;
-            }
-            else if (LoadFact >= _fuelCurveP[2].Val && LoadFact < _fuelCurveP[3].Val)
-            {
-                m = (_fuelCurveL[3].Val - _fuelCurveL[2].Val)/(_fuelCurveP[3].Val - _fuelCurveP[2].Val);
-                b = _fuelCurveL[2].Val - m * _fuelCurveP[2].Val;
-            }
-            else if (LoadFact >= _fuelCurveP[3].Val)
-            {
-                m = (_fuelCurveL[4].Val - _fuelCurveL[3].Val) / (_fuelCurveP[4].Val - _fuelCurveP[3].Val);
-                b = _fuelCurveL[3].Val - m * _fuelCurveP[3].Val;
-            }
-            else
-            {
-                m = 0;
-                b = double.MinValue;
+                bool aboveMinPercent =
+                    // ignore points that are unset (0,0)
+                    (_fuelCurveP[i - 1].Val == 0 && _fuelCurveL[i - 1].Val == 0) ||
+                    // load is within this range
+                    LoadFact >= _fuelCurveP[i].Val;
+
+                bool belowMaxPercent = i == Settings.FuelCurvePoints - 2 ||
+                    // ignore points that are unset (0,0)
+                    (_fuelCurveP[i + 1].Val == 0 && _fuelCurveL[i + 1].Val == 0) ||
+                    // load is within this range
+                    LoadFact < _fuelCurveP[i + 1].Val;
+
+                if (aboveMinPercent && belowMaxPercent)
+                {
+                    m = (_fuelCurveL[i + 1].Val - _fuelCurveL[i].Val) / (_fuelCurveP[i + 1].Val - _fuelCurveP[i].Val);
+                    b = _fuelCurveL[i].Val - m * _fuelCurveP[i].Val;
+                    break;
+                }
             }
 
-            double lPerkWs = (m * LoadFact + b) * MaxP * Settings.PerHourToSec;
-            return lPerkWs;
+            return (m * LoadFact + b) * P * Settings.PerHourToSec;
         }
 
         public static void UpdateStates(ulong iteration)

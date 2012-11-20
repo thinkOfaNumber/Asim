@@ -208,6 +208,18 @@ namespace ExcelReader.Logic
                         _settings.LogInformation = lf;
                         break;
 
+                    case "start time":
+                        DateTime startDate;
+                        if (DateTime.TryParse(data[i, 2].ToString(), out startDate))
+                        {
+                            _settings.StartDate = startDate;
+                        }
+                        else
+                        {
+                            throw new Exception("Couldn't understand the date '" + data[i, 2] + "'.");
+                        }
+                        break;
+
                     default:
                         Console.WriteLine("unknown option: '" + s + "'");
                         break;

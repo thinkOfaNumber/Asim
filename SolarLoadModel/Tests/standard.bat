@@ -13,6 +13,7 @@ echo Running...
  --input "daly river 1s.csv" ^
  --input "daly river Pv 1s.csv" ^
  --input transpose-test-input.csv ^
+ --input Example_FuelEfficiency.csv ^
  --output output.csv 1 Gen*LoadFact,Gen[0-9]P,LoadP,StatP,StatSpinP,GenP,PvAvailP,PvP,PvSpillP,GenMinRunT,GenSetCfg,GenOnlineCfg ^
  --output weekly.csv 604800 Gen*Cnt,StatBlack,GenOverload,StatBlackCnt ^
  --output test.csv 3600 *Pact,*Fact

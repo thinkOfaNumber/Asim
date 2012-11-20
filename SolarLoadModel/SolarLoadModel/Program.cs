@@ -17,7 +17,7 @@ namespace SolarLoadModel
     {
         private static Simulator _simulator;
         private static bool _pause;
-        private static DateTime _startTime;
+        private static DateTime? _startTime = null;
         enum Arguments
         {
             Iterations,
@@ -94,12 +94,13 @@ namespace SolarLoadModel
                             break;
 
                         case Arguments.StartTime:
+                            DateTime time;
                             string st = stack.Pop();
-                            try
+                            if (DateTime.TryParse(st, out time))
                             {
-                                _startTime = DateTime.Parse(st);
+                                _startTime = time;
                             }
-                            catch (Exception e)
+                            else
                             {
                                 Error("Couldn't understand start time '" + st + "'.");
                             }

@@ -22,7 +22,7 @@ namespace SolarLoadModel.Utils
         }
 
         public ulong Iteration { get; private set; }
-        public DateTime StartTime { get; set; }
+        public DateTime? StartTime { get; set; }
         private System.Timers.Timer _timer;
         private List<string> _inputActors = new List<string>();
         private List<OutputOption> _outputActors = new List<OutputOption>();
