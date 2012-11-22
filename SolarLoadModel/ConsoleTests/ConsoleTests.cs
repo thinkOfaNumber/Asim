@@ -38,30 +38,16 @@ namespace ConsoleTests
             int iterations = 100000;
             var inFile = GetTempFilename;
             var outFile = GetTempFilename;
-            var r = new Random();
             double[] random = new double[iterations];
             double sum = 0, min = Double.MaxValue, max = Double.MinValue;
-            int minT = 0;
-            int maxT = 0;
-            for (int i = 0; i < random.Length; i++)
+            FillWithRandomData(ref random);
+            foreach (var d in random)
             {
-                random[i] = r.NextDouble();
-                sum += random[i];
-                if (random[i] > max)
-                {
-                    maxT = i;
-                    max = random[i];
-                }
-                else if (random[i] < min)
-                {
-                    minT = i;
-                    min = random[i];
-                }
+                sum += d;
+                max = Math.Max(max, d);
+                min = Math.Min(min, d);
             }
             double average = sum / iterations;
-
-            Console.WriteLine("Input file is: " + inFile);
-            Console.WriteLine("Output file is: " + outFile);
 
             File.WriteAllText(inFile, BuildCsvFor("LoadP", random).ToString());
 
@@ -94,10 +80,64 @@ namespace ConsoleTests
 
             // statistics value is close enough
             Assert.IsTrue(DoublesAreEqual(loadPmin, min));
-            Assert.IsTrue(DoublesAreEqual(loadPminT, minT));
+            //Assert.IsTrue(DoublesAreEqual(loadPminT, minT));
             Assert.IsTrue(DoublesAreEqual(loadPmax, max));
-            Assert.IsTrue(DoublesAreEqual(loadPmaxT, maxT));
+            //Assert.IsTrue(DoublesAreEqual(loadPmaxT, maxT));
             Assert.IsTrue(DoublesAreEqual(loadPave, average));
+        }
+
+        [Test]
+        public void TestMinMaxStats()
+        {
+            int iterations = 100000;
+            var inFile = GetTempFilename;
+            var outFile = GetTempFilename;
+            int[] random = new int[iterations];
+            int min = int.MaxValue, max = int.MinValue, minT = 0, maxT = 0;
+            FillWithRandomData(ref random, 0, 1000);
+            for (int i = 0; i < random.Length; i++)
+            {
+                if (random[i] < min)
+                {
+                    min = random[i];
+                    minT = i;
+                }
+                else if (random[i] > max)
+                {
+                    max = random[i];
+                    maxT = i;
+                }
+            }
+
+            File.WriteAllText(inFile, BuildCsvFor("LoadP", random).ToString());
+
+            // Act
+            int retValue = StartConsoleApplication(
+                string.Format("--iterations {0} --input {1} --output {2} {0} LoadP",
+                    iterations, inFile, outFile));
+            var fileArray = CsvFileToArray(outFile);
+
+            int loadPminT = Convert.ToInt32(fileArray.ElementAt(1)[2]);
+            int loadPmaxT = Convert.ToInt32(fileArray.ElementAt(1)[4]);
+
+            // Assert
+            // completed successfully
+            Assert.AreEqual(retValue, 0);
+
+            // header row and one result
+            Assert.AreEqual(fileArray.Count(), 2);
+
+            // number of cells in all rows is the same
+            Assert.IsTrue(fileArray.TrueForAll(l => l.Length == 6));
+
+            // header row is t,v_min,v_minT,v_max,v_maxT,v_ave
+            Assert.AreEqual(
+                String.Join(",", fileArray.ElementAt(0)),
+                "t,LoadP_min,LoadP_minT,LoadP_max,LoadP_maxT,LoadP_ave");
+
+            // statistics value is close enough
+            Assert.AreEqual(loadPminT, minT);
+            Assert.AreEqual(loadPmaxT, maxT);
         }
     }
 }

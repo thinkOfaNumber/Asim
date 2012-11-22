@@ -18,18 +18,22 @@ namespace ConsoleTests
         StartTime
     }
 
-    [TestFixture]
     public class TestBase
     {
         public StringBuilder ConsoleOutput { get; set; }
         private string _tempPath;
+        private readonly Queue<string> _tempFiles = new Queue<string>();
 
         public string GetTempFilename
         {
             get
             {
                 string f = Path.GetRandomFileName();
-                return Path.GetTempPath() + '\\' + f.Replace(".", "") + "slms.tmp";
+                f = Path.GetTempPath() + f.Replace(".", "") + "slms.tmp";
+                _tempFiles.Enqueue(f);
+                // Console.WriteLine();
+                _normalOutput.WriteLine("Serving file: " + f);
+                return f;
             }
         }
 
@@ -53,7 +57,6 @@ namespace ConsoleTests
                 dirName = dirName.Substring(6);
 
             // set current folder
-            //"C:\\Users\\iain.buchanan\\svn\\radical_pwcsolar\\Development\\trunk\\SolarLoadModel\\ConsoleTests\\bin\\Debug"
             Environment.CurrentDirectory = dirName;
 
             // Initialize string builder to replace console
@@ -71,6 +74,18 @@ namespace ConsoleTests
         {
             // set normal output stream to the console
             System.Console.SetOut(_normalOutput);
+            while (_tempFiles.Any())
+            {
+                string f = _tempFiles.Dequeue();
+                try
+                {
+                    File.Delete(f);
+                }
+                catch(Exception e)
+                {
+                    _tempFiles.Enqueue(f);
+                }
+            }
         }
 
         [SetUp]
@@ -85,6 +100,15 @@ namespace ConsoleTests
         {
             // Verbose output in console
             _normalOutput.Write(ConsoleOutput.ToString());
+        }
+
+        /// <summary>
+        /// writes string to normal non-redirected console for unit test output
+        /// </summary>
+        /// <param name="s"></param>
+        public void WriteLine(string s)
+        {
+            _normalOutput.WriteLine(s);
         }
 
         /// <summary>
@@ -133,7 +157,7 @@ namespace ConsoleTests
             return "--" + arg;
         }
 
-        public StringBuilder BuildCsvFor(string varName, double[] values)
+        public StringBuilder BuildCsvFor<T>(string varName, T[] values)
         {
             var sb = new StringBuilder(values.Length * 10);
             sb.Append("t,");
@@ -143,7 +167,14 @@ namespace ConsoleTests
             {
                 sb.Append(i);
                 sb.Append(",");
-                sb.Append(values[i].ToString("0.0000"));
+                if (values[i] is double)
+                {
+                    sb.Append(Convert.ToDouble(values[i]).ToString("0.0000"));
+                }
+                else
+                {
+                    sb.Append(values[i].ToString());
+                }
                 sb.Append("\n");
             }
             return sb;
@@ -173,6 +204,23 @@ namespace ConsoleTests
             {
                 Console.WriteLine("Double precision off by: " + diff);
                 return false;
+            }
+        }
+
+        /// <summary>
+        /// Fills an array of doubles with random data
+        /// </summary>
+        /// <param name="array">Array to be filled.  Existing values will be clobbered.</param>
+        /// <param name="low">lower bound of all random numbers</param>
+        /// <param name="high">upper bound of all random numbers</param>
+        public void FillWithRandomData<T>(ref T[] array, int low = 0, int high = 1)
+            where T : struct, IComparable, IFormattable, IConvertible, IComparable<T>, IEquatable<T>
+        {
+            var r = new Random();
+            array = new T[array.Length];
+            for (int i = 0; i < array.Length; i++)
+            {
+                array[i] = (T)Convert.ChangeType(r.NextDouble() * (high - low) + low, typeof(T)); //r.NextDouble() * (high - low) + low;
             }
         }
     }
