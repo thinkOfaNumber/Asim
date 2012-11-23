@@ -1,17 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using ExcelReader.Interface;
 using Excel = Microsoft.Office.Interop.Excel;
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Office.Interop.Excel;
-using Action = System.Action;
 
 namespace ExcelReader.Logic
 {
@@ -89,12 +85,14 @@ namespace ExcelReader.Logic
             }
 
             // prefix the community name.
-            if (_settings.OutputFiles != null &&
-                _settings.OutputFiles.Any())
-            {
-                string prefixFileName = (_settings.CommunityName + _settings.DateSimulatorRun.ToString(" yyyy-MM-dd-HH-mm-ss")).Trim();
-                _settings.OutputFiles.ForEach(o => o.Filename = q + prefixFileName + " " + o.Period + " " + o.Filename + q);
-            }
+            string prefixFileName = (_settings.CommunityName + _settings.DateSimulatorRun.ToString(" yyyy-MM-dd-HH-mm-ss")).Trim();
+            if (_settings.OutputFiles == null)
+                _settings.OutputFiles = new List<OutputInformation>();
+            if (_settings.TemplateFiles == null)
+                _settings.TemplateFiles = new List<TemplateInformation>();
+
+            _settings.OutputFiles.Where(f => !_settings.TemplateFiles.Any(t => t.OutputName.Equals(f.Filename))).ToList()
+                .ForEach(o => o.Filename = q + prefixFileName + " " + o.Period + " " + o.Filename + q);
         }
         
         private void GetWorkbookData()
@@ -285,15 +283,6 @@ namespace ExcelReader.Logic
                         ChartObject resultChart = resultCharts.Add(150, 40, 300, 100);
                         _resultChartPage = resultChart.Chart;
 
-                        Axis axis = resultChart.Chart.Axes(
-                            XlAxisType.xlValue,
-                            XlAxisGroup.xlPrimary);
-                        axis.MaximumScaleIsAuto = false;
-                        axis.MaximumScale = 1; // 1 ~ 100%
-                        axis.MinimumScaleIsAuto = false;
-                        axis.MinimumScale = 0;
-                        axis.HasTitle = false;
-
                         _resultsSheet.Activate();
                         _workBook.Application.Visible = true;
                     }
@@ -308,6 +297,15 @@ namespace ExcelReader.Logic
                             _resultChartPage.SetSourceData(_resultChartRange);
                             _resultChartPage.ChartType = Excel.XlChartType.xlBarStacked;
                             _resultChartPage.HasLegend = false;
+
+                            Axis axis = _resultChartPage.Axes(
+                                XlAxisType.xlValue,
+                                XlAxisGroup.xlPrimary);
+                            axis.MaximumScaleIsAuto = false;
+                            axis.MaximumScale = 1; // 1 ~ 100%
+                            axis.MinimumScaleIsAuto = false;
+                            axis.MinimumScale = 0;
+                            axis.HasTitle = false;
                         }
                         _resultChartPage.Refresh();
                         if (message.StartsWith("100"))
@@ -431,7 +429,7 @@ namespace ExcelReader.Logic
 
                 foreach (Worksheet sheet in templateBook.Sheets)
                 {
-                    if (sheet.Name != "autofill")
+                    if (sheet.Name != "autofill" && sheet.Name != "Helper")
                     {
                         // update the data sources for each chart
                         ChartObjects charts = (ChartObjects)sheet.ChartObjects();
@@ -465,11 +463,6 @@ namespace ExcelReader.Logic
             }
             catch (Exception e)
             {
-                if (e.Message.Contains("0x800A03EC"))
-                {
-                    throw new Exception("Too many rows have been generated, please reduce the number of rows in the output.", e);
-                }
-
                 if (excelApp != null)
                 {
                     foreach (Workbook book in excelApp.Workbooks)
@@ -478,6 +471,12 @@ namespace ExcelReader.Logic
                     }
                     excelApp.Quit();
                 }
+
+                if (e.Message.Contains("0x800A03EC"))
+                {
+                    throw new Exception("Too many rows have been generated, please reduce the number of rows in the output.", e);
+                }
+
                 throw new Exception("Error opening workbook: " + e.Message, e);
             }
             finally
