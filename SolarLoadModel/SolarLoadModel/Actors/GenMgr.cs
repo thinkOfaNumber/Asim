@@ -96,7 +96,7 @@ namespace SolarLoadModel.Actors
             // black start or select
             _configurationPower = new double?[Settings.MAX_CFG];
 
-            ushort newCfg = (ushort)(Generator.OnlineCfg == 0 ? _genBlackCfg.Val : SelectGens());
+            ushort newCfg = (ushort)((ushort)_genAvailCfg.Val & (ushort)(Generator.OnlineCfg == 0 ? _genBlackCfg.Val : SelectGens()));
 
             if (newCfg != (ushort)_currCfg.Val)
             {

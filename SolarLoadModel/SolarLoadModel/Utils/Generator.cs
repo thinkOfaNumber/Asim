@@ -115,6 +115,9 @@ namespace SolarLoadModel.Utils
         private static readonly Shared _genP = SharedContainer.GetOrNew("GenP");
         private static readonly Shared _genOverload = SharedContainer.GetOrNew("GenOverload");
         private static readonly Shared _genSpinP = SharedContainer.GetOrNew("GenSpinP");
+        private static readonly Shared _genCapP = SharedContainer.GetOrNew("GenCapP");
+        private static readonly Shared _genAvailCfg = SharedContainer.GetOrNew("GenAvailCfg");
+
         // counters
         private readonly Shared _startCnt;
         private readonly Shared _stopCnt;
@@ -166,6 +169,7 @@ namespace SolarLoadModel.Utils
             _genIdealP.Val = 0;
             _genP.Val = 0;
             _genOverload.Val = 0;
+            _genCapP.Val = 0;
         }
 
         public static void RunAll()
@@ -174,14 +178,27 @@ namespace SolarLoadModel.Utils
             GenP = 0;
             Overload = false;
             _genSpinP.Val = 0;
+            int imax = 0;
+            double pmax = 0;
             for (int i = 0; i < Settings.MAX_GENS; i ++)
             {
                 Gen[i].Run();
                 GenIdealP += Gen[i].IdealP;
-                GenP += Gen[i].P;
                 Overload = Overload || (Gen[i].LoadFact > 1);
+
+                // don't add non-available generators to these calculations
+                if (((ushort)_genAvailCfg.Val & i) != i)
+                    continue;
+                GenP += Gen[i].P;
                 _genSpinP.Val += Gen[i]._spinP;
+                _genCapP.Val += Gen[i]._maxP.Val;
+                if (Gen[i].MaxP > pmax)
+                {
+                    pmax = Gen[i].MaxP;
+                    imax = i;
+                }
             }
+            _genCapP.Val = _genCapP.Val - Gen[imax].P;
         }
 
         public void Start()

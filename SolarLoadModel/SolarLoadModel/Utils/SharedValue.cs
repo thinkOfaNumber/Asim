@@ -17,6 +17,26 @@ namespace SolarLoadModel.Utils
         {
             ScaleFunction = null;
         }
+
+        //public static double operator +(Shared s1, Shared s2)
+        //{
+        //    return s1.Val + s2.Val;
+        //}
+
+        //public static double operator -(Shared s1, Shared s2)
+        //{
+        //    return s1.Val - s2.Val;
+        //}
+
+        //public static double operator *(Shared s1, Shared s2)
+        //{
+        //    return s1.Val * s2.Val;
+        //}
+
+        //public static double operator /(Shared s1, Shared s2)
+        //{
+        //    return s1.Val / s2.Val;
+        //}
     }
 
     public class SharedContainer
