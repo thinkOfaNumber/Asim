@@ -47,6 +47,8 @@ namespace SolarLoadModel.Actors
         public void Run(ulong iteration)
         {
             // calc
+            if (_loadMaxLimP.Val > 0)
+                _loadP.Val = Math.Min(_loadP.Val, _loadMaxLimP.Val);
             _genCfgSetP.Val = _loadP.Val - _pvP.Val;
             _statP.Val = _genP.Val + _pvP.Val;
             _statSpinP.Val = _genSpinP.Val;

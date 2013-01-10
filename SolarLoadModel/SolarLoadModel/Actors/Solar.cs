@@ -34,7 +34,7 @@ namespace SolarLoadModel.Actors
         private readonly Shared _pvE = SharedContainer.GetOrNew("PvE");
         private readonly Shared _pvSetMaxDownP = SharedContainer.GetOrNew("PvSetMaxDownP");
         private readonly Shared _pvSetMaxUpP = SharedContainer.GetOrNew("PvSetMaxUpP");
-        private readonly Shared _pvMaxP = SharedContainer.GetOrNew("PvMaxP");
+        private readonly Shared _pvMaxLimP = SharedContainer.GetOrNew("PvMaxLimP");
 
         private readonly Shared _statSpinP = SharedContainer.GetOrNew("StatSpinP");
         private readonly Shared _genP = SharedContainer.GetOrNew("GenP");
@@ -46,6 +46,9 @@ namespace SolarLoadModel.Actors
 
         public void Run(ulong iteration)
         {
+            if (_pvMaxLimP.Val > 0)
+                _pvAvailP.Val = Math.Min(_pvAvailP.Val, _pvMaxLimP.Val);
+
             // calculate desired setpoint
             _deltaSetP = Math.Min(_statSpinP.Val, _genP.Val - _genIdealP.Val);
 
