@@ -114,10 +114,10 @@ namespace SolarLoadModel.Utils
             get { return _runCnt.Val; }
             private set { _runCnt.Val = value; }
         }
-        public double ECnt
+        public double E
         {
-            get { return _eCnt.Val; }
-            private set { _eCnt.Val = value; }
+            get { return _e.Val; }
+            private set { _e.Val = value; }
         }
 
         private readonly Shared _maxP;
@@ -141,7 +141,7 @@ namespace SolarLoadModel.Utils
         private readonly Shared _stopCnt;
         private readonly Shared _fuelCnt;
         private readonly Shared _runCnt;
-        private readonly Shared _eCnt;
+        private readonly Shared _e;
 
         public GeneratorState State { get; private set; }
 
@@ -166,7 +166,7 @@ namespace SolarLoadModel.Utils
             _stopCnt = SharedContainer.GetOrNew("Gen" + n + "StopCnt");
             _loadFact = SharedContainer.GetOrNew("Gen" + n + "LoadFact");
             _runCnt = SharedContainer.GetOrNew("Gen" + n + "RunCnt");
-            _eCnt = SharedContainer.GetOrNew("Gen" + n + "ECnt");
+            _e = SharedContainer.GetOrNew("Gen" + n + "ECnt");
             _fuelCnt = SharedContainer.GetOrNew("Gen" + n + "FuelCnt");
             _maxP = SharedContainer.GetOrNew("Gen" + n + "MaxP");
             _minRunTPa = SharedContainer.GetOrNew("Gen" + n + "MinRunTPa");
@@ -266,7 +266,7 @@ namespace SolarLoadModel.Utils
             else if (State == GeneratorState.RunningClosed)
             {
                 RunCnt += Settings.PerHourToSec;
-                ECnt += P * Settings.PerHourToSec;
+                E += P * Settings.PerHourToSec;
                 LoadFact = P / MaxP;
                 FuelCnt += FuelConsumptionSecond();
                 IdealP = MaxP * IdealPctP / 100;

@@ -38,7 +38,7 @@ namespace SolarLoadModel.Actors
         public string MinRunTPa;
         public string LoadFact;
         public string RunCnt;
-        public string ECnt;
+        public string E;
         public string FuelCnt;
         public string FuelCons;
     }
