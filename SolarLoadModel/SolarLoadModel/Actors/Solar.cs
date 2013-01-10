@@ -32,6 +32,8 @@ namespace SolarLoadModel.Actors
         private readonly Shared _pvSetP = SharedContainer.GetOrNew("PvSetP");
         private readonly Shared _pvSpillP = SharedContainer.GetOrNew("PvSpillP");
         private readonly Shared _pvE = SharedContainer.GetOrNew("PvE");
+        private readonly Shared _pvAvailE = SharedContainer.GetOrNew("PvAvailE");
+        private readonly Shared _pvSpillE = SharedContainer.GetOrNew("PvSpillE");
         private readonly Shared _pvSetMaxDownP = SharedContainer.GetOrNew("PvSetMaxDownP");
         private readonly Shared _pvSetMaxUpP = SharedContainer.GetOrNew("PvSetMaxUpP");
         private readonly Shared _pvMaxLimP = SharedContainer.GetOrNew("PvMaxLimP");
@@ -74,6 +76,8 @@ namespace SolarLoadModel.Actors
 
             // calculate energy
             _pvE.Val += (_pvP.Val * Settings.PerHourToSec);
+            _pvAvailE.Val += (_pvAvailP.Val * Settings.PerHourToSec);
+            _pvSpillE.Val += (_pvSpillP.Val * Settings.PerHourToSec);
         }
 
         public void Init()

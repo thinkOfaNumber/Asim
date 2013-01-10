@@ -170,7 +170,7 @@ namespace SolarLoadModel.Actors
             for (int i = 0; i < _nvars; i++)
             {
                 _outVars[i].svar = SharedContainer.GetOrNew(varList[i]);
-                _outVars[i].DoStats = _doStats && !varList[i].EndsWith("Cnt");
+                _outVars[i].DoStats = _doStats && !varList[i].EndsWith("Cnt") && !varList[i].EndsWith("E");
             }
 
             for (int i = 0; i < _nvars; i++)
