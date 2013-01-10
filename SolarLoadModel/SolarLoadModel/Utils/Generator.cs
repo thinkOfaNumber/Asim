@@ -166,7 +166,7 @@ namespace SolarLoadModel.Utils
             _stopCnt = SharedContainer.GetOrNew("Gen" + n + "StopCnt");
             _loadFact = SharedContainer.GetOrNew("Gen" + n + "LoadFact");
             _runCnt = SharedContainer.GetOrNew("Gen" + n + "RunCnt");
-            _e = SharedContainer.GetOrNew("Gen" + n + "ECnt");
+            _e = SharedContainer.GetOrNew("Gen" + n + "E");
             _fuelCnt = SharedContainer.GetOrNew("Gen" + n + "FuelCnt");
             _maxP = SharedContainer.GetOrNew("Gen" + n + "MaxP");
             _minRunTPa = SharedContainer.GetOrNew("Gen" + n + "MinRunTPa");
