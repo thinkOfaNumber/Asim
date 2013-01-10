@@ -37,3 +37,17 @@ If possible, reproduce the bug using a small set of input and output files.
 Include in your bug report all input files and executable files required to
 reproduce the bug, and detailed steps to reproduce the behaviour, as well as
 what behaviour you were expecing.
+
+
+KNOWN ISSUES
+
+- various input values are not sanity checked - such as generator sizes, fuel curves, etc.
+so it is possible to get strange results by supplying incorrect data such as a negative
+generator rating.
+
+- all files are written to on the very first iteration.  This means that there will be a slight
+statistical error (of one second) on any output files with an output frequency greater than
+one.
+
+- if the output file frequency does not divide equally by the number of iterations, the
+output file will not get written to on the last iteration.

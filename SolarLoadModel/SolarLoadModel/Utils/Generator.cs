@@ -285,19 +285,19 @@ namespace SolarLoadModel.Utils
             double b = double.NaN;
             for (int i = 1; i < Settings.FuelCurvePoints - 1; i++)
             {
-                bool aboveMinPercent =
+                bool aboveMinPoint =
                     // ignore points that are unset (0,0)
                     (_fuelCurveP[i - 1].Val == 0 && _fuelCurveL[i - 1].Val == 0) ||
                     // load is within this range
-                    LoadFact >= _fuelCurveP[i].Val;
+                    LoadFact >= _fuelCurveP[i - 1].Val;
 
-                bool belowMaxPercent = i == Settings.FuelCurvePoints - 2 ||
+                bool belowMaxPoint = i == Settings.FuelCurvePoints - 2 ||
                     // ignore points that are unset (0,0)
-                    (_fuelCurveP[i + 1].Val == 0 && _fuelCurveL[i + 1].Val == 0) ||
+                    (_fuelCurveP[i].Val == 0 && _fuelCurveL[i].Val == 0) ||
                     // load is within this range
-                    LoadFact < _fuelCurveP[i + 1].Val;
+                    LoadFact < _fuelCurveP[i].Val;
 
-                if (aboveMinPercent && belowMaxPercent)
+                if (aboveMinPoint && belowMaxPoint)
                 {
                     m = (_fuelCurveL[i + 1].Val - _fuelCurveL[i].Val) / (_fuelCurveP[i + 1].Val - _fuelCurveP[i].Val);
                     b = _fuelCurveL[i].Val - m * _fuelCurveP[i].Val;

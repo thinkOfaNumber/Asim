@@ -31,6 +31,7 @@ namespace SolarLoadModel.Actors
         private readonly Shared _loadCapMargin = SharedContainer.GetOrNew("LoadCapMargin");
         private readonly Shared _loadMaxP = SharedContainer.GetOrNew("LoadMaxP");
         private readonly Shared _loadP = SharedContainer.GetOrNew("LoadP");
+        private readonly Shared _loadMaxLimP = SharedContainer.GetOrNew("LoadMaxLimP");
         private readonly Shared _pvP = SharedContainer.GetOrNew("PvP");
         private readonly Shared _pvAvailP = SharedContainer.GetOrNew("PvAvailP");
         private readonly Shared _genCfgSetP = SharedContainer.GetOrNew("GenCfgSetP");
