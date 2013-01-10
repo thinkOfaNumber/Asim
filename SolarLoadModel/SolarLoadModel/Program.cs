@@ -42,6 +42,7 @@ namespace SolarLoadModel
             while (stack.Count > 0)
             {
                 var arg = stack.Pop();
+                Console.WriteLine("parsing: '" + arg + "'");
                 if (!arg.StartsWith("--"))
                 {
                     Error("Unknown argument: " + arg);

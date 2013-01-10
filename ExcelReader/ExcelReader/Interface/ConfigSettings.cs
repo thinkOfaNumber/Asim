@@ -46,7 +46,7 @@ namespace ExcelReader.Logic
         /// The "start date" to start counting relative times.  Absolute times in input files 
         /// before this date are ignored.
         /// </summary>
-        public DateTime StartDate { get; set; }
+        public DateTime? StartDate { get; set; }
 
         public ConfigSettings()
         {
@@ -55,7 +55,6 @@ namespace ExcelReader.Logic
             TemplateFiles = new List<TemplateInformation>();
             RunSimulator = true;
             _dateSimulatorRun = DateTime.Now;
-            StartDate = new DateTime(1970, 1, 1, 0, 0, 0, 0);
         }
     }
 

@@ -68,6 +68,13 @@ namespace ExcelReader.Logic
                 args.Append(settings.Iterations);
             }
 
+            if (settings.StartDate.HasValue)
+            {
+                args.Append(" --StartTime \"");
+                args.Append(settings.StartDate.Value.ToString("yyyy-MM-dd hh:mm:ss"));
+                args.Append("\"");
+            }
+
             if (settings.InputFiles.Any())
             {
                 settings.InputFiles.ForEach(file =>

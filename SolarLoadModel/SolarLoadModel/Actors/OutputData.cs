@@ -60,7 +60,7 @@ namespace SolarLoadModel.Actors
         public void Run(ulong iteration)
         {
             // write output every "_outputEvery" samples, or always if that is 1.
-            bool write = !_doStats || ((iteration % _outputEvery) == (_outputEvery - 1));
+            bool write = !_doStats || iteration == 0 || ((iteration % _outputEvery) == (_outputEvery - 1));
 
             for (int i = 0; i < _nvars; i++)
             {
@@ -102,7 +102,7 @@ namespace SolarLoadModel.Actors
                         _row.Append(iteration);
                         break;
                     default:
-                        _row.Append(_simStartTime.AddSeconds(iteration));
+                        _row.Append(_simStartTime.AddSeconds(iteration).ToString("yyyy-MM-dd hh:mm:ss"));
                         break;
                 }
                 for (int i = 0; i < _nvars; i++)
