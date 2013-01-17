@@ -200,8 +200,8 @@ namespace ConsoleTests
             var totalE = Convert.ToDouble(fileArray[2][1]);
             var totalFuel = Convert.ToDouble(fileArray[2][2]);
 
-            // convert watt-seconds to kWh
-            Assert.IsTrue(DoublesAreEqual((iterations - 60) * constLoad / 60 / 60 / 1000, totalE));
+            // convert kWs to kWh
+            Assert.IsTrue(DoublesAreEqual((iterations - 60) * constLoad / 60 / 60, totalE));
             Assert.IsTrue(DoublesAreEqual(totalFuel, fuelConst * totalE));
         }
 
@@ -210,7 +210,7 @@ namespace ConsoleTests
         {
             var settingsFile = GetTempFilename;
             int nServices = 5;
-            int serviceInterval = 300;
+            int serviceInterval = 120;
             int iterations =
                 // make nServices by running for serviceInterval * nServices+1 hours
                 serviceInterval * (nServices + 1) * 60 * 60
@@ -220,7 +220,7 @@ namespace ConsoleTests
 
             var values = new SortedDictionary<string, double[]>();
             values["Gen1MaxP"] = new double[] { 100 };
-            values["Gen1ServiceT"] = new double[] { 300 };
+            values["Gen1ServiceT"] = new double[] { serviceInterval };
             values["GenConfig1"] = new double[] { 1 };
             values["GenAvailCfg"] = new double[] { 1 };
             values["GenBlackCfg"] = new double[] { 1 };
