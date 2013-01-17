@@ -23,20 +23,32 @@ using System.Text;
 
 namespace SolarLoadModel.Utils
 {
+    /// <summary>
+    /// Generator states.  Values are subject to change.
+    /// </summary>
+    [Flags]
     public enum GeneratorState
     {
         /// <summary>
         /// stopped, offline, open, etc.
         /// </summary>
-        Stopped,
+        Stopped = 0x1,
         /// <summary>
-        /// Run counter incrememnted, but no load or fuel used
+        /// Running & CB open. Run counter incrememnted, but no load or fuel used
         /// </summary>
-        RunningOpen,
+        RunningOpen = 0x2,
         /// <summary>
-        /// Run counter incrememted and loaded
+        /// Running & CB closed.  Run counter incrememted and set loaded
         /// </summary>
-        RunningClosed
+        RunningClosed = 0x4,
+        /// <summary>
+        /// Generator service counter reached, waiting for Gen#ServiceT to expire
+        /// </summary>
+        InService = 0x8,
+        /// <summary>
+        /// The Set is not available to be put online
+        /// </summary>
+        Unavailable = 0x10
     }
 
     /// <summary>
@@ -126,6 +138,7 @@ namespace SolarLoadModel.Utils
         private readonly Shared _idealPctP;
         private readonly Shared _idealP;
         private readonly Shared _loadFact;
+        private readonly Shared _serviceT;
         private readonly Shared[] _fuelCurveP = new Shared[Settings.FuelCurvePoints];
         private readonly Shared[] _fuelCurveL = new Shared[Settings.FuelCurvePoints];
         private static readonly Shared _onlineCfg = SharedContainer.GetOrNew("GenOnlineCfg");
@@ -143,7 +156,7 @@ namespace SolarLoadModel.Utils
         private readonly Shared _runCnt;
         private readonly Shared _e;
 
-        public GeneratorState State { get; private set; }
+        private GeneratorState State { get; set; }
 
         private static readonly ExecutionManager ExecutionManager = new ExecutionManager();
         private bool _busy;
@@ -172,6 +185,7 @@ namespace SolarLoadModel.Utils
             _minRunTPa = SharedContainer.GetOrNew("Gen" + n + "MinRunTPa");
             _idealPctP = SharedContainer.GetOrNew("Gen" + n + "IdealPctP");
             _idealP = SharedContainer.GetOrNew("Gen" + n + "IdealP");
+            _serviceT = SharedContainer.GetOrNew("Gen" + n + "ServiceT");
             for (int i = 0; i < Settings.FuelCurvePoints; i++)
             {
                 // Gen1Cons1P, Gen1Cons1L; Gen1Cons2P, Gen1Cons2L; ...
@@ -224,7 +238,7 @@ namespace SolarLoadModel.Utils
             if (_busy)
                 return;
 
-            if (State == GeneratorState.Stopped)
+            if (IsStopped() && IsAvailable())
             {
                 ExecutionManager.After(60, TransitionToOnline);
                 _busy = true;
@@ -237,7 +251,7 @@ namespace SolarLoadModel.Utils
             if (_busy)
                 return;
 
-            if (State == GeneratorState.RunningClosed)
+            if (IsOnline())
             {
                 _busy = true;
                 ExecutionManager.After(60, TransitionToStop);
@@ -254,16 +268,35 @@ namespace SolarLoadModel.Utils
             OnlineCfg &= (ushort)~_idBit;
         }
 
+        private void Service()
+        {
+            if (_busy)
+                return;
+
+            if (IsOnline())
+            {
+                _busy = true;
+                ExecutionManager.After(60, PerformService);
+                State = GeneratorState.RunningOpen;
+                OnlineCfg &= (ushort)~_idBit;
+            }
+            else if (IsStopped())
+            {
+            _busy = true;
+                PerformService();
+            }
+        }
+
         private void Run()
         {
             LoadFact = 0;
             IdealP = 0;
             _spinP = 0;
-            if (State == GeneratorState.RunningOpen)
+            if (IsRunningOffline())
             {
                 RunCnt += Settings.PerHourToSec;
             }
-            else if (State == GeneratorState.RunningClosed)
+            else if (IsOnline())
             {
                 RunCnt += Settings.PerHourToSec;
                 E += P * Settings.PerHourToSec;
@@ -271,6 +304,10 @@ namespace SolarLoadModel.Utils
                 FuelCnt += FuelConsumptionSecond();
                 IdealP = MaxP * IdealPctP / 100;
                 _spinP = MaxP - P;
+                if (_serviceT.Val > 0 && RunCnt > _serviceT.Val)
+                {
+                    Service();
+                }
             }
         }
 
@@ -328,6 +365,47 @@ namespace SolarLoadModel.Utils
             StopCnt++;
             _busy = false;
         }
+
+        private void PerformService()
+        {
+            State = GeneratorState.Stopped | GeneratorState.InService | GeneratorState.Unavailable;
+            // service takes 6 hours
+            ExecutionManager.After(6 * Settings.SecondsInAnHour, FinishService);
+        }
+
+        private void FinishService()
+        {
+            StartCnt = 0;
+            StopCnt = 0;
+            // todo remove from analyser and put in model: ServiceCnt++;
+            RunCnt = 0;
+            State = GeneratorState.Stopped;
+            _busy = false;
+        }
+
+        #region State Helpers
+
+        public bool IsOnline()
+        {
+            return (State & GeneratorState.RunningClosed) == GeneratorState.RunningClosed;
+        }
+
+        public bool IsRunningOffline()
+        {
+            return (State & GeneratorState.RunningOpen) == GeneratorState.RunningOpen;
+        }
+
+        public bool IsStopped()
+        {
+            return (State & GeneratorState.Stopped) == GeneratorState.Stopped;
+        }
+
+        public bool IsAvailable()
+        {
+            return (State & GeneratorState.Unavailable) == 0;
+        }
+
+        #endregion State Helpers
     }
 
 }

@@ -198,6 +198,41 @@ namespace ConsoleTests
             return sb;
         }
 
+        public StringBuilder BuildCsvFor<T>(List<string> varName, T[][] values)
+        {
+            if (!values.Any() || !varName.Any())
+            {
+                throw new ArgumentException("Unexpected number of cells.");
+            }
+
+            var sb = new StringBuilder();
+            sb.Append("t,");
+            sb.Append(string.Join(",", varName));
+            sb.Append("\n");
+            for (int row = 0; row < values.Length; row++)
+            {
+                if (varName.Count != values[row].Length)
+                {
+                    throw new ArgumentException("Unexpected number of cells.");
+                }
+                sb.Append(row);
+                for (int col = 0; col < values[row].Length; col++)
+                {
+                    sb.Append(",");
+                    if (values[row][col] is double)
+                    {
+                        sb.Append(Convert.ToDouble(values[row][col]).ToString("0.0000"));
+                    }
+                    else
+                    {
+                        sb.Append(values[row][col].ToString());
+                    }
+                }
+                sb.Append("\n");
+            }
+            return sb;
+        }
+
         public List<string[]> CsvFileToArray(string filename)
         {
             var file = new StreamReader(filename);

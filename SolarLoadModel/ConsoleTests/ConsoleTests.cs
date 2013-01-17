@@ -157,5 +157,11 @@ namespace ConsoleTests
             Assert.AreEqual(loadPminT, minT);
             Assert.AreEqual(loadPmaxT, maxT);
         }
+
+        [Test]
+        public void FuelUsage()
+        {
+            
+        }
     }
 }

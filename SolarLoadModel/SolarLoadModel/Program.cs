@@ -49,6 +49,7 @@ namespace SolarLoadModel
         static void Main(string[] args)
         {
             ShowCopyrightNotice();
+            Console.WriteLine(Version());
             _simulator = new Simulator();
             ulong iterations = 100000;
             _pause = true;
@@ -201,6 +202,13 @@ SolarLoadModel.exe --iterations 100000 --path C:\\Users\\Joe\\Data
             catch (Exception e)
             {
             }
+        }
+
+        private static string Version()
+        {
+            var version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
+            DateTime buildDate = new DateTime(2000, 1, 1).AddDays(version.Build);
+            return string.Format("version {0}-{1}", buildDate.ToString("yyyy/MM/dd"), version.Revision);
         }
     }
 }

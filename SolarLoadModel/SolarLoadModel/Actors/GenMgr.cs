@@ -135,6 +135,9 @@ namespace SolarLoadModel.Actors
 
             for (int i = 0; i < Settings.MAX_CFG; i++)
             {
+                // ignore configurations with unavailable sets
+                if (((ushort)_configurations[i].GenReg.Val & (ushort)_genAvailCfg.Val) != (ushort)_configurations[i].GenReg.Val)
+                    continue;
                 _configurations[i].Pmax = TotalPower((ushort)((ushort)_configurations[i].GenReg.Val & (ushort)_genAvailCfg.Val));
                 if (_configurations[i].Pmax >= _genCfgSetP.Val + _statSpinSetP.Val)
                 {
@@ -202,35 +205,36 @@ namespace SolarLoadModel.Actors
             for (ushort i = 0; i < Settings.MAX_GENS; i++)
             {
                 ushort genBit = (ushort)(1<<i);
-                if ((genBit & cfg) == genBit && Gen[i].State != GeneratorState.RunningClosed)
+                if ((genBit & cfg) == genBit && !Gen[i].IsOnline())
                 {
                     Gen[i].Start();
                 }
-                if (((genBit & cfg) == 0) && canStop && Gen[i].State != GeneratorState.Stopped)
+                if (((genBit & cfg) == 0) && canStop && !Gen[i].IsStopped())
                 {
                     Gen[i].Stop();
                 }
             }
         }
 
+        /// <summary>
+        /// simple load sharing:
+        /// - load is taken / dropped immediatly
+        /// - load factor is evened across all online sets
+        /// - generators can be loaded up to MaxP at which point they trip
+        /// </summary>
         private void LoadShare()
         {
-            // simple load sharing:
-            // - load is taken / dropped immediatly
-            // - load factor is evened across all online sets
-            // - generators can be loaded infinitely
-
             // figure out actual online capacity
             double onlineCap = 0;
             for (int i = 0; i < Settings.MAX_GENS; i++)
             {
-                if (Gen[i].State == GeneratorState.RunningClosed)
+                if (Gen[i].IsOnline())
                     onlineCap += Gen[i].MaxP;
             }
 
             for (ushort i = 0; i < Settings.MAX_GENS; i++)
             {
-                if (Gen[i].State == GeneratorState.RunningClosed)
+                if (Gen[i].IsOnline())
                 {
                     double setP = Gen[i].MaxP / onlineCap * _genCfgSetP.Val;
                     if (setP > Gen[i].MaxP || setP < 0)
