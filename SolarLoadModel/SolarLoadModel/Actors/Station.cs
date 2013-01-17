@@ -33,12 +33,12 @@ namespace SolarLoadModel.Actors
         private readonly Shared _loadP = SharedContainer.GetOrNew("LoadP");
         private readonly Shared _loadMaxLimP = SharedContainer.GetOrNew("LoadMaxLimP");
         private readonly Shared _pvP = SharedContainer.GetOrNew("PvP");
-        private readonly Shared _pvAvailP = SharedContainer.GetOrNew("PvAvailP");
         private readonly Shared _genCfgSetP = SharedContainer.GetOrNew("GenCfgSetP");
         private readonly Shared _genP = SharedContainer.GetOrNew("GenP");
         private readonly Shared _genOnlineCfg = SharedContainer.GetOrNew("GenOnlineCfg");
         private readonly Shared _genSpinP = SharedContainer.GetOrNew("GenSpinP");
         private readonly Shared _genCapP = SharedContainer.GetOrNew("GenCapP");
+        private readonly Shared _disP = SharedContainer.GetOrNew("DisP");
         private bool _lastStatBlack = false;
         private bool _thisStatBlack = false;
 
@@ -49,11 +49,13 @@ namespace SolarLoadModel.Actors
             // calc
             if (_loadMaxLimP.Val > 0)
                 _loadP.Val = Math.Min(_loadP.Val, _loadMaxLimP.Val);
-            _genCfgSetP.Val = _loadP.Val - _pvP.Val;
+            double loadP = _loadP.Val + _disP.Val;
+
+            _genCfgSetP.Val = loadP - _pvP.Val;
             _statP.Val = _genP.Val + _pvP.Val;
             _statSpinP.Val = _genSpinP.Val;
 
-            _loadMaxP.Val = Math.Max(_loadP.Val, _loadMaxP.Val);
+            _loadMaxP.Val = Math.Max(loadP, _loadMaxP.Val);
             _loadCapAl.Val = _genCapP.Val < (_loadMaxP.Val * _loadCapMargin.Val) ? 1.0F : 0.0F;
 
             _thisStatBlack = _genOnlineCfg.Val <= 0;

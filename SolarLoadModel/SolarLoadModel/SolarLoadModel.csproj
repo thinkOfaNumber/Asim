@@ -46,6 +46,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Actors\DispatchMgr.cs" />
     <Compile Include="Actors\GenMgr.cs" />
     <Compile Include="Actors\NextData.cs" />
     <Compile Include="Actors\OutputData.cs" />
