@@ -139,6 +139,7 @@ namespace SolarLoadModel.Utils
         private readonly Shared _idealP;
         private readonly Shared _loadFact;
         private readonly Shared _serviceT;
+        private readonly Shared _serviceCnt;
         private readonly Shared[] _fuelCurveP = new Shared[Settings.FuelCurvePoints];
         private readonly Shared[] _fuelCurveL = new Shared[Settings.FuelCurvePoints];
         private static readonly Shared _onlineCfg = SharedContainer.GetOrNew("GenOnlineCfg");
@@ -186,6 +187,7 @@ namespace SolarLoadModel.Utils
             _idealPctP = SharedContainer.GetOrNew("Gen" + n + "IdealPctP");
             _idealP = SharedContainer.GetOrNew("Gen" + n + "IdealP");
             _serviceT = SharedContainer.GetOrNew("Gen" + n + "ServiceT");
+            _serviceCnt = SharedContainer.GetOrNew("Gen" + n + "ServiceCnt");
             for (int i = 0; i < Settings.FuelCurvePoints; i++)
             {
                 // Gen1Cons1P, Gen1Cons1L; Gen1Cons2P, Gen1Cons2L; ...
@@ -377,7 +379,7 @@ namespace SolarLoadModel.Utils
         {
             StartCnt = 0;
             StopCnt = 0;
-            // todo remove from analyser and put in model: ServiceCnt++;
+            _serviceCnt.Val++;
             RunCnt = 0;
             State = GeneratorState.Stopped;
             _busy = false;

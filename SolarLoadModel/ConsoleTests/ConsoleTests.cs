@@ -165,6 +165,7 @@ namespace ConsoleTests
             int iterations = 100000;
             var outFile = GetTempFilename;
             double fuelConst = 0.33;
+            double constLoad = 50;
 
             var values = new SortedDictionary<string, double[]>();
             values["Gen1FuelCons1P"] = new double[] { 0 };
@@ -181,7 +182,7 @@ namespace ConsoleTests
             values["GenConfig1"] = new double[] { 1 };
             values["GenAvailCfg"] = new double[] { 1 };
             values["GenBlackCfg"] = new double[] { 1 };
-            values["LoadP"] = new double[] { 50 };
+            values["LoadP"] = new double[] { constLoad };
 
             StringBuilder fuelsettings = BuildCsvFor(values.Keys.ToList(), values.Values.ToArray());
             File.WriteAllText(settingsFile, fuelsettings.ToString());
@@ -198,13 +199,49 @@ namespace ConsoleTests
             
             var totalE = Convert.ToDouble(fileArray[2][1]);
             var totalFuel = Convert.ToDouble(fileArray[2][2]);
+
+            // convert watt-seconds to kWh
+            Assert.IsTrue(DoublesAreEqual((iterations - 60) * constLoad / 60 / 60 / 1000, totalE));
             Assert.IsTrue(DoublesAreEqual(totalFuel, fuelConst * totalE));
         }
 
         [Test]
         public void ServiceCounter()
         {
+            var settingsFile = GetTempFilename;
+            int nServices = 5;
+            int serviceInterval = 300;
+            int iterations =
+                // make nServices by running for serviceInterval * nServices+1 hours
+                serviceInterval * (nServices + 1) * 60 * 60
+                // plus every shut down will take 6 hours
+                + nServices * 6 * 60 * 60;
+            var outFile = GetTempFilename;
 
+            var values = new SortedDictionary<string, double[]>();
+            values["Gen1MaxP"] = new double[] { 100 };
+            values["Gen1ServiceT"] = new double[] { 300 };
+            values["GenConfig1"] = new double[] { 1 };
+            values["GenAvailCfg"] = new double[] { 1 };
+            values["GenBlackCfg"] = new double[] { 1 };
+            values["LoadP"] = new double[] { 50 };
+
+            StringBuilder fuelsettings = BuildCsvFor(values.Keys.ToList(), values.Values.ToArray());
+            File.WriteAllText(settingsFile, fuelsettings.ToString());
+
+            // Act
+            int retValue = StartConsoleApplication(
+                string.Format("--iterations {0} --input {1} --output {2} {0} Gen1RunCnt,Gen1ServiceCnt",
+                    iterations, settingsFile, outFile));
+            var fileArray = CsvFileToArray(outFile);
+
+            // Assert
+            // completed successfully
+            Assert.AreEqual(0, retValue);
+
+            var runCnt = Convert.ToDouble(fileArray[2][1]);
+            var serviceCnt = Convert.ToInt32(fileArray[2][2]);
+            Assert.AreEqual(nServices, serviceCnt);
         }
     }
 }
