@@ -19,6 +19,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using SolarLoadModel.Contracts;
 using SolarLoadModel.Exceptions;
@@ -50,7 +51,9 @@ namespace SolarLoadModel.Actors
         private string[] _cells;
         private ValueContainer[] _values;
 
-        private readonly System.IO.StreamReader _file;
+        private readonly FileStream  _file;
+        private StreamReader _stream;
+
         private readonly string _filename;
         private UInt64 _nextT;
         private string _nextline;
@@ -65,7 +68,8 @@ namespace SolarLoadModel.Actors
         public NextData(string filename, DateTime? simStartTime = null)
         {
             _filename = filename;
-            _file = new System.IO.StreamReader(_filename);
+            _file = new FileStream(_filename, FileMode.Open, FileAccess.Read);
+            _stream = new StreamReader(_file);
             _simStartTime = simStartTime.HasValue ? simStartTime.Value : Settings.Epoch;
             _simOffset = Convert.ToUInt64((_simStartTime - Settings.Epoch).TotalSeconds);
         }
@@ -169,8 +173,16 @@ namespace SolarLoadModel.Actors
 
         private string ReadLine()
         {
-            var s = _file.ReadLine();
+            var s = _stream.ReadLine();
             _lineNo++;
+
+            if (s == null)
+            {
+                _file.Seek(0, SeekOrigin.Begin);
+                _stream = new StreamReader(_file);
+                s = _stream.ReadLine();
+                _lineNo = 1;
+            }
             return s;
         }
 
