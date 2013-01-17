@@ -209,23 +209,24 @@ namespace ConsoleTests
             sb.Append("t,");
             sb.Append(string.Join(",", varName));
             sb.Append("\n");
-            for (int row = 0; row < values.Length; row++)
+            int numRows = values[0].Length;
+            int numCols = varName.Count;
+            for (int row = 0; row < numRows; row++)
             {
-                if (varName.Count != values[row].Length)
+                for (int col = 0; col < numCols; col++)
                 {
-                    throw new ArgumentException("Unexpected number of cells.");
-                }
-                sb.Append(row);
-                for (int col = 0; col < values[row].Length; col++)
-                {
-                    sb.Append(",");
-                    if (values[row][col] is double)
+                    if (col == 0)
                     {
-                        sb.Append(Convert.ToDouble(values[row][col]).ToString("0.0000"));
+                        sb.Append(row);
+                    }
+                    sb.Append(",");
+                    if (values[col][row] is double)
+                    {
+                        sb.Append(Convert.ToDouble(values[col][row]).ToString("0.0000"));
                     }
                     else
                     {
-                        sb.Append(values[row][col].ToString());
+                        sb.Append(values[col][row].ToString());
                     }
                 }
                 sb.Append("\n");

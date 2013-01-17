@@ -75,18 +75,18 @@ namespace ConsoleTests
                     iterations, inFile, outFile));
             var fileArray = CsvFileToArray(outFile);
 
-            double loadPmin = Convert.ToDouble(fileArray.ElementAt(1)[1]);
-            int loadPminT = Convert.ToInt32(fileArray.ElementAt(1)[2]);
-            double loadPmax = Convert.ToDouble(fileArray.ElementAt(1)[3]);
-            int loadPmaxT = Convert.ToInt32(fileArray.ElementAt(1)[4]);
-            double loadPave = Convert.ToDouble(fileArray.ElementAt(1)[5]);
+            double loadPmin = Convert.ToDouble(fileArray.ElementAt(2)[1]);
+            int loadPminT = Convert.ToInt32(fileArray.ElementAt(2)[2]);
+            double loadPmax = Convert.ToDouble(fileArray.ElementAt(2)[3]);
+            int loadPmaxT = Convert.ToInt32(fileArray.ElementAt(2)[4]);
+            double loadPave = Convert.ToDouble(fileArray.ElementAt(2)[5]);
 
             // Assert
             // completed successfully
             Assert.AreEqual(retValue, 0);
 
-            // header row and one result
-            Assert.AreEqual(fileArray.Count(), 2);
+            // header row, start row and one result
+            Assert.AreEqual(3, fileArray.Count());
 
             // number of cells in all rows is the same
             Assert.IsTrue(fileArray.TrueForAll(l => l.Length == 6));
@@ -135,15 +135,15 @@ namespace ConsoleTests
                     iterations, inFile, outFile));
             var fileArray = CsvFileToArray(outFile);
 
-            int loadPminT = Convert.ToInt32(fileArray.ElementAt(1)[2]);
-            int loadPmaxT = Convert.ToInt32(fileArray.ElementAt(1)[4]);
+            int loadPminT = Convert.ToInt32(fileArray.ElementAt(2)[2]);
+            int loadPmaxT = Convert.ToInt32(fileArray.ElementAt(2)[4]);
 
             // Assert
             // completed successfully
             Assert.AreEqual(retValue, 0);
 
-            // header row and one result
-            Assert.AreEqual(fileArray.Count(), 2);
+            // header row, start row and one result
+            Assert.AreEqual(3, fileArray.Count());
 
             // number of cells in all rows is the same
             Assert.IsTrue(fileArray.TrueForAll(l => l.Length == 6));
@@ -161,7 +161,50 @@ namespace ConsoleTests
         [Test]
         public void FuelUsage()
         {
+            var settingsFile = GetTempFilename;
+            int iterations = 100000;
+            var outFile = GetTempFilename;
+            double fuelConst = 0.33;
+
+            var values = new SortedDictionary<string, double[]>();
+            values["Gen1FuelCons1P"] = new double[] { 0 };
+            values["Gen1FuelCons1L"] = new double[] { fuelConst };
+            values["Gen1FuelCons2P"] = new double[] { 1 };
+            values["Gen1FuelCons2L"] = new double[] { fuelConst };
+            values["Gen1FuelCons3P"] = new double[] { 0 };
+            values["Gen1FuelCons3L"] = new double[] { 0 };
+            values["Gen1FuelCons4P"] = new double[] { 0 };
+            values["Gen1FuelCons4L"] = new double[] { 0 };
+            values["Gen1FuelCons5P"] = new double[] { 0 };
+            values["Gen1FuelCons5L"] = new double[] { 0 };
+            values["Gen1MaxP"] = new double[] { 100 };
+            values["GenConfig1"] = new double[] { 1 };
+            values["GenAvailCfg"] = new double[] { 1 };
+            values["GenBlackCfg"] = new double[] { 1 };
+            values["LoadP"] = new double[] { 50 };
+
+            StringBuilder fuelsettings = BuildCsvFor(values.Keys.ToList(), values.Values.ToArray());
+            File.WriteAllText(settingsFile, fuelsettings.ToString());
+
+            // Act
+            int retValue = StartConsoleApplication(
+                string.Format("--iterations {0} --input {1} --output {2} {0} Gen1E,Gen1FuelCnt",
+                    iterations, settingsFile, outFile));
+            var fileArray = CsvFileToArray(outFile);
+
+            // Assert
+            // completed successfully
+            Assert.AreEqual(0, retValue);
             
+            var totalE = Convert.ToDouble(fileArray[2][1]);
+            var totalFuel = Convert.ToDouble(fileArray[2][2]);
+            Assert.IsTrue(DoublesAreEqual(totalFuel, fuelConst * totalE));
+        }
+
+        [Test]
+        public void ServiceCounter()
+        {
+
         }
     }
 }

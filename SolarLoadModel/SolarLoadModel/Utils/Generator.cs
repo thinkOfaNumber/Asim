@@ -336,7 +336,7 @@ namespace SolarLoadModel.Utils
 
                 if (aboveMinPoint && belowMaxPoint)
                 {
-                    m = (_fuelCurveL[i + 1].Val - _fuelCurveL[i].Val) / (_fuelCurveP[i + 1].Val - _fuelCurveP[i].Val);
+                    m = (_fuelCurveL[i].Val - _fuelCurveL[i-1].Val) / (_fuelCurveP[i].Val - _fuelCurveP[i-1].Val);
                     b = _fuelCurveL[i].Val - m * _fuelCurveP[i].Val;
                     break;
                 }
