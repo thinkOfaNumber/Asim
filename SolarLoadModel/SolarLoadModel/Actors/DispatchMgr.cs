@@ -68,6 +68,15 @@ namespace SolarLoadModel.Actors
         private static readonly DispatchLoad[] Load = new DispatchLoad[Settings.MAX_GENS];
         private static readonly ExecutionManager ExecutionManager = new ExecutionManager();
 
+        private bool MaxOffTimeExpired
+        {
+            get
+            {
+                _maxOffTime = (ulong)Math.Max(_disLoadMaxT.Val, DisLoadMaxT.Val);
+                return (_actualOffTime > _maxOffTime);
+            }
+        }
+
         public DispatchLoad(int id)
         {
             int n = id + 1;
@@ -83,31 +92,37 @@ namespace SolarLoadModel.Actors
         {
             ExecutionManager.RunActions(iteration);
 
+            bool stop = GenSpinP.Val < StatSpinSetP.Val;
+            // start dispatchable loads when the spinning reserve, less any
+            // offline dispatchable load, is still less than the station spinning
+            // reserve setpoint
+            bool start = (GenSpinP.Val - (DisLoadP.Val - DisP.Val)) > StatSpinSetP.Val;
+
             DisLoadP.Val = 0;
             DisP.Val = 0;
-            bool stop = GenSpinP.Val < StatSpinSetP.Val;
             for (int i = 0; i < Settings.MAX_GENS; i++)
             {
                 if (Load[i] == null) continue;
+                bool thisstop = stop && !Load[i].MaxOffTimeExpired;
+                bool thisstart = start || Load[i].MaxOffTimeExpired;
 
-                if (stop)
-                    Load[i].Stop();
-                else
+                if (thisstop)
+                {
+                    if (Load[i]._online) Load[i].Stop();
+                }
+                else if (thisstart)
                     Load[i].Start();
-                Load[i].Run();
 
+                Load[i].Run();
                 DisLoadP.Val += Load[i]._disLoadP.Val;
                 if (Load[i]._online)
                     DisP.Val += Load[i]._disLoadP.Val;
+                ;
             }
         }
 
         public void Run()
         {
-            _maxOffTime = (ulong)Math.Max(_disLoadMaxT.Val, DisLoadMaxT.Val);
-            if (_actualOffTime > _maxOffTime)
-                Start();
-
             if (_online)
                 _actualOffTime = 0;
             else
@@ -125,7 +140,8 @@ namespace SolarLoadModel.Actors
                 return;
 
             _busy = true;
-            ExecutionManager.After((ulong)_disLoadT.Val, () => { _online = false; _busy = false; });
+            ulong latency = Convert.ToUInt64(Math.Max(_disLoadT.Val, DisLoadT.Val));
+            ExecutionManager.After(latency, () => { _online = false; _busy = false; });
         }
     }
 }

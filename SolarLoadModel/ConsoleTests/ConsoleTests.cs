@@ -293,10 +293,10 @@ namespace ConsoleTests
         {
             var settingsFile1 = GetTempFilename;
             var settingsFile2 = GetTempFilename;
-            int iterations = 100000;
             var outFile = GetTempFilename;
             int maxOffTime = 20 * 60;
             int offLatency = 120;
+            int period = 10 * 60;
 
             var values = new SortedDictionary<string, double[]>();
             values["StatSpinSetP"] = new double[] { 50 };
@@ -305,25 +305,61 @@ namespace ConsoleTests
             values["GenAvailCfg"] = new double[] { 1 };
             values["GenBlackCfg"] = new double[] { 1 };
             values["DisLoadMaxT"] = new double[] { maxOffTime };
-            values["DisLoadT"] = new double[] { offLatency };
-            values["Dis1LoadP"] = new double[] { 50 };
-            var loadProfile = new double[] { 50, 100, 200, 300, 450, 460, 460, 400 };
+            values["Dis1LoadT"] = new double[] { offLatency };
+            values["Dis1LoadP"] = new double[] { 40 };
+            var loadProfile = new double[] { 50, 100, 200, 300, 440, 440, 440, 440, 400 };
+            int iterations = loadProfile.Count() * (period + 1);
 
             StringBuilder settings = BuildCsvFor(values.Keys.ToList(), values.Values.ToArray());
             File.WriteAllText(settingsFile1, settings.ToString());
-            settings = BuildCsvFor("LoadP", loadProfile, 10 * 60);
+            settings = BuildCsvFor("LoadP", loadProfile, period);
             File.WriteAllText(settingsFile2, settings.ToString());
 
             // Act
             int retValue = StartConsoleApplication(
-                string.Format("--iterations {0} --input {1} --input {2} --output {3} 600 Gen1P,DisLoadP,GenSpinP,DisP",
+                string.Format("--iterations {0} --input {1} --input {2} --output {3} Gen1P,DisLoadP,GenSpinP,DisP",
                     iterations, settingsFile1, settingsFile2, outFile));
 
             // Assert
             // completed successfully
             Assert.AreEqual(0, retValue);
             var fileArray = CsvFileToArray(outFile);
+            var gen1P = fileArray.Select(col => col[1]).Where((s, i) => i > 0).Select(Convert.ToDouble).ToList();
+            var disLoadP = fileArray.Select(col => col[2]).Where((s, i) => i > 0).Select(Convert.ToDouble).ToList();
+            var geSpinP = fileArray.Select(col => col[3]).Where((s, i) => i > 0).Select(Convert.ToDouble).ToList();
+            var disP = fileArray.Select(col => col[4]).Where((s, i) => i > 0).Select(Convert.ToDouble).ToList();
 
+            // at 60s: load 50 + disLoad 0
+            Assert.IsTrue(DoublesAreEqual(50, gen1P.ElementAt(60)));
+            // at 65s: load 50 + disload 40
+            Assert.IsTrue(DoublesAreEqual(90, gen1P.ElementAt(65)));
+            // at 10m: load 100 + disload 40
+            Assert.IsTrue(DoublesAreEqual(140, gen1P.ElementAt(10 * 60)));
+            // at 20m: load 200 + disload 40
+            Assert.IsTrue(DoublesAreEqual(240, gen1P.ElementAt(20 * 60)));
+            // at 30m: load 300 + disload 40
+            Assert.IsTrue(DoublesAreEqual(340, gen1P.ElementAt(30 * 60)));
+            // at 40m: load 440 + disload 40
+            Assert.IsTrue(DoublesAreEqual(480, gen1P.ElementAt(40 * 60)));
+
+            // StatSpinSetP is no longer maintained so the dispatchable load
+            // should shut off automatically
+            // at 40m+latency: load 440 + disload 0
+            Assert.IsTrue(DoublesAreEqual(440, gen1P.ElementAt(40 * 60 + offLatency + 5)));
+
+            // at 50m: load 440 + disload 0
+            Assert.IsTrue(DoublesAreEqual(440, gen1P.ElementAt(50 * 60)));
+            // at 60m: load 440 + disload 0
+            Assert.IsTrue(DoublesAreEqual(440, gen1P.ElementAt(60 * 60)));
+
+            // this tests that the dispatchable load turns on when the min run
+            // time has expired, regardless of spinning reserve.  This is twenty
+            // minutes after it turned off (at 42m).
+            // at 60m+5s: load 440 + disload 40
+            Assert.IsTrue(DoublesAreEqual(480, gen1P.ElementAt(60 * 60 + offLatency + 5)));
+
+            // at 70m: load 400 + disload 40
+            Assert.IsTrue(DoublesAreEqual(440, gen1P.ElementAt(70 * 60)));
         }
     }
 }
