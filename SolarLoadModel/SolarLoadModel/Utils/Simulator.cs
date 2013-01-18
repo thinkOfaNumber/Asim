@@ -18,8 +18,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Timers;
 using SolarLoadModel.Actors;
 using SolarLoadModel.Contracts;
@@ -39,15 +37,21 @@ namespace SolarLoadModel.Utils
             public uint Period;
         }
 
+        private class InputOption
+        {
+            public string Filename;
+            public bool Recycle;
+        }
+
         public ulong Iteration { get; private set; }
         public DateTime? StartTime { get; set; }
-        private System.Timers.Timer _timer;
-        private List<string> _inputActors = new List<string>();
+        private Timer _timer;
+        private List<InputOption> _inputActors = new List<InputOption>();
         private List<OutputOption> _outputActors = new List<OutputOption>();
 
-        public void AddInput(string filename)
+        public void AddInput(string filename, bool recycle = false)
         {
-            _inputActors.Add(filename);
+            _inputActors.Add(new InputOption() { Filename = filename, Recycle = recycle });
         }
 
         public void AddOutput(string filename, string[] variables = null, uint period = 1)
@@ -59,10 +63,11 @@ namespace SolarLoadModel.Utils
         {
             var actors = new List<IActor>();
 
-            _inputActors.ForEach(s => actors.Add(new NextData(s, StartTime)));
+            _inputActors.ForEach(s => actors.Add(new NextData(s.Filename, StartTime, s.Recycle)));
             actors.Add(new ScaleValues());
             // add extra simulation actors here.  Order is important:
             actors.Add(new Station());
+            actors.Add(new DispatchMgr());
             actors.Add(new GenMgr());
             actors.Add(new Solar());
             _outputActors.ForEach(o => actors.Add(new OutputData(o.Filename, o.Vars, o.Period, StartTime, DateFormat.Other)));
@@ -74,7 +79,7 @@ namespace SolarLoadModel.Utils
             actors.ForEach(a => a.Init());
             Console.WriteLine("Run " + Iterations + " iterations...");
 
-            _timer = new System.Timers.Timer(5000);
+            _timer = new Timer(5000);
             _timer.Elapsed += new ElapsedEventHandler(OnTimedEvent);
             _timer.Enabled = true;
             try

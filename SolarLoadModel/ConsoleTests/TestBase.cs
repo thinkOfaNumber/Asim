@@ -141,7 +141,7 @@ namespace ConsoleTests
             Process proc = new Process();
             proc.StartInfo.FileName = ConsoleDir + ConsoleApp;
             // add arguments as whole string
-            proc.StartInfo.Arguments = arguments;
+            proc.StartInfo.Arguments = "--nopause " + arguments;
 
             // use it to start from testing environment
             proc.StartInfo.UseShellExecute = false;
@@ -175,7 +175,7 @@ namespace ConsoleTests
             return "--" + arg;
         }
 
-        public StringBuilder BuildCsvFor<T>(string varName, T[] values)
+        public StringBuilder BuildCsvFor<T>(string varName, T[] values, int period = 1)
         {
             var sb = new StringBuilder(values.Length * 10);
             sb.Append("t,");
@@ -183,7 +183,7 @@ namespace ConsoleTests
             sb.Append("\n");
             for (int i = 0; i < values.Length; i++)
             {
-                sb.Append(i);
+                sb.Append(i * period);
                 sb.Append(",");
                 if (values[i] is double)
                 {
@@ -198,7 +198,7 @@ namespace ConsoleTests
             return sb;
         }
 
-        public StringBuilder BuildCsvFor<T>(List<string> varName, T[][] values)
+        public StringBuilder BuildCsvFor<T>(List<string> varName, T[][] values, int period = 1)
         {
             if (!values.Any() || !varName.Any())
             {
@@ -217,7 +217,7 @@ namespace ConsoleTests
                 {
                     if (col == 0)
                     {
-                        sb.Append(row);
+                        sb.Append(row * period);
                     }
                     sb.Append(",");
                     if (values[col][row] is double)

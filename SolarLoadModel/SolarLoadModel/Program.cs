@@ -17,15 +17,9 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Threading;
-using System.Timers;
-using SolarLoadModel.Actors;
-using SolarLoadModel.Contracts;
 using SolarLoadModel.Exceptions;
 using SolarLoadModel.Utils;
 
@@ -42,7 +36,7 @@ namespace SolarLoadModel
             Input,
             Output,
             Directory,
-            Nopause,
+            NoPause,
             StartTime
         }
 
@@ -85,7 +79,14 @@ namespace SolarLoadModel
                             break;
 
                         case Arguments.Input:
-                            _simulator.AddInput(stack.Pop());
+                            bool recycle = false;
+                            string filename = stack.Pop();
+                            if (stack.Peek().ToLower().Equals("recycle"))
+                            {
+                                stack.Pop();
+                                recycle = true;
+                            }
+                            _simulator.AddInput(filename, recycle);
                             break;
 
                         case Arguments.Output:  
@@ -110,7 +111,7 @@ namespace SolarLoadModel
                             }
                             break;
 
-                        case Arguments.Nopause:
+                        case Arguments.NoPause:
                             _pause = false;
                             break;
 

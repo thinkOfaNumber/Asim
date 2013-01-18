@@ -18,7 +18,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -36,7 +35,6 @@ namespace ConsoleTests
 
             // Check run works
             Assert.IsTrue(ConsoleOutput.ToString().Contains("inner loop took"));
-            Assert.IsTrue(ConsoleOutput.ToString().Contains("Press any key to continue"));
         }
 
         [Test]
@@ -47,6 +45,52 @@ namespace ConsoleTests
 
             Assert.IsTrue(ConsoleOutput.ToString().Contains("Error: Unknown argument"));
             Assert.IsTrue(ConsoleOutput.ToString().Contains("Usage"));
+        }
+
+        [Test]
+        public void ReReadInput()
+        {
+            var recycledFile = GetTempFilename;
+            var readOnceFile = GetTempFilename;
+            int iterations = 5 * 60 * 60;
+            var outFile = GetTempFilename;
+            int period = 10 * 60;
+
+            StringBuilder settings = BuildCsvFor("RecycleCnt", new[] { 10, 20 }, period);
+            File.WriteAllText(recycledFile, settings.ToString());
+            settings = BuildCsvFor("NoRecycleCnt", new[] { 10, 20 }, period);
+            File.WriteAllText(readOnceFile, settings.ToString());
+
+            // Act
+            int retValue = StartConsoleApplication(
+                string.Format("--iterations {0} --input {1} recycle --input {2} --output {3} {4} RecycleCnt,NoRecycleCnt",
+                    iterations, recycledFile, readOnceFile, outFile, period));
+
+            // Assert
+            // completed successfully
+            Assert.AreEqual(0, retValue);
+            var fileArray = CsvFileToArray(outFile);
+
+            var recycleCnt = Convert.ToDouble(fileArray[1][1]);
+            var noRecycleCnt = Convert.ToDouble(fileArray[1][2]);
+            Assert.IsTrue(DoublesAreEqual(10, recycleCnt));
+            Assert.IsTrue(DoublesAreEqual(10, noRecycleCnt));
+
+            recycleCnt = Convert.ToDouble(fileArray[2][1]);
+            noRecycleCnt = Convert.ToDouble(fileArray[2][2]);
+            Assert.IsTrue(DoublesAreEqual(20, recycleCnt));
+            Assert.IsTrue(DoublesAreEqual(20, noRecycleCnt));
+
+            // ignore the last row as it may have a different period
+            for (int row = 3; row < fileArray.Count - 1; row++)
+            {
+                recycleCnt = Convert.ToDouble(fileArray[row][1]);
+                noRecycleCnt = Convert.ToDouble(fileArray[row][2]);
+                // this should oscillate 10, 20, 10, 20...
+                Assert.IsTrue(DoublesAreEqual(10 * (2 - (row % 2)), recycleCnt));
+                // this should remain 20
+                Assert.IsTrue(DoublesAreEqual(20, noRecycleCnt));
+            }
         }
 
         [Test]
@@ -73,6 +117,10 @@ namespace ConsoleTests
             int retValue = StartConsoleApplication(
                 string.Format("--iterations {0} --input {1} --output {2} {0} LoadP",
                     iterations, inFile, outFile));
+
+            // Assert
+            // completed successfully
+            Assert.AreEqual(retValue, 0);
             var fileArray = CsvFileToArray(outFile);
 
             double loadPmin = Convert.ToDouble(fileArray.ElementAt(2)[1]);
@@ -80,10 +128,6 @@ namespace ConsoleTests
             double loadPmax = Convert.ToDouble(fileArray.ElementAt(2)[3]);
             int loadPmaxT = Convert.ToInt32(fileArray.ElementAt(2)[4]);
             double loadPave = Convert.ToDouble(fileArray.ElementAt(2)[5]);
-
-            // Assert
-            // completed successfully
-            Assert.AreEqual(retValue, 0);
 
             // header row, start row and one result
             Assert.AreEqual(3, fileArray.Count());
@@ -133,14 +177,14 @@ namespace ConsoleTests
             int retValue = StartConsoleApplication(
                 string.Format("--iterations {0} --input {1} --output {2} {0} LoadP",
                     iterations, inFile, outFile));
-            var fileArray = CsvFileToArray(outFile);
-
-            int loadPminT = Convert.ToInt32(fileArray.ElementAt(2)[2]);
-            int loadPmaxT = Convert.ToInt32(fileArray.ElementAt(2)[4]);
 
             // Assert
             // completed successfully
             Assert.AreEqual(retValue, 0);
+            var fileArray = CsvFileToArray(outFile);
+
+            int loadPminT = Convert.ToInt32(fileArray.ElementAt(2)[2]);
+            int loadPmaxT = Convert.ToInt32(fileArray.ElementAt(2)[4]);
 
             // header row, start row and one result
             Assert.AreEqual(3, fileArray.Count());
@@ -191,11 +235,11 @@ namespace ConsoleTests
             int retValue = StartConsoleApplication(
                 string.Format("--iterations {0} --input {1} --output {2} {0} Gen1E,Gen1FuelCnt",
                     iterations, settingsFile, outFile));
-            var fileArray = CsvFileToArray(outFile);
 
             // Assert
             // completed successfully
             Assert.AreEqual(0, retValue);
+            var fileArray = CsvFileToArray(outFile);
             
             var totalE = Convert.ToDouble(fileArray[2][1]);
             var totalFuel = Convert.ToDouble(fileArray[2][2]);
@@ -233,15 +277,53 @@ namespace ConsoleTests
             int retValue = StartConsoleApplication(
                 string.Format("--iterations {0} --input {1} --output {2} {0} Gen1RunCnt,Gen1ServiceCnt",
                     iterations, settingsFile, outFile));
-            var fileArray = CsvFileToArray(outFile);
 
             // Assert
             // completed successfully
             Assert.AreEqual(0, retValue);
+            var fileArray = CsvFileToArray(outFile);
 
             var runCnt = Convert.ToDouble(fileArray[2][1]);
             var serviceCnt = Convert.ToInt32(fileArray[2][2]);
             Assert.AreEqual(nServices, serviceCnt);
+        }
+
+        [Test]
+        public void DispatchableLoad()
+        {
+            var settingsFile1 = GetTempFilename;
+            var settingsFile2 = GetTempFilename;
+            int iterations = 100000;
+            var outFile = GetTempFilename;
+            int maxOffTime = 20 * 60;
+            int offLatency = 120;
+
+            var values = new SortedDictionary<string, double[]>();
+            values["StatSpinSetP"] = new double[] { 50 };
+            values["Gen1MaxP"] = new double[] { 500 };
+            values["GenConfig1"] = new double[] { 1 };
+            values["GenAvailCfg"] = new double[] { 1 };
+            values["GenBlackCfg"] = new double[] { 1 };
+            values["DisLoadMaxT"] = new double[] { maxOffTime };
+            values["DisLoadT"] = new double[] { offLatency };
+            values["Dis1LoadP"] = new double[] { 50 };
+            var loadProfile = new double[] { 50, 100, 200, 300, 450, 460, 460, 400 };
+
+            StringBuilder settings = BuildCsvFor(values.Keys.ToList(), values.Values.ToArray());
+            File.WriteAllText(settingsFile1, settings.ToString());
+            settings = BuildCsvFor("LoadP", loadProfile, 10 * 60);
+            File.WriteAllText(settingsFile2, settings.ToString());
+
+            // Act
+            int retValue = StartConsoleApplication(
+                string.Format("--iterations {0} --input {1} --input {2} --output {3} 600 Gen1P,DisLoadP,GenSpinP,DisP",
+                    iterations, settingsFile1, settingsFile2, outFile));
+
+            // Assert
+            // completed successfully
+            Assert.AreEqual(0, retValue);
+            var fileArray = CsvFileToArray(outFile);
+
         }
     }
 }

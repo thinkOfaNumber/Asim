@@ -54,6 +54,7 @@ namespace SolarLoadModel.Actors
         private bool _initStats = true;
         private readonly DateFormat _outputFormat;
         private readonly DateTime _simStartTime;
+        private ulong _iteration;
 
         public OutputData(string filename, string[] vars, uint outputEvery = 1, DateTime? simStartTime = null, DateFormat outputFormat = DateFormat.Other)
         {
@@ -78,76 +79,13 @@ namespace SolarLoadModel.Actors
         public void Run(ulong iteration)
         {
             // write output every "_outputEvery" samples, or always if that is 1.
-            bool write = !_doStats || iteration == 0 || ((iteration % _outputEvery) == (_outputEvery - 1));
+            bool write = !_doStats || iteration == 0 || ((iteration % _outputEvery) == 0);
+            _iteration = iteration;
 
-            for (int i = 0; i < _nvars; i++)
-            {
-                if (_outVars[i].DoStats)
-                {
-                    if (_initStats)
-                    {
-                        _outVars[i].Max = _outVars[i].Min = _outVars[i].Ave = _outVars[i].Val;
-                        _outVars[i].MinT = _outVars[i].MaxT = iteration;
-                    }
-                    else
-                    {
-                        if (_outVars[i].Val < _outVars[i].Min)
-                        {
-                            _outVars[i].Min = _outVars[i].Val;
-                            _outVars[i].MinT = iteration;
-                        }
-                        else if (_outVars[i].Val > _outVars[i].Max)
-                        {
-                            _outVars[i].Max = _outVars[i].Val;
-                            _outVars[i].MaxT = iteration;
-                        }
-                        // use ave to store the sum
-                        _outVars[i].Ave = _outVars[i].Ave + _outVars[i].Val;
-                    }
-                }
-            }
-            _initStats = false;
-
+            CalculateStats();
             if (write)
             {
-                _row.Clear();
-                switch (_outputFormat)
-                {
-                    case DateFormat.RelativeToEpoch:
-                        _row.Append((_simStartTime.AddSeconds(iteration) - Settings.Epoch).TotalSeconds);
-                        break;
-                    case DateFormat.RelativeToSim:
-                        _row.Append(iteration);
-                        break;
-                    default:
-                        _row.Append(_simStartTime.AddSeconds(iteration).ToString("yyyy-MM-dd hh:mm:ss"));
-                        break;
-                }
-                for (int i = 0; i < _nvars; i++)
-                {
-                    if (_outVars[i].DoStats)
-                    {
-                        _outVars[i].Ave = _outVars[i].Ave/_outputEvery;
-                        _row.Append(',');
-                        _row.Append(_outVars[i].Min);
-                        _row.Append(',');
-                        _row.Append(_outVars[i].MinT);
-                        _row.Append(',');
-                        _row.Append(_outVars[i].Max);
-                        _row.Append(',');
-                        _row.Append(_outVars[i].MaxT);
-                        _row.Append(',');
-                        _row.Append(_outVars[i].Ave);
-                    }
-                    else
-                    {
-                        _row.Append(',');
-                        _row.Append(_outVars[i].Val);
-                    }
-                }
-
-                _initStats = true;
-                _file.WriteLine(_row);
+                WriteLine();
             }
         }
 
@@ -201,6 +139,10 @@ namespace SolarLoadModel.Actors
 
         public void Finish()
         {
+            if (!_initStats)
+            {
+                WriteLine();
+            }
             try
             {
                 _file.Flush();
@@ -212,5 +154,78 @@ namespace SolarLoadModel.Actors
         }
 
         #endregion
+
+        private void CalculateStats()
+        {
+            for (int i = 0; i < _nvars; i++)
+            {
+                if (_outVars[i].DoStats)
+                {
+                    if (_initStats)
+                    {
+                        _outVars[i].Max = _outVars[i].Min = _outVars[i].Ave = _outVars[i].Val;
+                        _outVars[i].MinT = _outVars[i].MaxT = _iteration;
+                    }
+                    else
+                    {
+                        if (_outVars[i].Val < _outVars[i].Min)
+                        {
+                            _outVars[i].Min = _outVars[i].Val;
+                            _outVars[i].MinT = _iteration;
+                        }
+                        else if (_outVars[i].Val > _outVars[i].Max)
+                        {
+                            _outVars[i].Max = _outVars[i].Val;
+                            _outVars[i].MaxT = _iteration;
+                        }
+                        // use ave to store the sum
+                        _outVars[i].Ave = _outVars[i].Ave + _outVars[i].Val;
+                    }
+                }
+            }
+            _initStats = false;
+        }
+
+        private void WriteLine()
+        {
+            _row.Clear();
+            switch (_outputFormat)
+            {
+                case DateFormat.RelativeToEpoch:
+                    _row.Append((_simStartTime.AddSeconds(_iteration) - Settings.Epoch).TotalSeconds);
+                    break;
+                case DateFormat.RelativeToSim:
+                    _row.Append(_iteration);
+                    break;
+                default:
+                    _row.Append(_simStartTime.AddSeconds(_iteration).ToString("yyyy-MM-dd hh:mm:ss"));
+                    break;
+            }
+            for (int i = 0; i < _nvars; i++)
+            {
+                if (_outVars[i].DoStats)
+                {
+                    _outVars[i].Ave = _outVars[i].Ave / _outputEvery;
+                    _row.Append(',');
+                    _row.Append(_outVars[i].Min);
+                    _row.Append(',');
+                    _row.Append(_outVars[i].MinT);
+                    _row.Append(',');
+                    _row.Append(_outVars[i].Max);
+                    _row.Append(',');
+                    _row.Append(_outVars[i].MaxT);
+                    _row.Append(',');
+                    _row.Append(_outVars[i].Ave);
+                }
+                else
+                {
+                    _row.Append(',');
+                    _row.Append(_outVars[i].Val);
+                }
+            }
+
+            _initStats = true;
+            _file.WriteLine(_row);
+        }
     }
 }
