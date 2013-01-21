@@ -144,6 +144,10 @@ namespace ExcelReader.Logic
                 string s = val.ToString().ToLower().TrimStart(new[] { ' ' }).TrimEnd(new[] { ' ' });
                 switch (s)
                 {
+                    case "config":
+                    case "flattenapplication":
+                        break;
+
                     case "simulator":
                         _settings.Simulator = data[i,2].ToString();
                         break;
@@ -168,8 +172,12 @@ namespace ExcelReader.Logic
 
                     case "input":
                         var file = data[i, 2].ToString().TrimStart(new[] { q }).TrimEnd(new[] { q });
-                        file = q + file + q;
-                        _settings.InputFiles.Add(file);
+                        var input = new InputInformation
+                                        {
+                                            Filename = q + file + q,
+                                            Recycle = data[i, 3] != null && data[i, 3].ToString().ToLower().Equals("recycle")
+                                        };
+                        _settings.InputFiles.Add(input);
                         break;
 
                     case "output":
@@ -257,7 +265,9 @@ namespace ExcelReader.Logic
                     {
                         lock (_settings)
                         {
-                            _settings.InputFiles.Add(q + filename + q);
+                            _settings.InputFiles.Add(
+                                new InputInformation() { Filename = q + filename + q, Recycle = false }
+                            );
                         }
                     }
                 });
@@ -380,10 +390,12 @@ namespace ExcelReader.Logic
 
         public void ShowAnalyst()
         {
+            Console.WriteLine("Starting Analyser.  Please wait...");
             foreach (var t in _settings.TemplateFiles)
             {
                 ProcessTemplate(t.TemplateName, t.OutputName);
             }
+            Console.WriteLine("Analyser finished.");
         }
 
         private void ProcessTemplate(string template, string output)

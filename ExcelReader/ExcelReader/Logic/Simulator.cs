@@ -31,8 +31,9 @@ namespace ExcelReader.Logic
             _settings = settings;
         }
 
-        public void Run(Action<string> onOutputData)
+        public bool Run(Action<string> onOutputData)
         {
+            bool success = false;
             if (_settings != null && _settings.RunSimulator)
             {
                 if (!string.IsNullOrEmpty(_settings.Simulator))
@@ -40,9 +41,14 @@ namespace ExcelReader.Logic
                     FileInfo simulatorLocation = new FileInfo(_settings.Simulator);
                     if (simulatorLocation.Exists)
                     {
+                        var cliArgs = GenerateArguments(_settings);
+                        Console.WriteLine();
+                        Console.WriteLine("Spawning simulator with options:");
+                        Console.WriteLine(cliArgs);
+                        Console.WriteLine("Please wait...");
                         Process simulator = new Process();
                         ProcessStartInfo psi = new ProcessStartInfo(_settings.Simulator);
-                        psi.Arguments = GenerateArguments(_settings);
+                        psi.Arguments = cliArgs;
 
                         psi.CreateNoWindow = true;
                         psi.UseShellExecute = false;
@@ -56,8 +62,10 @@ namespace ExcelReader.Logic
                         simulator.BeginOutputReadLine();
                         simulator.BeginErrorReadLine();
                         simulator.WaitForExit();
+                        success = simulator.ExitCode == 0;
                         simulator.Close();
                         simulator.Dispose();
+                        Console.WriteLine("simulator finished.");
                     }
                     else
                     {
@@ -70,6 +78,7 @@ namespace ExcelReader.Logic
                     Console.WriteLine("No simulator location was provided.");
                 }
             }
+            return success;
         }
 
         private string GenerateArguments(ConfigSettings settings)
@@ -91,17 +100,16 @@ namespace ExcelReader.Logic
                 args.Append("\"");
             }
 
-            if (settings.InputFiles.Any())
+            settings.InputFiles.ForEach(file =>
             {
-                settings.InputFiles.ForEach(file =>
+                if (!string.IsNullOrEmpty(file.Filename))
                 {
-                    if (!string.IsNullOrEmpty(file))
-                    {
-                        args.Append(" --input ");
-                        args.Append(file);
-                    }
-                });
-            }
+                    args.Append(" --input ");
+                    args.Append(file.Filename);
+                    if (file.Recycle)
+                        args.Append(" recycle ");
+                }
+            });
 
             if (settings.OutputFiles.Any())
             {

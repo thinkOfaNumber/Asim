@@ -33,7 +33,7 @@ namespace ExcelReader.Logic
         /// <summary>
         /// The list of files that are to be used in the simulator.
         /// </summary>
-        public List<string> InputFiles { get; set; }
+        public List<InputInformation> InputFiles { get; set; }
         /// <summary>
         /// The list of output files that are generated in the simulator.
         /// </summary>
@@ -66,7 +66,7 @@ namespace ExcelReader.Logic
 
         public ConfigSettings()
         {
-            InputFiles = new List<string>();
+            InputFiles = new List<InputInformation>();
             OutputFiles = new List<OutputInformation>();
             TemplateFiles = new List<TemplateInformation>();
             RunSimulator = true;
@@ -84,6 +84,12 @@ namespace ExcelReader.Logic
         {
             Variables = new List<string>();
         }
+    }
+
+    public class InputInformation
+    {
+        public string Filename { get; set; }
+        public bool Recycle { get; set; }
     }
 
     public class TemplateInformation

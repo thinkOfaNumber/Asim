@@ -60,10 +60,11 @@ namespace ExcelReader
                 }
 
                 // call the external system
+                bool success = false;
                 try
                 {
                     var sim = new Simulator(Settings);
-                    sim.Run(reader.ShowSimOutput);
+                    success = sim.Run(reader.ShowSimOutput);
                     reader.Finalise();
                 }
                 catch (Exception e)
@@ -71,13 +72,16 @@ namespace ExcelReader
                     Error("Error running simulation: " + e.Message);
                 }
 
-                try
+                if (success)
                 {
-                    reader.ShowAnalyst();
-                }
-                catch (Exception e)
-                {
-                    Error("Error: " + e.Message);
+                    try
+                    {
+                        reader.ShowAnalyst();
+                    }
+                    catch (Exception e)
+                    {
+                        Error("Error running analyst: " + e.Message);
+                    }
                 }
             }
         }
