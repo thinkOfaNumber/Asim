@@ -305,10 +305,10 @@ namespace ConsoleTests
             values["GenAvailCfg"] = new double[] { 1 };
             values["GenBlackCfg"] = new double[] { 1 };
             values["DisLoadMaxT"] = new double[] { maxOffTime };
-            values["Dis1LoadT"] = new double[] { offLatency };
+            values["DisLoadT"] = new double[] { offLatency };
             values["Dis1LoadP"] = new double[] { 40 };
             var loadProfile = new double[] { 50, 100, 200, 300, 440, 440, 440, 440, 400 };
-            int iterations = loadProfile.Count() * (period + 1);
+            int iterations = (loadProfile.Count() + 1) * period;
 
             StringBuilder settings = BuildCsvFor(values.Keys.ToList(), values.Values.ToArray());
             File.WriteAllText(settingsFile1, settings.ToString());
