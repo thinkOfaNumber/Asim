@@ -55,10 +55,10 @@ namespace SolarLoadModel.Actors
         private StreamReader _stream;
 
         private readonly string _filename;
-        private UInt64 _nextT;
+        private Int64 _nextT;
         private UInt64 _offset;
         private UInt64 _period;
-        private bool _recycle;
+        private readonly bool _recycle;
         private string _nextline;
         private ulong _lineNo;
         private int _columnCount;
@@ -81,7 +81,7 @@ namespace SolarLoadModel.Actors
         #region Implementation of IActor
         public void Run(ulong iteration)
         {
-            if (iteration != _nextT || _nextline == null)
+            if (iteration != (ulong)_nextT || _nextline == null)
                 return;
 
             try
@@ -116,7 +116,7 @@ namespace SolarLoadModel.Actors
                 ReadLine();
                 if (_nextline != null)
                 {
-                    _nextT = DateToUInt64(_nextline.Substring(0, _nextline.IndexOf(',')));
+                    _nextT = DateToInt64(_nextline.Substring(0, _nextline.IndexOf(',')));
                 }
             }
             catch (SimulationException)
@@ -164,10 +164,15 @@ namespace SolarLoadModel.Actors
             }
 
             // get first data row
-            ReadLine();
-            string time = _nextline.Substring(0, _nextline.IndexOf(','));
-            _dateFormat = GetDateFormat(time);
-            _nextT = DateToUInt64(time);
+            do
+            {
+                ReadLine();
+                string time = _nextline.Substring(0, _nextline.IndexOf(','));
+                _dateFormat = GetDateFormat(time);
+                _nextT = DateToInt64(time);
+                // times less than zero represent a start time after the beginning
+                // of the data file's first sample, so ignore up to "zero"
+            } while (_nextT < 0);
         }
 
         public void Finish()
@@ -194,28 +199,34 @@ namespace SolarLoadModel.Actors
                 _stream.ReadLine(); // ignore header row
                 _nextline = _stream.ReadLine();
                 _lineNo = 1;
-                _offset = _nextT + _period;
+                _offset = (ulong)(_nextT + (long)_period);
             }
         }
 
-        private UInt64 DateToUInt64(string time)
+        /// <summary>
+        /// converts a time string to the number of seconds since the start of
+        /// the simulation
+        /// </summary>
+        /// <param name="time">string time to convert</param>
+        /// <returns></returns>
+        private Int64 DateToInt64(string time)
         {
-            UInt64 seconds = 0;
+            Int64 seconds = 0;
             try
             {
                 switch (_dateFormat)
                 {
                     case DateFormat.RelativeToEpoch:
-                        seconds = Convert.ToUInt64(time) - _simOffset;
+                        seconds = Convert.ToInt64(time) - (long)_simOffset;
                         break;
 
                     case DateFormat.RelativeToSim:
-                        seconds = Convert.ToUInt64(time);
+                        seconds = Convert.ToInt64(time);
                         break;
 
                     case DateFormat.Other:
                         var datetime = Convert.ToDateTime(time);
-                        seconds = Convert.ToUInt64((datetime - _simStartTime).TotalSeconds);
+                        seconds = Convert.ToInt64((datetime - _simStartTime).TotalSeconds);
                         break;
                 }
             }
@@ -225,9 +236,9 @@ namespace SolarLoadModel.Actors
             }
             if (seconds != 0)
             {
-                _period = seconds - (_nextT - _offset);
+                _period = (ulong)(seconds - (_nextT - (long)_offset));
             }
-            return seconds + _offset;
+            return seconds + (long)_offset;
         }
 
         private DateFormat GetDateFormat(string s)
