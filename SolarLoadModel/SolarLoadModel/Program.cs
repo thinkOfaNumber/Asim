@@ -42,6 +42,7 @@ namespace SolarLoadModel
 
         static void Main(string[] args)
         {
+            // Console.WriteLine("\"" + string.Join("\" \"", args) + "\"");
             ShowCopyrightNotice();
             Console.WriteLine(Version());
             _simulator = new Simulator();

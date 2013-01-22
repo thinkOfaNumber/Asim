@@ -111,10 +111,19 @@ namespace SolarLoadModel.Actors
             {
                 _genMinRunT.Val--;
             }
-            // black start or select
+            // force recalculation of configuration power
             _configurationPower = new double?[Settings.MAX_CFG];
 
-            ushort newCfg = (ushort)((ushort)_genAvailCfg.Val & (ushort)(Generator.OnlineCfg == 0 ? _genBlackCfg.Val : SelectGens()));
+            // black start or select
+            ushort newCfg;
+            if (Generator.OnlineCfg == 0 && BlackStartPower() > _genCfgSetP.Val)
+            {
+                newCfg = (ushort)_genBlackCfg.Val;
+            }
+            else
+            {
+                newCfg = (ushort)((ushort)_genAvailCfg.Val & (ushort)SelectGens());
+            }
 
             if (newCfg != (ushort)_currCfg.Val)
             {
@@ -125,6 +134,11 @@ namespace SolarLoadModel.Actors
 
             StartStopGens((ushort)_currCfg.Val);
             LoadShare();
+        }
+
+        private double BlackStartPower()
+        {
+            return _configurations[(ushort)_genAvailCfg.Val & (ushort)_genBlackCfg.Val].Pmax;
         }
 
         private ushort SelectGens()
