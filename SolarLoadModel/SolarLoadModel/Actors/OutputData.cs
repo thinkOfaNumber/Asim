@@ -94,14 +94,7 @@ namespace SolarLoadModel.Actors
             _row = new StringBuilder("t");
 
             // by now all vars will exist in varPool, so expand globs
-            Regex regex;
-            var varList = new List<string>();
-
-            foreach (string glob in _varGlobs)
-            {
-                regex = new Regex("^" + glob.Replace("*", ".*").Replace(@"\?", ".") + "$", RegexOptions.IgnoreCase | RegexOptions.Singleline);
-                varList.AddRange(SharedContainer.GetAllNames().Where(var => regex.IsMatch(var)));
-            }
+            var varList = SharedContainer.MatchGlobs(_varGlobs);
             _nvars = varList.Count;
 
             _outVars = new Variable[_nvars];

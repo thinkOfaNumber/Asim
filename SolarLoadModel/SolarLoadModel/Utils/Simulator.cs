@@ -18,6 +18,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using System.Timers;
 using SolarLoadModel.Actors;
 using SolarLoadModel.Contracts;
@@ -48,6 +50,9 @@ namespace SolarLoadModel.Utils
         private Timer _timer;
         private List<InputOption> _inputActors = new List<InputOption>();
         private List<OutputOption> _outputActors = new List<OutputOption>();
+        public string Watchfile { get; set; }
+        public string[] Watchvars { get; set; }
+        private StreamWriter _watchWriter;
 
         public void AddInput(string filename, bool recycle = false)
         {
@@ -79,6 +84,8 @@ namespace SolarLoadModel.Utils
             actors.ForEach(a => a.Init());
             Console.WriteLine("Run " + Iterations + " iterations...");
 
+            SetWatchActions();
+
             _timer = new Timer(5000);
             _timer.Elapsed += new ElapsedEventHandler(OnTimedEvent);
             _timer.Enabled = true;
@@ -106,6 +113,33 @@ namespace SolarLoadModel.Utils
             finally
             {
                 _timer.Enabled = false;
+                FinishWatchActions();
+            }
+        }
+
+        private void SetWatchActions()
+        {
+            if (string.IsNullOrEmpty(Watchfile) || !Watchvars.Any())
+                return;
+
+            _watchWriter = new StreamWriter(Watchfile);
+            var varlist = SharedContainer.MatchGlobs(Watchvars);
+            foreach (var varname in varlist)
+            {
+                var sv = SharedContainer.GetOrDefault(varname);
+                if (sv == null) continue;
+                sv.SetFunction = (oldval, newval) => _watchWriter.WriteLine(
+                    Iteration + ":\t" + sv.Name + "\t" + oldval + " -> " + newval
+                    );
+            }
+        }
+
+        private void FinishWatchActions()
+        {
+            if (_watchWriter != null)
+            {
+                _watchWriter.Flush();
+                _watchWriter.Close();
             }
         }
 

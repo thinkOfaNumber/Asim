@@ -18,6 +18,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace SolarLoadModel.Utils
 {
@@ -73,6 +75,16 @@ namespace SolarLoadModel.Utils
             return s;
         }
 
+        public static Shared GetOrDefault(string name)
+        {
+            Shared s;
+            if (!SharedValues.TryGetValue(name, out s))
+            {
+                s = null;
+            }
+            return s;
+        }
+
         public static Shared GetExisting(string name)
         {
             return SharedValues[name];
@@ -81,6 +93,19 @@ namespace SolarLoadModel.Utils
         public static IList<string> GetAllNames()
         {
             return new List<string>(SharedValues.Keys);
+        }
+
+        public static List<string> MatchGlobs(string[] globs)
+        {
+            Regex regex;
+            var varList = new List<string>();
+
+            foreach (string glob in globs)
+            {
+                regex = new Regex("^" + glob.Replace("*", ".*").Replace(@"\?", ".") + "$", RegexOptions.IgnoreCase | RegexOptions.Singleline);
+                varList.AddRange(SharedContainer.GetAllNames().Where(var => regex.IsMatch(var)));
+            }
+            return varList;
         }
     }
 }

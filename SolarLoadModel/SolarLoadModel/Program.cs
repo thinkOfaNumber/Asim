@@ -37,7 +37,8 @@ namespace SolarLoadModel
             Output,
             Directory,
             NoPause,
-            StartTime
+            StartTime,
+            Watch
         }
 
         static void Main(string[] args)
@@ -127,6 +128,13 @@ namespace SolarLoadModel
                             {
                                 Error("Couldn't understand start time '" + st + "'.");
                             }
+                            break;
+
+                        case Arguments.Watch:
+                            string watchfile = stack.Pop();
+                            var watchvars = stack.Pop().Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+                            _simulator.Watchfile = watchfile;
+                            _simulator.Watchvars = watchvars;
                             break;
                     }
                 }
