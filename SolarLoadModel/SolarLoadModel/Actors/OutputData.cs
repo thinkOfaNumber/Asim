@@ -198,7 +198,7 @@ namespace SolarLoadModel.Actors
                     _row.Append(_iteration);
                     break;
                 default:
-                    _row.Append(_simStartTime.AddSeconds(_iteration).ToString("yyyy-MM-dd hh:mm:ss"));
+                    _row.Append(_simStartTime.AddSeconds(_iteration).ToString("yyyy-MM-dd HH:mm:ss"));
                     break;
             }
             for (int i = 0; i < _nvars; i++)

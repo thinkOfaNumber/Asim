@@ -18,43 +18,44 @@
 
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Globalization;
-using System.Linq;
-using System.Text;
 
 namespace SolarLoadModel.Utils
 {
     public class Shared
     {
+        /// <summary>
+        /// A function with the definition:
+        /// double Func(double input);
+        /// which is called when a scaling modifier is required to be applied
+        /// to this value.
+        /// </summary>
         public Func<double, double> ScaleFunction { get; set; }
-        public double Val { get; set; }
+        /// <summary>
+        /// An action method which is called before the internal value is set,
+        /// only when a variable changes value, with the definition:
+        /// void Method(double oldVal, double newVal);
+        /// </summary>
+        public Action<double, double> SetFunction { get; set; }
+        private double _val;
+        public double Val
+        {
+            get { return _val; }
+            set 
+            {
+                if (SetFunction != null && _val != value)
+                {
+                    SetFunction(_val, value);
+                }
+                _val = value;
+            }
+        }
+
 
         internal string Name;
         public Shared()
         {
             ScaleFunction = null;
         }
-
-        //public static double operator +(Shared s1, Shared s2)
-        //{
-        //    return s1.Val + s2.Val;
-        //}
-
-        //public static double operator -(Shared s1, Shared s2)
-        //{
-        //    return s1.Val - s2.Val;
-        //}
-
-        //public static double operator *(Shared s1, Shared s2)
-        //{
-        //    return s1.Val * s2.Val;
-        //}
-
-        //public static double operator /(Shared s1, Shared s2)
-        //{
-        //    return s1.Val / s2.Val;
-        //}
     }
 
     public class SharedContainer
@@ -66,8 +67,7 @@ namespace SolarLoadModel.Utils
             Shared s;
             if (!SharedValues.TryGetValue(name, out s))
             {
-                s = new Shared();
-                s.Name = name;
+                s = new Shared {Name = name};
                 SharedValues[name] = s;
             }
             return s;

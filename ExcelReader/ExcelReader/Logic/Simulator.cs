@@ -96,7 +96,7 @@ namespace ExcelReader.Logic
             if (settings.StartDate.HasValue)
             {
                 args.Append(" --StartTime \"");
-                args.Append(settings.StartDate.Value.ToString("yyyy-MM-dd hh:mm:ss"));
+                args.Append(settings.StartDate.Value.ToString("yyyy-MM-dd HH:mm:ss"));
                 args.Append("\"");
             }
 
