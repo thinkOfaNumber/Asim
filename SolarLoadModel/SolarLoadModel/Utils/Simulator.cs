@@ -129,7 +129,8 @@ namespace SolarLoadModel.Utils
                 var sv = SharedContainer.GetOrDefault(varname);
                 if (sv == null) continue;
                 sv.SetFunction = (oldval, newval) => _watchWriter.WriteLine(
-                    Iteration + ":\t" + sv.Name + "\t" + oldval + " -> " + newval
+                    (StartTime.HasValue ? StartTime.Value : Settings.Epoch).AddSeconds(Iteration).ToString("yyyy-MM-dd HH:mm:ss")
+                    + "\t" + sv.Name + "\t" + oldval + " -> " + newval
                     );
             }
         }

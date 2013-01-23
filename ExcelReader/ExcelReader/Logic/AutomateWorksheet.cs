@@ -109,6 +109,10 @@ namespace ExcelReader.Logic
 
             _settings.OutputFiles.Where(f => !_settings.TemplateFiles.Any(t => t.OutputName.Equals(f.Filename))).ToList()
                 .ForEach(o => o.Filename = q + prefixFileName + " " + o.Period + " " + o.Filename + q);
+            if (!string.IsNullOrWhiteSpace(_settings.WatchFile))
+            {
+                _settings.WatchFile = q + prefixFileName + " " + _settings.WatchFile + q;
+            }
         }
         
         private void GetWorkbookData()
@@ -242,6 +246,17 @@ namespace ExcelReader.Logic
                         }
                         break;
 
+                    case "watch":
+                        _settings.WatchFile = data[i, 2].ToString();
+                        _settings.WatchGlobs = new List<string>();
+                        for (int j = 3; j <= data.GetLength(1); j++)
+                        {
+                            var cell = data[i, j];
+                            if (cell != null)
+                                _settings.WatchGlobs.Add(cell.ToString());
+                        }
+                        break;
+
                     default:
                         Console.WriteLine("unknown option: '" + s + "'");
                         break;
@@ -272,9 +287,14 @@ namespace ExcelReader.Logic
                     }
                 });
             }
-            catch (Exception e)
+            catch(AggregateException ae)
             {
-                throw new Exception("Error splitting worksheets: " + e.Message, e);
+                string errorMsg = "";
+                foreach (var e in ae.InnerExceptions)
+                {
+                    errorMsg += e.Message + "\n";
+                }
+                throw new Exception(errorMsg, ae);
             }
         }
 
@@ -306,7 +326,7 @@ namespace ExcelReader.Logic
                         {
                             ch.Delete();
                         }
-                        ChartObject resultChart = resultCharts.Add(150, 40, 300, 100);
+                        ChartObject resultChart = resultCharts.Add(150, 100, 300, 100);
                         _resultChartPage = resultChart.Chart;
 
                         _resultsSheet.Activate();
@@ -574,7 +594,7 @@ namespace ExcelReader.Logic
             _workBook = null;
         }
 
-        private bool IsFileOpen(string path)
+        private static bool IsFileOpen(string path)
         {
             FileStream fs = null;
             try

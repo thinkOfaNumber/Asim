@@ -103,7 +103,7 @@ namespace SolarLoadModel.Utils
             foreach (string glob in globs)
             {
                 regex = new Regex("^" + glob.Replace("*", ".*").Replace(@"\?", ".") + "$", RegexOptions.IgnoreCase | RegexOptions.Singleline);
-                varList.AddRange(SharedContainer.GetAllNames().Where(var => regex.IsMatch(var)));
+                varList.AddRange(SharedValues.Keys.Where(var => regex.IsMatch(var)));
             }
             return varList;
         }

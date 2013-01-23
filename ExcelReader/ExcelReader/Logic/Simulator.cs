@@ -139,6 +139,13 @@ namespace ExcelReader.Logic
                 args.Append(settings.Directory);
             }
 
+            if (!string.IsNullOrWhiteSpace(settings.WatchFile) && settings.WatchGlobs.Any())
+            {
+                args.Append(" --watch ");
+                args.Append(settings.WatchFile);
+                args.Append(" ");
+                args.Append(string.Join(",", settings.WatchGlobs));
+            }
             
             //Console.WriteLine(args);
             return args.ToString();

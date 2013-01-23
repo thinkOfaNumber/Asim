@@ -64,6 +64,9 @@ namespace ExcelReader.Logic
         /// </summary>
         public DateTime? StartDate { get; set; }
 
+        public string WatchFile { get; set; }
+        public List<string> WatchGlobs { get; set; }
+
         public ConfigSettings()
         {
             InputFiles = new List<InputInformation>();
