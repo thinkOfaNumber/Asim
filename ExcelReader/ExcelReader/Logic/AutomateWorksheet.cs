@@ -101,17 +101,22 @@ namespace ExcelReader.Logic
             }
 
             // prefix the community name.
-            string prefixFileName = (_settings.CommunityName + _settings.DateSimulatorRun.ToString(" yyyy-MM-dd-HH-mm-ss")).Trim();
+            string date = _settings.NoDate ? "" : _settings.DateSimulatorRun.ToString(" yyyy-MM-dd-HH-mm-ss");
+            string prefixFileName = (_settings.CommunityName + date).Trim();
             if (_settings.OutputFiles == null)
                 _settings.OutputFiles = new List<OutputInformation>();
             if (_settings.TemplateFiles == null)
                 _settings.TemplateFiles = new List<TemplateInformation>();
 
             _settings.OutputFiles.Where(f => !_settings.TemplateFiles.Any(t => t.OutputName.Equals(f.Filename))).ToList()
-                .ForEach(o => o.Filename = q + prefixFileName + " " + o.Period + " " + o.Filename + q);
+                .ForEach(o => o.Filename = q +
+                    string.Join(" ", new List<string>() { prefixFileName, o.Period, o.Filename }.Where(s => !string.IsNullOrWhiteSpace(s)))
+                    + q);
             if (!string.IsNullOrWhiteSpace(_settings.WatchFile))
             {
-                _settings.WatchFile = q + prefixFileName + " " + _settings.WatchFile + q;
+                _settings.WatchFile = q +
+                    string.Join(" ", new List<string>() { prefixFileName, _settings.WatchFile }.Where(s => !string.IsNullOrWhiteSpace(s)))
+                    + q;
             }
         }
         

@@ -34,7 +34,8 @@ namespace ExcelReader
         enum Arguments
         {
             Input,
-            Attach
+            Attach,
+            NoDate
         }
 
         public static void Main(string[] args)
@@ -123,6 +124,10 @@ namespace ExcelReader
 
                         case Arguments.Attach:
                             _attach = true;
+                            break;
+
+                        case Arguments.NoDate:
+                            Settings.NoDate = true;
                             break;
                     }
                 }

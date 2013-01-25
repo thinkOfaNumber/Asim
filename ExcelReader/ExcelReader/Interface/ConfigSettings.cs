@@ -50,6 +50,10 @@ namespace ExcelReader.Logic
         /// The community name will be prefixed to all output files.
         /// </summary>
         public string CommunityName { get; set; }
+        /// <summary>
+        /// Don't prefix the date to the output files - useful for testing.
+        /// </summary>
+        public bool NoDate { get; set; }
 
         public List<TemplateInformation> TemplateFiles { get; set; }
 
