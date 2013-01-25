@@ -486,13 +486,11 @@ namespace ExcelReader.Logic
                             foreach (ChartObject chart in charts)
                             {
                                 int chartType = chart.Chart.Type;
-                                chart.Chart.Type = (int)Excel.XlChartType.xlArea;
                                 var seriesCollection = (Excel.SeriesCollection)chart.Chart.SeriesCollection();
                                 foreach (Series series in seriesCollection)
                                 {
                                     series.Formula = UpdateFormulaRange(series.Formula, rowCount);
                                 }
-                                chart.Chart.Type = chartType;
                             }
                         }
                         
