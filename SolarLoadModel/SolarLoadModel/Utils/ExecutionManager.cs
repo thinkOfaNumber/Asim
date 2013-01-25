@@ -43,7 +43,10 @@ namespace SolarLoadModel.Utils
 
         public void After(ulong t, Action a)
         {
-            _todo.Add(new DelayedExecution(_thisIter + t, a));
+            if (t == 0)
+                a();
+            else
+                _todo.Add(new DelayedExecution(_thisIter + t, a));
         }
 
         // todo: opportunity to speed this up as the number of actions gets larger, _todo is not sorted or searched well

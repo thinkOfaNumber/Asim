@@ -255,16 +255,18 @@ namespace ConsoleTests
             var settingsFile = GetTempFilename;
             int nServices = 5;
             int serviceInterval = 120;
+            int serviceOutage = 5;
             int iterations =
                 // make nServices by running for serviceInterval * nServices+1 hours
                 serviceInterval * (nServices + 1) * 60 * 60
-                // plus every shut down will take 6 hours
-                + nServices * 6 * 60 * 60;
+                // plus every shut down will take x hours
+                + nServices * serviceOutage * 60 * 60;
             var outFile = GetTempFilename;
 
             var values = new SortedDictionary<string, double[]>();
             values["Gen1MaxP"] = new double[] { 100 };
             values["Gen1ServiceT"] = new double[] { serviceInterval };
+            values["Gen1ServiceOutT"] = new double[] { serviceOutage };
             values["GenConfig1"] = new double[] { 1 };
             values["GenAvailCfg"] = new double[] { 1 };
             values["GenBlackCfg"] = new double[] { 1 };

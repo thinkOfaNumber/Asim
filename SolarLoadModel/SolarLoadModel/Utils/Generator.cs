@@ -139,6 +139,7 @@ namespace SolarLoadModel.Utils
         private readonly Shared _idealP;
         private readonly Shared _loadFact;
         private readonly Shared _serviceT;
+        private readonly Shared _serviceOutT;
         private readonly Shared _serviceCnt;
         private readonly Shared[] _fuelCurveP = new Shared[Settings.FuelCurvePoints];
         private readonly Shared[] _fuelCurveL = new Shared[Settings.FuelCurvePoints];
@@ -148,6 +149,7 @@ namespace SolarLoadModel.Utils
         private static readonly Shared _genOverload = SharedContainer.GetOrNew("GenOverload");
         private static readonly Shared _genSpinP = SharedContainer.GetOrNew("GenSpinP");
         private static readonly Shared _genCapP = SharedContainer.GetOrNew("GenCapP");
+        private static readonly Shared _genAvailSet = SharedContainer.GetOrNew("GenAvailSet");
         private static readonly Shared _genAvailCfg = SharedContainer.GetOrNew("GenAvailCfg");
 
         // counters
@@ -187,6 +189,7 @@ namespace SolarLoadModel.Utils
             _idealPctP = SharedContainer.GetOrNew("Gen" + n + "IdealPctP");
             _idealP = SharedContainer.GetOrNew("Gen" + n + "IdealP");
             _serviceT = SharedContainer.GetOrNew("Gen" + n + "ServiceT");
+            _serviceOutT = SharedContainer.GetOrNew("Gen" + n + "ServiceOutT");
             _serviceCnt = SharedContainer.GetOrNew("Gen" + n + "ServiceCnt");
             for (int i = 0; i < Settings.FuelCurvePoints; i++)
             {
@@ -212,17 +215,22 @@ namespace SolarLoadModel.Utils
             GenP = 0;
             Overload = false;
             _genSpinP.Val = 0;
+            _genAvailCfg.Val = 0;
             int imax = 0;
             double pmax = 0;
             for (int i = 0; i < Settings.MAX_GENS; i ++)
             {
+                if (((ushort)_genAvailSet.Val & i) != i)
+                    continue;
+
                 Gen[i].Run();
                 GenIdealP += Gen[i].IdealP;
                 Overload = Overload || (Gen[i].LoadFact > 1);
 
                 // don't add non-available generators to these calculations
-                if (((ushort)_genAvailCfg.Val & i) != i)
+                if (!Gen[i].IsAvailable())
                     continue;
+                _genAvailCfg.Val = ((ushort)_genAvailCfg.Val | (1 << i));
                 GenP += Gen[i].P;
                 _genSpinP.Val += Gen[i]._spinP;
                 _genCapP.Val += Gen[i]._maxP.Val;
@@ -279,12 +287,12 @@ namespace SolarLoadModel.Utils
             {
                 _busy = true;
                 ExecutionManager.After(60, PerformService);
-                State = GeneratorState.RunningOpen;
+                State = GeneratorState.RunningOpen | GeneratorState.Unavailable;
                 OnlineCfg &= (ushort)~_idBit;
             }
             else if (IsStopped())
             {
-            _busy = true;
+                _busy = true;
                 PerformService();
             }
         }
@@ -371,8 +379,8 @@ namespace SolarLoadModel.Utils
         private void PerformService()
         {
             State = GeneratorState.Stopped | GeneratorState.InService | GeneratorState.Unavailable;
-            // service takes 6 hours
-            ExecutionManager.After(6 * Settings.SecondsInAnHour, FinishService);
+            // service takes _serviceOutT hours
+            ExecutionManager.After((ulong)(_serviceOutT.Val * Settings.SecondsInAnHour), FinishService);
         }
 
         private void FinishService()
