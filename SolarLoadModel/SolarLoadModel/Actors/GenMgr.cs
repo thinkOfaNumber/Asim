@@ -17,7 +17,6 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using System.Runtime.InteropServices;
 using SolarLoadModel.Utils;
 using SolarLoadModel.Contracts;
 
@@ -47,28 +46,37 @@ namespace SolarLoadModel.Actors
     {
         private static readonly Generator[] Gen = new Generator[Settings.MAX_GENS];
 
-        private readonly Shared _currCfg = SharedContainer.GetOrNew("GenSetCfg");
+        private readonly Shared _genDesiredCfg = SharedContainer.GetOrNew("GenSetCfg");
+        private ushort GenSetCfg
+        {
+            get { return (ushort)_genDesiredCfg.Val; }
+            set { _genDesiredCfg.Val = value; }
+        }
         private readonly Shared _genMinRunT = SharedContainer.GetOrNew("GenMinRunT");
         private readonly Shared _genP = SharedContainer.GetOrNew("GenP");
+        private readonly Shared _genLowP = SharedContainer.GetOrNew("GenLowP");
         private readonly Shared _genCfgSetP = SharedContainer.GetOrNew("GenCfgSetP");
+        private readonly Shared _genSetP = SharedContainer.GetOrNew("GenSetP");
         private readonly Shared _statHystP = SharedContainer.GetOrNew("StatHystP");
-        private readonly Shared _statSpinSetP = SharedContainer.GetOrNew("StatSpinSetP");
         private readonly Shared _genAvailCfg = SharedContainer.GetOrNew("GenAvailCfg");
         private readonly Shared _genBlackCfg = SharedContainer.GetOrNew("GenBlackCfg");
         private readonly Shared _genMinRunTPa = SharedContainer.GetOrNew("GenMinRunTPa");
 
         private ulong _iteration;
-        private readonly Configuration[] _configurations = new Configuration[Settings.MAX_CFG];
+        private readonly Shared[] _configurations = new Shared[Settings.MAX_CFG];
         private Double?[] _configurationPower = new Double?[Settings.MAX_CFG];
 
         //private readonly ExecutionManager _executionManager = new ExecutionManager();
 
         #region Implementation of IActor
+        
+        public void Read(ulong iteration)
+        {
+            _iteration = iteration;
+        }
 
         public void Run(ulong iteration)
         {
-            _iteration = iteration;
-
             //
             // Simulate
             //
@@ -81,6 +89,10 @@ namespace SolarLoadModel.Actors
             //
             _genP.Val = Generator.GenP;
         }
+        public void Write(ulong iteration)
+        {
+        }
+
 
         public void Init()
         {
@@ -93,8 +105,8 @@ namespace SolarLoadModel.Actors
             for (int i = 0; i < Settings.MAX_CFG; i++)
             {
                 string cstr = "GenConfig" + (i+1);
-                _configurations[i].GenReg = SharedContainer.GetOrNew(cstr);
-                _configurations[i].GenReg.Val = 0;
+                _configurations[i] = SharedContainer.GetOrNew(cstr);
+                _configurations[i].Val = 0;
             }
         }
 
@@ -107,77 +119,93 @@ namespace SolarLoadModel.Actors
 
         private void GeneratorManager()
         {
-            if (_genMinRunT.Val > 0 && ((ushort)_currCfg.Val & Generator.OnlineCfg) == (ushort)_currCfg.Val)
+            if (_genMinRunT.Val > 0 && (GenSetCfg & Generator.OnlineCfg) == GenSetCfg)
             {
-                _genMinRunT.Val--;
+                _genMinRunT.Val --;
             }
             // force recalculation of configuration power
             _configurationPower = new double?[Settings.MAX_CFG];
 
             // black start or select
             ushort newCfg;
+            double lowerP;
             if (Generator.OnlineCfg == 0 && BlackStartPower() > _genCfgSetP.Val)
             {
                 newCfg = (ushort)_genBlackCfg.Val;
+                lowerP = 0;
             }
             else
             {
-                newCfg = (ushort)((ushort)_genAvailCfg.Val & (ushort)SelectGens());
+                newCfg = (ushort)((ushort)_genAvailCfg.Val & SelectGens(out lowerP));
             }
 
-            if (newCfg != (ushort)_currCfg.Val)
+            if (newCfg != GenSetCfg)
             {
                 // prime the minimum run timer on config changes
                 _genMinRunT.Val = MinimumRunTime(newCfg);
             }
-            _currCfg.Val = newCfg;
+            GenSetCfg = newCfg;
+            _genLowP.Val = lowerP;
 
-            StartStopGens((ushort)_currCfg.Val);
+            StartStopGens(newCfg);
             LoadShare();
         }
 
         private double BlackStartPower()
         {
-            return _configurations[(ushort)_genAvailCfg.Val & (ushort)_genBlackCfg.Val].Pmax;
+            return TotalPower((ushort)((ushort)_genAvailCfg.Val & (ushort)_genBlackCfg.Val));
         }
 
-        private ushort SelectGens()
+        /// <summary>
+        /// Select the best configuration of generators to run, based on setpoint,
+        /// hysteresis, switch down timers, etc.
+        /// </summary>
+        /// <param name="lowerP">output showing the next lower configuration power (if found), or 0.</param>
+        /// <returns>The selected configuration to put online.</returns>
+        private ushort SelectGens(out double lowerP)
         {
             int found = -1;
+            int nextLower = -1;
             ushort bestCfg = 0;
-            double currCfgPower = TotalPower((ushort)_currCfg.Val);
+            double currCfgPower = TotalPower(GenSetCfg);
 
             for (int i = 0; i < Settings.MAX_CFG; i++)
             {
                 // ignore configurations with unavailable sets
-                if (((ushort)_configurations[i].GenReg.Val & (ushort)_genAvailCfg.Val) != (ushort)_configurations[i].GenReg.Val)
+                if (((ushort)_configurations[i].Val & (ushort)_genAvailCfg.Val) != (ushort)_configurations[i].Val)
                     continue;
-                _configurations[i].Pmax = TotalPower((ushort)((ushort)_configurations[i].GenReg.Val & (ushort)_genAvailCfg.Val));
-                if (_configurations[i].Pmax >= _genCfgSetP.Val + _statSpinSetP.Val)
+                double thisP = TotalPower((ushort)((ushort)_configurations[i].Val & (ushort)_genAvailCfg.Val));
+                if (thisP >= _genCfgSetP.Val)
                 {
                     found = i;
                     break;
                 }
+                if (nextLower == -1 || thisP > TotalPower((ushort)_configurations[nextLower].Val))
+                {
+                    nextLower = i;
+                }
             }
+            double foundP = found == -1 ? 0 : TotalPower((ushort)_configurations[found].Val);
             // if nothing was found, switch on everything as a fallback
             if (found == -1)
                 bestCfg = (ushort)_genAvailCfg.Val;
             // if no change is required, stay at current config
-            else if (_configurations[found].GenReg.Val == _currCfg.Val)
-                bestCfg = (ushort)_currCfg.Val;
+            else if (_configurations[found].Val == GenSetCfg)
+                bestCfg = GenSetCfg;
             // switch to a higher configuration without waiting
-            else if (_configurations[found].Pmax > currCfgPower)
-                bestCfg = (ushort)_configurations[found].GenReg.Val;
+            else if (foundP > currCfgPower)
+                bestCfg = (ushort)_configurations[found].Val;
             // only switch to a lower configurations if min run timer is expired
             else if (_genMinRunT.Val > 0)
-                bestCfg = (ushort)_currCfg.Val;
+                bestCfg = GenSetCfg;
             // only switch to a lower configuration if it is below the hysteresis of the current configuration
-            else if (_configurations[found].Pmax < (currCfgPower - _statHystP.Val))
-                bestCfg = (ushort)_configurations[found].GenReg.Val;
+            else if (foundP < (currCfgPower - _statHystP.Val))
+                bestCfg = (ushort)_configurations[found].Val;
             // don't switch to a smaller configuration as Hysteresis wasn't satisfied
             else
-                bestCfg = (ushort)_currCfg.Val;
-
+                bestCfg = GenSetCfg;
+            
+            lowerP = nextLower == -1 ? 0 : TotalPower((ushort)_configurations[nextLower].Val);
             return bestCfg;
         }
 
@@ -250,7 +278,7 @@ namespace SolarLoadModel.Actors
             {
                 if (Gen[i].IsOnline())
                 {
-                    double setP = Gen[i].MaxP / onlineCap * _genCfgSetP.Val;
+                    double setP = Gen[i].MaxP / onlineCap * _genSetP.Val;
                     if (setP > Gen[i].MaxP || setP < 0)
                     {
                         Gen[i].CriticalStop();

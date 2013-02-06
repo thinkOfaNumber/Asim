@@ -18,7 +18,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using SolarLoadModel.Contracts;
@@ -79,6 +78,11 @@ namespace SolarLoadModel.Actors
         }
 
         #region Implementation of IActor
+
+        public void Read(ulong iteration)
+        {
+        }
+
         public void Run(ulong iteration)
         {
             if (iteration != (ulong)_nextT || _nextline == null)
@@ -127,6 +131,10 @@ namespace SolarLoadModel.Actors
             {
                 throw new SimulationException(string.Format("Error parsing line {0} of {1}:\n{2}", _lineNo, _filename, e.Message), e);
             }
+        }
+
+        public void Write(ulong iteration)
+        {
         }
 
         public void Init()

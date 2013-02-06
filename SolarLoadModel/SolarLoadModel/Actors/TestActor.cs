@@ -25,9 +25,17 @@ namespace SolarLoadModel.Actors
     {
         #region Implementation of IActor
 
+        public void Read(ulong iteration)
+        {
+        }
+
         public void Run(ulong iteration)
         {
             Console.WriteLine("1: hello, world!");
+        }
+
+        public void Write(ulong iteration)
+        {
         }
 
         public void Init()

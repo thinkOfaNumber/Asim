@@ -24,16 +24,60 @@ namespace SolarLoadModel.Actors
 {
     class DispatchMgr : IActor
     {
-        
+        // Sum of switchable loads
+        private readonly Shared _disLoadP = SharedContainer.GetOrNew("DisLoadP");
+        // Online Dispatchable load
+        private readonly Shared _disP = SharedContainer.GetOrNew("DisP");
+        // Offline load
+        private readonly Shared _disOffP = SharedContainer.GetOrNew("DisOffP");
+
+        private readonly Shared _genP = SharedContainer.GetOrNew("GenP");
+        private readonly Shared _genMaxP = SharedContainer.GetOrNew("GenMaxP");
+        private readonly IDispatchLoad[] Load = new IDispatchLoad[Settings.MAX_GENS];
+        private readonly ExecutionManager _executionManager = new ExecutionManager();
+
+        public void Read(ulong iteration)
+        {
+        }
+
         public void Run(ulong iteration)
         {
-            DispatchLoad.RunAll(iteration);
+            _executionManager.RunActions(iteration);
+            
+            _disLoadP.Val = 0;
+            _disP.Val = 0;
+            _disOffP.Val = 0;
+
+            // todo: fix magic numbers - stop with 2% of max load and start when more than 8%
+            double pctMaxLoad = (_genMaxP.Val - _genP.Val) / _genMaxP.Val * 100;
+            bool stop = pctMaxLoad < 2;
+            bool start = pctMaxLoad > 8;
+
+            for (int i = 0; i < Settings.MAX_GENS; i++)
+            {
+                if (Load[i] == null)
+                    continue;
+
+                if (stop)
+                    Load[i].Stop();
+                if (start)
+                    Load[i].Start();
+
+                Load[i].Run();
+                _disP.Val += Load[i].DisP;
+                _disOffP.Val += Load[i].DisOffP;
+                _disLoadP.Val += Load[i].DisLoadP;
+            }
+        }
+
+        public void Write(ulong iteration)
+        {
         }
 
         public void Init()
         {
             // create dispatchable load (only one for now)
-            new DispatchLoad(0);
+            Load[0] = new StaticLoad(0, _executionManager);
         }
 
         public void Finish()
@@ -41,32 +85,52 @@ namespace SolarLoadModel.Actors
         }
     }
 
-    class DispatchLoad
+    class StaticLoad : IDispatchLoad
     {
-        // Sum of switchable loads
-        private static readonly Shared DisLoadP = SharedContainer.GetOrNew("DisLoadP");
-        // Online Dispatchable load
-        private static readonly Shared DisP = SharedContainer.GetOrNew("DisP");
-        private static readonly Shared GenSpinP = SharedContainer.GetOrNew("GenSpinP");
-        private static readonly Shared StatSpinSetP = SharedContainer.GetOrNew("StatSpinSetP");
-        // Maximum Off Time
-        private static readonly Shared DisLoadMaxT = SharedContainer.GetOrNew("DisLoadMaxT");
-        // Load shed latency
-        private static readonly Shared DisLoadT = SharedContainer.GetOrNew("DisLoadT");
+        public double DisLoadP
+        {
+            get { return _disLoadP.Val; }
+        }
+
+        public double DisP
+        {
+            get { return _disP.Val; }
+        }
+
+        public double DisOffP
+        {
+            get { return _disOffP.Val; }
+        }
+
+        public double DisSpinP
+        {
+            get { return _disSpinP.Val; }
+        }
 
         // Maximum Off Time
         private readonly Shared _disLoadMaxT;
         // Size of Load to switch on/off
         private readonly Shared _disLoadP;
+        // online amount of this load
+        private readonly Shared _disP;
+        // offline amount of this load
+        private readonly Shared _disOffP;
+        // amount this load can shed quickly
+        private readonly Shared _disSpinP;
         // Load shed latency
         private readonly Shared _disLoadT;
+        
+        // Maximum Off Time
+        private static readonly Shared DisLoadMaxT = SharedContainer.GetOrNew("DisLoadMaxT");
+        // Load shed latency
+        private static readonly Shared DisLoadT = SharedContainer.GetOrNew("DisLoadT");
+
         private ulong _actualOffTime;
         private bool _online;
         private bool _busy;
         private ulong _maxOffTime;
 
-        private static readonly DispatchLoad[] Load = new DispatchLoad[Settings.MAX_GENS];
-        private static readonly ExecutionManager ExecutionManager = new ExecutionManager();
+        private ExecutionManager _executionManager;
 
         private bool MaxOffTimeExpired
         {
@@ -77,7 +141,7 @@ namespace SolarLoadModel.Actors
             }
         }
 
-        public DispatchLoad(int id)
+        public StaticLoad(int id, ExecutionManager executionManager)
         {
             int n = id + 1;
             _online = false;
@@ -85,48 +149,31 @@ namespace SolarLoadModel.Actors
             _disLoadMaxT = SharedContainer.GetOrNew("Dis" + n + "LoadMaxT");
             _disLoadP = SharedContainer.GetOrNew("Dis" + n + "LoadP");
             _disLoadT = SharedContainer.GetOrNew("Dis" + n + "LoadT");
-            Load[id] = this;
+            _disP = SharedContainer.GetOrNew("Dis" + n + "P");
+            _disOffP = SharedContainer.GetOrNew("Dis" + n + "OffP");
+            _disSpinP = SharedContainer.GetOrNew("Dis" + n + "SpinP");
+
+            _executionManager = executionManager;
         }
 
-        public static void RunAll(ulong iteration)
-        {
-            ExecutionManager.RunActions(iteration);
-
-            bool stop = GenSpinP.Val < StatSpinSetP.Val;
-            // start dispatchable loads when the spinning reserve, less any
-            // offline dispatchable load, is still less than the station spinning
-            // reserve setpoint
-            bool start = (GenSpinP.Val - (DisLoadP.Val - DisP.Val)) > StatSpinSetP.Val;
-
-            DisLoadP.Val = 0;
-            DisP.Val = 0;
-            for (int i = 0; i < Settings.MAX_GENS; i++)
-            {
-                if (Load[i] == null) continue;
-                bool thisstop = stop && !Load[i].MaxOffTimeExpired;
-                bool thisstart = start || Load[i].MaxOffTimeExpired;
-
-                if (thisstop)
-                {
-                    if (Load[i]._online) Load[i].Stop();
-                }
-                else if (thisstart)
-                    Load[i].Start();
-
-                Load[i].Run();
-                DisLoadP.Val += Load[i]._disLoadP.Val;
-                if (Load[i]._online)
-                    DisP.Val += Load[i]._disLoadP.Val;
-                ;
-            }
-        }
 
         public void Run()
         {
+            if (MaxOffTimeExpired)
+                Start();
+
             if (_online)
+            {
                 _actualOffTime = 0;
+                _disP.Val = _disLoadP.Val;
+                _disOffP.Val = 0;
+            }
             else
+            {
                 _actualOffTime++;
+                _disP.Val = 0;
+                _disOffP.Val = _disLoadP.Val;
+            }
         }
 
         public void Start()
@@ -141,7 +188,7 @@ namespace SolarLoadModel.Actors
 
             _busy = true;
             ulong latency = Convert.ToUInt64(Math.Max(_disLoadT.Val, DisLoadT.Val));
-            ExecutionManager.After(latency, () => { _online = false; _busy = false; });
+            _executionManager.After(latency, () => { _online = false; _busy = false; });
         }
     }
 }

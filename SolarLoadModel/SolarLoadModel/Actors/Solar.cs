@@ -17,9 +17,6 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using SolarLoadModel.Contracts;
 using SolarLoadModel.Utils;
 
@@ -38,13 +35,18 @@ namespace SolarLoadModel.Actors
         private readonly Shared _pvSetMaxUpP = SharedContainer.GetOrNew("PvSetMaxUpP");
         private readonly Shared _pvMaxLimP = SharedContainer.GetOrNew("PvMaxLimP");
 
+        private readonly Shared _loadP = SharedContainer.GetOrNew("LoadP");
         private readonly Shared _statSpinP = SharedContainer.GetOrNew("StatSpinP");
+        private readonly Shared _statBlack = SharedContainer.GetOrNew("StatBlack");
         private readonly Shared _genP = SharedContainer.GetOrNew("GenP");
         private readonly Shared _genIdealP = SharedContainer.GetOrNew("GenIdealP");
-
-        private double _deltaSetP = 0;
-
+        private readonly Shared _genLowP = SharedContainer.GetOrNew("GenLowP");
+        
         #region Implementation of IActor
+
+        public void Read(ulong iteration)
+        {
+        }
 
         public void Run(ulong iteration)
         {
@@ -52,21 +54,31 @@ namespace SolarLoadModel.Actors
                 _pvAvailP.Val = Math.Min(_pvAvailP.Val, _pvMaxLimP.Val);
 
             // calculate desired setpoint
-            _deltaSetP = Math.Min(_statSpinP.Val, _genP.Val - _genIdealP.Val);
+            double setP;
+            //if (_genLowP.Val != 0 && _loadP.Val - _pvAvailP.Val < _genLowP.Val)
+            //    setP = _pvAvailP.Val;
+            //else
+                setP = Math.Max(0, _genP.Val - _genIdealP.Val);
+            // limit setpoint to total station load
+            setP = Math.Min(setP, _loadP.Val);
 
-            if (_deltaSetP > 0)
+            double deltaSetP = setP - _pvP.Val;
+            if (deltaSetP > 0 && _pvSetMaxUpP.Val != 0)
             {
-                _deltaSetP = Math.Min(_deltaSetP, _pvSetMaxUpP.Val);
+                deltaSetP = Math.Min(deltaSetP, _pvSetMaxUpP.Val);
             }
-            if (_deltaSetP < 0)
+            if (deltaSetP < 0 && _pvSetMaxDownP.Val != 0)
             {
-                _deltaSetP = Math.Max(_deltaSetP, -_pvSetMaxDownP.Val);
+                deltaSetP = Math.Max(deltaSetP, -_pvSetMaxDownP.Val);
             }
 
             // apply ramp limited setpoint
-            _pvSetP.Val = Math.Max(0, _pvSetP.Val + _deltaSetP);
+            _pvSetP.Val = Math.Max(0, _pvP.Val + deltaSetP);
             // limit setpoint to available solar power
             _pvSetP.Val = Math.Min(_pvSetP.Val, _pvAvailP.Val);
+            // solar trips off in case of a black station
+            if (_statBlack.Val > 0)
+                _pvSetP.Val = 0;
 
             // assume solar farm outputs this immediatly
             _pvP.Val = _pvSetP.Val;
@@ -78,6 +90,10 @@ namespace SolarLoadModel.Actors
             _pvE.Val += (_pvP.Val * Settings.PerHourToSec);
             _pvAvailE.Val += (_pvAvailP.Val * Settings.PerHourToSec);
             _pvSpillE.Val += (_pvSpillP.Val * Settings.PerHourToSec);
+        }
+
+        public void Write(ulong iteration)
+        {
         }
 
         public void Init()

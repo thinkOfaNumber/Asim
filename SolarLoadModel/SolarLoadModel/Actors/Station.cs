@@ -27,43 +27,65 @@ namespace SolarLoadModel.Actors
         private readonly Shared _statP = SharedContainer.GetOrNew("StatP");
         private readonly Shared _statBlackCnt = SharedContainer.GetOrNew("StatBlackCnt");
         private readonly Shared _statSpinP = SharedContainer.GetOrNew("StatSpinP");
+        private readonly Shared _statSpinSetP = SharedContainer.GetOrNew("StatSpinSetP");
         private readonly Shared _loadCapAl = SharedContainer.GetOrNew("LoadCapAl");
         private readonly Shared _loadCapMargin = SharedContainer.GetOrNew("LoadCapMargin");
         private readonly Shared _loadMaxP = SharedContainer.GetOrNew("LoadMaxP");
         private readonly Shared _loadP = SharedContainer.GetOrNew("LoadP");
         private readonly Shared _loadMaxLimP = SharedContainer.GetOrNew("LoadMaxLimP");
         private readonly Shared _pvP = SharedContainer.GetOrNew("PvP");
+        private readonly Shared _pvCvgPct = SharedContainer.GetOrNew("PvCvgPct");
         private readonly Shared _genCfgSetP = SharedContainer.GetOrNew("GenCfgSetP");
         private readonly Shared _genP = SharedContainer.GetOrNew("GenP");
+        private readonly Shared _genSetP = SharedContainer.GetOrNew("GenSetP");
         private readonly Shared _genOnlineCfg = SharedContainer.GetOrNew("GenOnlineCfg");
         private readonly Shared _genSpinP = SharedContainer.GetOrNew("GenSpinP");
         private readonly Shared _genCapP = SharedContainer.GetOrNew("GenCapP");
         private readonly Shared _disP = SharedContainer.GetOrNew("DisP");
         private bool _lastStatBlack = false;
-        private bool _thisStatBlack = false;
+        private readonly Shared _statBlack = SharedContainer.GetOrNew("StatBlack");
 
         #region Implementation of IActor
+
+        public void Read(ulong iteration)
+        {
+        }
 
         public void Run(ulong iteration)
         {
             // calc
             if (_loadMaxLimP.Val > 0)
                 _loadP.Val = Math.Min(_loadP.Val, _loadMaxLimP.Val);
-            double loadP = _loadP.Val + _disP.Val;
 
-            _genCfgSetP.Val = loadP - _pvP.Val;
+            double pvCoverage = _pvP.Val * _pvCvgPct.Val / 100D;
+            double reserve = Math.Max(0, Math.Max(_statSpinSetP.Val, pvCoverage) - _disP.Val);
+
+            // generator coverage setpoint
+            _genCfgSetP.Val = _loadP.Val - _pvP.Val + reserve;
+            // actual generator loading setpoint
+            _genSetP.Val = _loadP.Val - _pvP.Val;
+            // station output
             _statP.Val = _genP.Val + _pvP.Val;
-            _statSpinP.Val = _genSpinP.Val;
+            // station spinning reserve
+            _statSpinP.Val = _genSpinP.Val + _disP.Val;
 
-            _loadMaxP.Val = Math.Max(loadP, _loadMaxP.Val);
-            _loadCapAl.Val = _genCapP.Val < (_loadMaxP.Val * _loadCapMargin.Val) ? 1.0F : 0.0F;
-
-            _thisStatBlack = _genOnlineCfg.Val <= 0;
-            if (_thisStatBlack && !_lastStatBlack)
+            // maximun load value
+            _loadMaxP.Val = Math.Max(_loadP.Val, _loadMaxP.Val);
+            // load capacity warning
+            _loadCapAl.Val = _genCapP.Val < (_loadMaxP.Val * _loadCapMargin.Val) ? 1.0D : 0.0D;
+            
+            // blackout detection
+            bool thisStatBlack = _genOnlineCfg.Val <= 0;
+            _statBlack.Val = thisStatBlack ? 1 : 0;
+            if (thisStatBlack && !_lastStatBlack)
             {
                 _statBlackCnt.Val++;
             }
-            _lastStatBlack = _thisStatBlack;
+            _lastStatBlack = thisStatBlack;
+        }
+
+        public void Write(ulong iteration)
+        {
         }
 
         public void Init()

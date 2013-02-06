@@ -95,7 +95,9 @@ namespace SolarLoadModel.Utils
                 for (ulong i = 0; i < Iterations; i++)
                 {
                     Iteration = i;
+                    actors.ForEach(a => a.Read(i));
                     actors.ForEach(a => a.Run(i));
+                    actors.ForEach(a => a.Write(i));
                 }
                 var end = DateTime.Now;
                 Console.WriteLine("100%");

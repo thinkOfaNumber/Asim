@@ -17,10 +17,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using System.Text.RegularExpressions;
 using SolarLoadModel.Contracts;
 using SolarLoadModel.Utils;
 
@@ -76,6 +73,10 @@ namespace SolarLoadModel.Actors
 
         #region Implementation of IActor
 
+        public void Read(ulong iteration)
+        {
+        }
+
         public void Run(ulong iteration)
         {
             // write output every "_outputEvery" samples, or always if that is 1.
@@ -87,6 +88,10 @@ namespace SolarLoadModel.Actors
             {
                 WriteLine();
             }
+        }
+
+        public void Write(ulong iteration)
+        {
         }
 
         public void Init()
