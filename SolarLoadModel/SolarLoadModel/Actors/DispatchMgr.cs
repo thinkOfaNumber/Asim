@@ -35,11 +35,7 @@ namespace SolarLoadModel.Actors
         private readonly Shared _genMaxP = SharedContainer.GetOrNew("GenMaxP");
         private readonly IDispatchLoad[] Load = new IDispatchLoad[Settings.MAX_GENS];
         private readonly ExecutionManager _executionManager = new ExecutionManager();
-
-        public void Read(ulong iteration)
-        {
-        }
-
+        
         public void Run(ulong iteration)
         {
             _executionManager.RunActions(iteration);
@@ -68,10 +64,6 @@ namespace SolarLoadModel.Actors
                 _disOffP.Val += Load[i].DisOffP;
                 _disLoadP.Val += Load[i].DisLoadP;
             }
-        }
-
-        public void Write(ulong iteration)
-        {
         }
 
         public void Init()

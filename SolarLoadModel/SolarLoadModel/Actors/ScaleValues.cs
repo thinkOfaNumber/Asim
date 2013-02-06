@@ -31,10 +31,6 @@ namespace SolarLoadModel.Actors
 
         #region Implementation of IActor
 
-        public void Read(ulong iteration)
-        {
-        }
-
         public void Run(ulong iteration)
         {
             if (_toScale == null)
@@ -59,10 +55,6 @@ namespace SolarLoadModel.Actors
                     shared.ScaleFunction = null;
                 }
             }
-        }
-
-        public void Write(ulong iteration)
-        {
         }
 
         public void Init()

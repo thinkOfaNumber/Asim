@@ -28,9 +28,7 @@ namespace SolarLoadModel.Contracts
     public interface IActor
     {
         void Init();
-        void Read(ulong iteration);
         void Run(ulong iteration);
-        void Write(ulong iteration);
         void Finish();
     }
 }

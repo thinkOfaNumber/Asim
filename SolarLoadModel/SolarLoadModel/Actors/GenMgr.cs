@@ -70,13 +70,10 @@ namespace SolarLoadModel.Actors
 
         #region Implementation of IActor
         
-        public void Read(ulong iteration)
-        {
-            _iteration = iteration;
-        }
-
         public void Run(ulong iteration)
         {
+            _iteration = iteration;
+
             //
             // Simulate
             //
@@ -88,9 +85,6 @@ namespace SolarLoadModel.Actors
             // Set Outputs
             //
             _genP.Val = Generator.GenP;
-        }
-        public void Write(ulong iteration)
-        {
         }
 
 

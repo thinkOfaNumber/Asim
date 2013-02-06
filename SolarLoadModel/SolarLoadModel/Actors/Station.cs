@@ -47,10 +47,6 @@ namespace SolarLoadModel.Actors
 
         #region Implementation of IActor
 
-        public void Read(ulong iteration)
-        {
-        }
-
         public void Run(ulong iteration)
         {
             // calc
@@ -82,10 +78,6 @@ namespace SolarLoadModel.Actors
                 _statBlackCnt.Val++;
             }
             _lastStatBlack = thisStatBlack;
-        }
-
-        public void Write(ulong iteration)
-        {
         }
 
         public void Init()

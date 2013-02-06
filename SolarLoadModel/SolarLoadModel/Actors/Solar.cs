@@ -44,10 +44,6 @@ namespace SolarLoadModel.Actors
         
         #region Implementation of IActor
 
-        public void Read(ulong iteration)
-        {
-        }
-
         public void Run(ulong iteration)
         {
             if (_pvMaxLimP.Val > 0)
@@ -90,10 +86,6 @@ namespace SolarLoadModel.Actors
             _pvE.Val += (_pvP.Val * Settings.PerHourToSec);
             _pvAvailE.Val += (_pvAvailP.Val * Settings.PerHourToSec);
             _pvSpillE.Val += (_pvSpillP.Val * Settings.PerHourToSec);
-        }
-
-        public void Write(ulong iteration)
-        {
         }
 
         public void Init()
