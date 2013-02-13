@@ -55,6 +55,13 @@ namespace SolarLoadModel.Utils
         public string[] Watchvars { get; set; }
         private StreamWriter _watchWriter;
 
+        private object _solarController;
+        private readonly Dictionary<string, string> _controllers = new Dictionary<string, string>();
+        public Dictionary<string, string> Controllers
+        {
+            get { return _controllers; }
+        }
+
         public void AddInput(string filename, bool recycle = false)
         {
             _inputActors.Add(new InputOption() { Filename = filename, Recycle = recycle });
@@ -120,23 +127,43 @@ namespace SolarLoadModel.Utils
 
         private Delegate LoadSolarDelegate()
         {
-            try
+            string dll;
+            Delegate toReturn;
+            if (Controllers.TryGetValue("SolarController", out dll))
             {
-                Assembly assembly = Assembly.LoadFrom(@"..\SolarLoadModel\PWC.SLMS.Default\bin\Debug\PWC.SLMS.Default.dll");
-                Type controllerType = assembly.GetTypes().First(t => t.IsClass && t.Name.Equals("SolarController"));
-                object controller = Activator.CreateInstance(controllerType);
-                MethodInfo handler = controllerType.GetMethod("Control", BindingFlags.Public | BindingFlags.Instance);
-                return Delegate.CreateDelegate(typeof (Delegates.SolarController), controller, handler);
-            }
-            catch(Exception e)
-            {
-                const string error =
+                Assembly assembly;
+                try
+                {
+                    assembly = Assembly.LoadFrom(dll);
+                }
+                catch (Exception e)
+                {
+                    throw new SimulationException("Could not load the DLL '" + dll + "': " + e.Message);
+                }
+                try
+                {
+                    Type controllerType = assembly.GetTypes().First(t => t.IsClass && t.Name.Equals("SolarController"));
+                    _solarController = Activator.CreateInstance(controllerType);
+                    MethodInfo handler = controllerType.GetMethod("Control", BindingFlags.Public | BindingFlags.Instance);
+                    toReturn = Delegate.CreateDelegate(typeof(Delegates.SolarController), _solarController, handler);
+                }
+                catch (Exception e)
+                {
+                    const string error =
                     "The solar controller could not load the specified control method. Please\n" +
-                    "ensure your DLL has a class called 'SolarController' with an instance method\n" +
-                    "'Control' with the following signature:\n" +
-                    "double Control (double lastSetP, double genP, double genIdealP, double loadP);";
-                throw new SimulationException(error, e);
+                        "ensure your DLL has a class called 'SolarController' with an instance method\n" +
+                        "'Control' with the following signature:\n" +
+                        "double Control (double lastSetP, double genP, double genIdealP, double loadP);";
+                    throw new SimulationException(error, e);
+                }
             }
+            else
+            {
+                // default solar controller returns setpoint 0
+                Delegates.SolarController d = (lastSetP, genP, idealP, loadP) => 0;
+                toReturn = d;
+            }
+            return toReturn;
         }
 
         private void SetWatchActions()

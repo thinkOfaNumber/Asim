@@ -22,7 +22,7 @@ namespace PWC.SLMS.Default
 {
     public class SolarController
     {
-        public double Control(double lastSetP, double genP, double genIdealP, double loadP, int i)
+        public double Control(double lastSetP, double genP, double genIdealP, double loadP)
         {
             // calculate desired setpoint
             double setP = Math.Max(0, genP - genIdealP);

@@ -38,7 +38,8 @@ namespace SolarLoadModel
             Directory,
             NoPause,
             StartTime,
-            Watch
+            Watch,
+            Algorithm
         }
 
         static void Main(string[] args)
@@ -54,10 +55,10 @@ namespace SolarLoadModel
 
             string outputFile = null;
 
-            var stack = new Stack<string>(args.Reverse());
-            while (stack.Count > 0)
+            var arglist = new Queue<string>(args);
+            while (arglist.Count > 0)
             {
-                var arg = stack.Pop();
+                var arg = arglist.Dequeue();
                 // Console.WriteLine("parsing: '" + arg + "'");
                 if (!arg.StartsWith("--"))
                 {
@@ -75,34 +76,34 @@ namespace SolarLoadModel
                     switch (thisArg)
                     {
                         case Arguments.Iterations:
-                            var s = stack.Pop();
+                            var s = arglist.Dequeue();
                             if (!ulong.TryParse(s, out iterations))
                                 Error("--iterations must be followed by a whole number, not '" + s + "'");
                             break;
 
                         case Arguments.Input:
                             bool recycle = false;
-                            string filename = stack.Pop();
-                            if (stack.Peek().ToLower().Equals("recycle"))
+                            string filename = arglist.Dequeue();
+                            if (arglist.Peek().ToLower().Equals("recycle"))
                             {
-                                stack.Pop();
+                                arglist.Dequeue();
                                 recycle = true;
                             }
                             _simulator.AddInput(filename, recycle);
                             break;
 
-                        case Arguments.Output:  
-                            outputFile = stack.Pop();
+                        case Arguments.Output:
+                            outputFile = arglist.Dequeue();
                             uint period = 1;
-                            if (UInt32.TryParse(stack.Peek(), out period))
-                                stack.Pop();
+                            if (UInt32.TryParse(arglist.Peek(), out period))
+                                arglist.Dequeue();
 
-                            var vars = stack.Pop().Split(new[]{','}, StringSplitOptions.RemoveEmptyEntries);
+                            var vars = arglist.Dequeue().Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
                             _simulator.AddOutput(outputFile, vars, period);
                             break;
 
                         case Arguments.Directory:
-                            string path = stack.Pop();
+                            string path = arglist.Dequeue();
                             try
                             {
                                 Directory.SetCurrentDirectory(path);
@@ -119,7 +120,7 @@ namespace SolarLoadModel
 
                         case Arguments.StartTime:
                             DateTime time;
-                            string st = stack.Pop();
+                            string st = arglist.Dequeue();
                             if (DateTime.TryParse(st, out time))
                             {
                                 _startTime = time;
@@ -131,10 +132,16 @@ namespace SolarLoadModel
                             break;
 
                         case Arguments.Watch:
-                            string watchfile = stack.Pop();
-                            var watchvars = stack.Pop().Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+                            string watchfile = arglist.Dequeue();
+                            var watchvars = arglist.Dequeue().Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
                             _simulator.Watchfile = watchfile;
                             _simulator.Watchvars = watchvars;
+                            break;
+
+                        case Arguments.Algorithm:
+                            var controllerName = arglist.Dequeue();
+                            var dllPath = arglist.Dequeue();
+                            _simulator.Controllers[controllerName] = dllPath;
                             break;
                     }
                 }
