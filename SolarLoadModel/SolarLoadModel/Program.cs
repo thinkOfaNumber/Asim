@@ -55,7 +55,7 @@ namespace SolarLoadModel
 
             string outputFile = null;
 
-            var arglist = new Queue<string>(args);
+            var arglist = new SafeQueue<string>(args);
             while (arglist.Count > 0)
             {
                 var arg = arglist.Dequeue();
@@ -84,7 +84,7 @@ namespace SolarLoadModel
                         case Arguments.Input:
                             bool recycle = false;
                             string filename = arglist.Dequeue();
-                            if (arglist.Peek().ToLower().Equals("recycle"))
+                            if (arglist.Peek() != null && arglist.Peek().ToLower().Equals("recycle"))
                             {
                                 arglist.Dequeue();
                                 recycle = true;

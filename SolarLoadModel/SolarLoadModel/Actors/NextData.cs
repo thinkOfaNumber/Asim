@@ -116,7 +116,10 @@ namespace SolarLoadModel.Actors
                 ReadLine();
                 if (_nextline != null)
                 {
-                    _nextT = DateToInt64(_nextline.Substring(0, _nextline.IndexOf(',')));
+                    var nextT = DateToInt64(_nextline.Substring(0, _nextline.IndexOf(',')));
+                    if (nextT <= _nextT)
+                        throw new Exception("Time stood still or went backwards!");
+                    _nextT = nextT;
                 }
             }
             catch (SimulationException)
@@ -167,6 +170,8 @@ namespace SolarLoadModel.Actors
             do
             {
                 ReadLine();
+                if (_nextline == null)
+                    break;
                 string time = _nextline.Substring(0, _nextline.IndexOf(','));
                 _dateFormat = GetDateFormat(time);
                 _nextT = DateToInt64(time);

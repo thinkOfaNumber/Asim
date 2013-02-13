@@ -57,6 +57,7 @@
     <Compile Include="Contracts\Delegates.cs" />
     <Compile Include="Contracts\IDispatchLoad.cs" />
     <Compile Include="Utils\Generator.cs" />
+    <Compile Include="Utils\SafeQueue.cs" />
     <Compile Include="Utils\Settings.cs" />
     <Compile Include="Utils\SharedValue.cs" />
     <Compile Include="Exceptions\SimulationException.cs" />
