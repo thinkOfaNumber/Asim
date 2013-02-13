@@ -41,7 +41,14 @@ namespace SolarLoadModel.Actors
         private readonly Shared _genP = SharedContainer.GetOrNew("GenP");
         private readonly Shared _genIdealP = SharedContainer.GetOrNew("GenIdealP");
         private readonly Shared _genLowP = SharedContainer.GetOrNew("GenLowP");
-        
+
+        readonly Delegates.SolarController _solarController;
+
+        public Solar(Delegate solarController)
+        {
+            _solarController = (Delegates.SolarController)solarController;
+        }
+
         #region Implementation of IActor
 
         public void Run(ulong iteration)
@@ -50,13 +57,7 @@ namespace SolarLoadModel.Actors
                 _pvAvailP.Val = Math.Min(_pvAvailP.Val, _pvMaxLimP.Val);
 
             // calculate desired setpoint
-            double setP;
-            //if (_genLowP.Val != 0 && _loadP.Val - _pvAvailP.Val < _genLowP.Val)
-            //    setP = _pvAvailP.Val;
-            //else
-                setP = Math.Max(0, _genP.Val - _genIdealP.Val);
-            // limit setpoint to total station load
-            setP = Math.Min(setP, _loadP.Val);
+            double setP = _solarController(_pvSetP.Val, _genP.Val, _genIdealP.Val, _loadP.Val);
 
             double deltaSetP = setP - _pvP.Val;
             if (deltaSetP > 0 && _pvSetMaxUpP.Val != 0)

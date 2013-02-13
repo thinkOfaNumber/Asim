@@ -20,6 +20,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Timers;
 using SolarLoadModel.Actors;
 using SolarLoadModel.Contracts;
@@ -74,7 +75,7 @@ namespace SolarLoadModel.Utils
             actors.Add(new Station());
             actors.Add(new DispatchMgr());
             actors.Add(new GenMgr());
-            actors.Add(new Solar());
+            actors.Add(new Solar(LoadSolarDelegate()));
             _outputActors.ForEach(o => actors.Add(new OutputData(o.Filename, o.Vars, o.Period, StartTime, DateFormat.Other)));
 
             _inputActors = null;
@@ -114,6 +115,27 @@ namespace SolarLoadModel.Utils
             {
                 _timer.Enabled = false;
                 FinishWatchActions();
+            }
+        }
+
+        private Delegate LoadSolarDelegate()
+        {
+            try
+            {
+                Assembly assembly = Assembly.LoadFrom(@"..\SolarLoadModel\PWC.SLMS.Default\bin\Debug\PWC.SLMS.Default.dll");
+                Type controllerType = assembly.GetTypes().First(t => t.IsClass && t.Name.Equals("SolarController"));
+                object controller = Activator.CreateInstance(controllerType);
+                MethodInfo handler = controllerType.GetMethod("Control", BindingFlags.Public | BindingFlags.Instance);
+                return Delegate.CreateDelegate(typeof (Delegates.SolarController), controller, handler);
+            }
+            catch(Exception e)
+            {
+                const string error =
+                    "The solar controller could not load the specified control method. Please\n" +
+                    "ensure your DLL has a class called 'SolarController' with an instance method\n" +
+                    "'Control' with the following signature:\n" +
+                    "double Control (double lastSetP, double genP, double genIdealP, double loadP);";
+                throw new SimulationException(error, e);
             }
         }
 
