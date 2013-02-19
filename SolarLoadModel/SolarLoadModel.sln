@@ -8,7 +8,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PWC.SLMS.ConsoleTests", "Co
 		{F871DB06-EB95-4326-9DB9-7AF31EEAE5D5} = {F871DB06-EB95-4326-9DB9-7AF31EEAE5D5}
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PWC.SLMS.Default", "PWC.SLMS.Default\PWC.SLMS.Default.csproj", "{29415DB1-978E-4BEB-A710-B6A48E51E200}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Algorithms", "Algorithms", "{C31C86E3-D4AE-44CB-9143-D4A8A77FA2D7}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PWC.SLMS.Algorithms.PvSimple", "Algorithms\PWC.SLMS.Algorithms.PvSimple\PWC.SLMS.Algorithms.PvSimple.csproj", "{6617A9B5-067C-4473-A69D-06526D323A31}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -40,18 +42,21 @@ Global
 		{AFFB328B-9B93-4FB4-ABB8-A1170CEAFA86}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{AFFB328B-9B93-4FB4-ABB8-A1170CEAFA86}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{AFFB328B-9B93-4FB4-ABB8-A1170CEAFA86}.Release|x86.ActiveCfg = Release|Any CPU
-		{29415DB1-978E-4BEB-A710-B6A48E51E200}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{29415DB1-978E-4BEB-A710-B6A48E51E200}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{29415DB1-978E-4BEB-A710-B6A48E51E200}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
-		{29415DB1-978E-4BEB-A710-B6A48E51E200}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
-		{29415DB1-978E-4BEB-A710-B6A48E51E200}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{29415DB1-978E-4BEB-A710-B6A48E51E200}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{29415DB1-978E-4BEB-A710-B6A48E51E200}.Release|Any CPU.Build.0 = Release|Any CPU
-		{29415DB1-978E-4BEB-A710-B6A48E51E200}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
-		{29415DB1-978E-4BEB-A710-B6A48E51E200}.Release|Mixed Platforms.Build.0 = Release|Any CPU
-		{29415DB1-978E-4BEB-A710-B6A48E51E200}.Release|x86.ActiveCfg = Release|Any CPU
+		{6617A9B5-067C-4473-A69D-06526D323A31}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6617A9B5-067C-4473-A69D-06526D323A31}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6617A9B5-067C-4473-A69D-06526D323A31}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{6617A9B5-067C-4473-A69D-06526D323A31}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{6617A9B5-067C-4473-A69D-06526D323A31}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{6617A9B5-067C-4473-A69D-06526D323A31}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6617A9B5-067C-4473-A69D-06526D323A31}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6617A9B5-067C-4473-A69D-06526D323A31}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{6617A9B5-067C-4473-A69D-06526D323A31}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{6617A9B5-067C-4473-A69D-06526D323A31}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{6617A9B5-067C-4473-A69D-06526D323A31} = {C31C86E3-D4AE-44CB-9143-D4A8A77FA2D7}
 	EndGlobalSection
 EndGlobal

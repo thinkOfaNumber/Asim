@@ -18,16 +18,14 @@
 
 using System;
 
-namespace PWC.SLMS.Default
+namespace PWC.SLMS.Algorithms.PvSimple
 {
     public class SolarController
     {
-        public double Control(double lastSetP, double genP, double genIdealP, double loadP)
+        public double Control(double lastSetP, double genP, double genIdealP, double loadP, double statSpinSetP)
         {
             // calculate desired setpoint
-            double setP = Math.Max(0, genP - genIdealP);
-            // limit setpoint to total station load
-            return Math.Min(setP, loadP);
+            return Math.Max(0, statSpinSetP);
         }
     }
 }

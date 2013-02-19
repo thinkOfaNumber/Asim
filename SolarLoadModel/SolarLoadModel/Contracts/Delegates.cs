@@ -28,7 +28,8 @@ namespace SolarLoadModel.Contracts
         /// <param name="genP">Actual generator output.</param>
         /// <param name="genIdealP">Ideal generator output for online generators.</param>
         /// <param name="loadP">Actual system load.</param>
+        /// <param name="statSpinSetP">Station spinning reserve setpoint parameter.</param>
         /// <returns>The new setpoint to feed to the ramp limit</returns>
-        public delegate double SolarController(double lastSetP, double genP, double genIdealP, double loadP);
+        public delegate double SolarController(double lastSetP, double genP, double genIdealP, double loadP, double statSpinSetP);
     }
 }

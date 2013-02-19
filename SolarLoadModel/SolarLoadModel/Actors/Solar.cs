@@ -36,11 +36,10 @@ namespace SolarLoadModel.Actors
         private readonly Shared _pvMaxLimP = SharedContainer.GetOrNew("PvMaxLimP");
 
         private readonly Shared _loadP = SharedContainer.GetOrNew("LoadP");
-        private readonly Shared _statSpinP = SharedContainer.GetOrNew("StatSpinP");
+        private readonly Shared _statSpinSetP = SharedContainer.GetOrNew("StatSpinSetP");
         private readonly Shared _statBlack = SharedContainer.GetOrNew("StatBlack");
         private readonly Shared _genP = SharedContainer.GetOrNew("GenP");
         private readonly Shared _genIdealP = SharedContainer.GetOrNew("GenIdealP");
-        private readonly Shared _genLowP = SharedContainer.GetOrNew("GenLowP");
 
         readonly Delegates.SolarController _solarController;
 
@@ -57,8 +56,9 @@ namespace SolarLoadModel.Actors
                 _pvAvailP.Val = Math.Min(_pvAvailP.Val, _pvMaxLimP.Val);
 
             // calculate desired setpoint
-            double setP = _solarController(_pvSetP.Val, _genP.Val, _genIdealP.Val, _loadP.Val);
+            double setP = _solarController(_pvSetP.Val, _genP.Val, _genIdealP.Val, _loadP.Val, _statSpinSetP.Val);
 
+            // calculate delta and ramp limits
             double deltaSetP = setP - _pvP.Val;
             if (deltaSetP > 0 && _pvSetMaxUpP.Val != 0)
             {
@@ -70,15 +70,15 @@ namespace SolarLoadModel.Actors
             }
 
             // apply ramp limited setpoint
-            _pvSetP.Val = Math.Max(0, _pvP.Val + deltaSetP);
+            setP = Math.Max(0, _pvP.Val + deltaSetP);
             // limit setpoint to available solar power
-            _pvSetP.Val = Math.Min(_pvSetP.Val, _pvAvailP.Val);
+            setP = Math.Min(setP, _pvAvailP.Val);
             // solar trips off in case of a black station
             if (_statBlack.Val > 0)
-                _pvSetP.Val = 0;
+                setP = 0;
 
             // assume solar farm outputs this immediatly
-            _pvP.Val = _pvSetP.Val;
+            _pvP.Val = _pvSetP.Val = setP;
 
             // calculate spill
             _pvSpillP.Val = _pvAvailP.Val - _pvP.Val;
@@ -100,5 +100,13 @@ namespace SolarLoadModel.Actors
         }
 
         #endregion
+
+        public static double DefaultSolarController(double lastSetP, double genP, double genIdealP, double loadP, double statSpinSetP)
+        {
+            // calculate desired setpoint
+            double setP = Math.Max(0, genP - genIdealP);
+            // limit setpoint to total station load
+            return Math.Min(setP, loadP);
+        }
     }
 }

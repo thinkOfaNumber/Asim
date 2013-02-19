@@ -7,12 +7,12 @@
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
-// 
+//
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -87,7 +87,7 @@ namespace SolarLoadModel.Utils
 
             _inputActors = null;
             _outputActors = null;
-            
+
             Console.WriteLine("Init...");
             actors.ForEach(a => a.Init());
             Console.WriteLine("Run " + Iterations + " iterations...");
@@ -159,8 +159,8 @@ namespace SolarLoadModel.Utils
             }
             else
             {
-                // default solar controller returns setpoint 0
-                Delegates.SolarController d = (lastSetP, genP, idealP, loadP) => 0;
+                // default solar controller built into Solar class
+                Delegates.SolarController d = Solar.DefaultSolarController;
                 toReturn = d;
             }
             return toReturn;
