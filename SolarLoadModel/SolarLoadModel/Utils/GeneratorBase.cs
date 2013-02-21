@@ -56,7 +56,7 @@ namespace SolarLoadModel.Utils
     /// </summary>
     /// <remarks>Locking is not required on state transitions becuase all commands
     /// happen at specific points in the iteration</remarks>
-    public class Generator
+    public abstract class GeneratorBase
     {
         public double MaxP
         {
@@ -78,17 +78,17 @@ namespace SolarLoadModel.Utils
         public double IdealP
         {
             get { return _idealP.Val; }
-            private set { _idealP.Val = value; }
+            protected set { _idealP.Val = value; }
         }
         public double LoadFact
         {
             get { return _loadFact.Val; }
-            private set { _loadFact.Val = value; }
+            protected set { _loadFact.Val = value; }
         }
         public static ushort OnlineCfg
         {
             get { return (ushort)_onlineCfg.Val; }
-            private set { _onlineCfg.Val = value; }
+            protected set { _onlineCfg.Val = value; }
         }
         public static double GenIdealP
         {
@@ -109,22 +109,22 @@ namespace SolarLoadModel.Utils
         public ulong StartCnt
         {
             get { return (ulong)_startCnt.Val; }
-            private set { _startCnt.Val = value; }
+            protected set { _startCnt.Val = value; }
         }
         public ulong StopCnt
         {
             get { return (ulong)_stopCnt.Val; }
-            private set { _stopCnt.Val = value; }
+            protected set { _stopCnt.Val = value; }
         }
         public double FuelCnt
         {
             get { return _fuelCnt.Val; }
-            private set { _fuelCnt.Val = value; }
+            protected set { _fuelCnt.Val = value; }
         }
         public double RunCnt
         {
             get { return _runCnt.Val; }
-            private set { _runCnt.Val = value; }
+            protected set { _runCnt.Val = value; }
         }
         public double E
         {
@@ -133,14 +133,14 @@ namespace SolarLoadModel.Utils
         }
 
         private readonly Shared _maxP;
-        private readonly Shared _p;
+        protected readonly Shared _p;
         private readonly Shared _minRunTPa;
         private readonly Shared _idealPctP;
         private readonly Shared _idealP;
         private readonly Shared _loadFact;
-        private readonly Shared _serviceT;
-        private readonly Shared _serviceOutT;
-        private readonly Shared _serviceCnt;
+        protected readonly Shared _serviceT;
+        protected readonly Shared _serviceOutT;
+        protected readonly Shared _serviceCnt;
         private readonly Shared[] _fuelCurveP = new Shared[Settings.FuelCurvePoints];
         private readonly Shared[] _fuelCurveL = new Shared[Settings.FuelCurvePoints];
         private static readonly Shared _onlineCfg = SharedContainer.GetOrNew("GenOnlineCfg");
@@ -159,18 +159,17 @@ namespace SolarLoadModel.Utils
         private readonly Shared _runCnt;
         private readonly Shared _e;
 
-        private GeneratorState State { get; set; }
+        protected GeneratorState State { get; set; }
 
-        private static readonly ExecutionManager ExecutionManager = new ExecutionManager();
-        private bool _busy;
+        protected static readonly ExecutionManager ExecutionManager = new ExecutionManager();
         private static ulong _iteration;
         private int _id;
-        private readonly ushort _idBit;
-        private double _spinP;
+        protected readonly ushort _idBit;
+        protected double _spinP;
 
-        private static readonly Generator[] Gen = new Generator[Settings.MAX_GENS];
+        private static readonly GeneratorBase[] Gen = new GeneratorBase[Settings.MAX_GENS];
 
-        public Generator(int id)
+        public GeneratorBase(int id)
         {
             _id = id;
             _idBit = (ushort)(1 << id);
@@ -200,7 +199,7 @@ namespace SolarLoadModel.Utils
             Gen[id] = this;
         }
 
-        static Generator()
+        static GeneratorBase()
         {
             _onlineCfg.Val = 0;
             _genIdealP.Val = 0;
@@ -216,8 +215,8 @@ namespace SolarLoadModel.Utils
             Overload = false;
             _genSpinP.Val = 0;
             _genAvailCfg.Val = 0;
-            int imax = 0;
-            double pmax = 0;
+            int largestGeni = 0;
+            double largestGenP = 0;
             for (int i = 0; i < Settings.MAX_GENS; i ++)
             {
                 if (((ushort)_genAvailSet.Val & i) != i)
@@ -234,70 +233,24 @@ namespace SolarLoadModel.Utils
                 GenP += Gen[i].P;
                 _genSpinP.Val += Gen[i]._spinP;
                 _genCapP.Val += Gen[i]._maxP.Val;
-                if (Gen[i].MaxP > pmax)
+                if (Gen[i].MaxP > largestGenP)
                 {
-                    pmax = Gen[i].MaxP;
-                    imax = i;
+                    largestGenP = Gen[i].MaxP;
+                    largestGeni = i;
                 }
             }
-            _genCapP.Val = _genCapP.Val - Gen[imax].P;
+            _genCapP.Val = _genCapP.Val - Gen[largestGeni].P;
         }
 
-        public void Start()
-        {
-            if (_busy)
-                return;
+        public abstract void Start();
 
-            if (IsStopped() && IsAvailable())
-            {
-                ExecutionManager.After(60, TransitionToOnline);
-                _busy = true;
-                State = GeneratorState.RunningOpen;
-            }
-        }
+        public abstract void Stop();
 
-        public void Stop()
-        {
-            if (_busy)
-                return;
+        public abstract void CriticalStop();
 
-            if (IsOnline())
-            {
-                _busy = true;
-                ExecutionManager.After(60, TransitionToStop);
-                State = GeneratorState.RunningOpen;
-                OnlineCfg &= (ushort)~_idBit;
-            }
-        }
+        protected abstract void Service();
 
-        public void CriticalStop()
-        {
-            if (_busy)
-                return;
-            TransitionToStop();
-            OnlineCfg &= (ushort)~_idBit;
-        }
-
-        private void Service()
-        {
-            if (_busy)
-                return;
-
-            if (IsOnline())
-            {
-                _busy = true;
-                ExecutionManager.After(60, PerformService);
-                State = GeneratorState.RunningOpen | GeneratorState.Unavailable;
-                OnlineCfg &= (ushort)~_idBit;
-            }
-            else if (IsStopped())
-            {
-                _busy = true;
-                PerformService();
-            }
-        }
-
-        private void Run()
+        protected virtual void Run()
         {
             LoadFact = 0;
             IdealP = 0;
@@ -325,7 +278,7 @@ namespace SolarLoadModel.Utils
         /// Calculates fuel consumption for one second of operation at the current load factor.
         /// </summary>
         /// <returns>Fuel used this second, in L</returns>
-        private double FuelConsumptionSecond()
+        protected double FuelConsumptionSecond()
         {
             // y = mx + b
             double m = 0;
@@ -361,38 +314,6 @@ namespace SolarLoadModel.Utils
             ExecutionManager.RunActions(_iteration);
         }
 
-        private void TransitionToOnline()
-        {
-            State = GeneratorState.RunningClosed;
-            StartCnt++;
-            _busy = false;
-            OnlineCfg |= _idBit;
-        }
-
-        private void TransitionToStop()
-        {
-            State = GeneratorState.Stopped;
-            StopCnt++;
-            _busy = false;
-        }
-
-        private void PerformService()
-        {
-            State = GeneratorState.Stopped | GeneratorState.InService | GeneratorState.Unavailable;
-            // service takes _serviceOutT hours
-            ExecutionManager.After((ulong)(_serviceOutT.Val * Settings.SecondsInAnHour), FinishService);
-        }
-
-        private void FinishService()
-        {
-            StartCnt = 0;
-            StopCnt = 0;
-            _serviceCnt.Val++;
-            RunCnt = 0;
-            State = GeneratorState.Stopped;
-            _busy = false;
-        }
-
         #region State Helpers
 
         public bool IsOnline()
@@ -417,5 +338,4 @@ namespace SolarLoadModel.Utils
 
         #endregion State Helpers
     }
-
 }

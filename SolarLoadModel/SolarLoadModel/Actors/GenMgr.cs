@@ -28,23 +28,22 @@ namespace SolarLoadModel.Actors
         public double Pmax;
     }
 
-    struct GenStrings
+    public enum GenMgrType
     {
-        public string MaxP;
-        public string P;
-        public string StartCnt;
-        public string StopCnt;
-        public string MinRunTPa;
-        public string LoadFact;
-        public string RunCnt;
-        public string E;
-        public string FuelCnt;
-        public string FuelCons;
+        /// <summary>
+        /// Simulate the operation of a generator, including generator selection, starting, stopping, etc.
+        /// </summary>
+        Simulate,
+        /// <summary>
+        /// Calculate the operation of generators given the actual power output, ie. it has started if the
+        /// power transitions from 0 to positive.
+        /// </summary>
+        Calculate
     }
 
     public class GenMgr : IActor
     {
-        private static readonly Generator[] Gen = new Generator[Settings.MAX_GENS];
+        private static readonly GeneratorBase[] Gen = new GeneratorBase[Settings.MAX_GENS];
 
         private readonly Shared _genDesiredCfg = SharedContainer.GetOrNew("GenSetCfg");
         private ushort GenSetCfg
@@ -65,8 +64,12 @@ namespace SolarLoadModel.Actors
         private ulong _iteration;
         private readonly Shared[] _configurations = new Shared[Settings.MAX_CFG];
         private Double?[] _configurationPower = new Double?[Settings.MAX_CFG];
+        private GenMgrType _simulationType;
 
-        //private readonly ExecutionManager _executionManager = new ExecutionManager();
+        public GenMgr(GenMgrType type)
+        {
+            _simulationType = type;
+        }
 
         #region Implementation of IActor
         
@@ -77,14 +80,16 @@ namespace SolarLoadModel.Actors
             //
             // Simulate
             //
-            Generator.UpdateStates(iteration);
+            GeneratorBase.UpdateStates(iteration);
+            // force recalculation of configuration power once per cycle
+            _configurationPower = new double?[Settings.MAX_CFG];
             GeneratorManager();
-            Generator.RunAll();
+            GeneratorBase.RunAll();
 
             //
             // Set Outputs
             //
-            _genP.Val = Generator.GenP;
+            _genP.Val = GeneratorBase.GenP;
         }
 
 
@@ -92,7 +97,16 @@ namespace SolarLoadModel.Actors
         {
             for (int i = 0; i < Settings.MAX_GENS; i++)
             {
-                Gen[i] = new Generator(i);
+                switch (_simulationType)
+                {
+                    case GenMgrType.Simulate:
+                        Gen[i] = new GeneratorStats(i);
+                        break;
+
+                    case GenMgrType.Calculate:
+                        Gen[i] = new GeneratorFull(i);
+                        break;
+                }
             }
 
             // test existance of variables we read from
@@ -113,17 +127,15 @@ namespace SolarLoadModel.Actors
 
         private void GeneratorManager()
         {
-            if (_genMinRunT.Val > 0 && (GenSetCfg & Generator.OnlineCfg) == GenSetCfg)
+            if (_genMinRunT.Val > 0 && (GenSetCfg & GeneratorBase.OnlineCfg) == GenSetCfg)
             {
                 _genMinRunT.Val --;
             }
-            // force recalculation of configuration power
-            _configurationPower = new double?[Settings.MAX_CFG];
 
             // black start or select
             ushort newCfg;
             double lowerP;
-            if (Generator.OnlineCfg == 0 && BlackStartPower() > _genCfgSetP.Val)
+            if (GeneratorBase.OnlineCfg == 0 && BlackStartPower() > _genCfgSetP.Val)
             {
                 newCfg = (ushort)_genBlackCfg.Val;
                 lowerP = 0;
@@ -237,7 +249,7 @@ namespace SolarLoadModel.Actors
 
         private void StartStopGens(ushort cfg)
         {
-            bool canStop = (cfg & Generator.OnlineCfg) == cfg;
+            bool canStop = (cfg & GeneratorBase.OnlineCfg) == cfg;
             for (ushort i = 0; i < Settings.MAX_GENS; i++)
             {
                 ushort genBit = (ushort)(1<<i);

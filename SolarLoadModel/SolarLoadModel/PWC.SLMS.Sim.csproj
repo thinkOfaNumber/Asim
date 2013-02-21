@@ -56,7 +56,9 @@
     <Compile Include="Actors\TestActor.cs" />
     <Compile Include="Contracts\Delegates.cs" />
     <Compile Include="Contracts\IDispatchLoad.cs" />
-    <Compile Include="Utils\Generator.cs" />
+    <Compile Include="Utils\GeneratorBase.cs" />
+    <Compile Include="Utils\GeneratorFull.cs" />
+    <Compile Include="Utils\GeneratorStats.cs" />
     <Compile Include="Utils\SafeQueue.cs" />
     <Compile Include="Utils\Settings.cs" />
     <Compile Include="Utils\SharedValue.cs" />

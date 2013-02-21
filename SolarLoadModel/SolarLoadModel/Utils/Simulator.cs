@@ -81,7 +81,7 @@ namespace SolarLoadModel.Utils
             // add extra simulation actors here.  Order is important:
             actors.Add(new Station());
             actors.Add(new DispatchMgr());
-            actors.Add(new GenMgr());
+            actors.Add(new GenMgr(GenMgrType.Calculate));
             actors.Add(new Solar(LoadSolarDelegate()));
             _outputActors.ForEach(o => actors.Add(new OutputData(o.Filename, o.Vars, o.Period, StartTime, DateFormat.Other)));
 
