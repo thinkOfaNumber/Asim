@@ -39,7 +39,8 @@ namespace SolarLoadModel
             NoPause,
             StartTime,
             Watch,
-            Algorithm
+            Algorithm,
+            GeneratorStats
         }
 
         static void Main(string[] args)
@@ -143,6 +144,10 @@ namespace SolarLoadModel
                             var dllPath = arglist.Dequeue();
                             _simulator.Controllers[controllerName] = dllPath;
                             break;
+
+                        case Arguments.GeneratorStats:
+                            _simulator.GuessGeneratorState = true;
+                            break;
                     }
                 }
                 else
@@ -182,12 +187,15 @@ namespace SolarLoadModel
             const string usage = @"
 Usage:
 SolarLoadModel.exe [--iterations <iterations>] [--input <filename> [...]]
-        [--output [period] <varlist> [...]] [--path <pathName>] [--nopause]
+        [--output [period] <varlist> [...]] [--directory <pathName>]
+        [--starttime <time>] [--watch <file> <varlist>] [--nopause]
+        [--algorithm <controllerName> <dllPath>] [--GeneratorStats]
 
 Where:
     iterations: number of iterations to run
     period: seconds
     varlist: comma separated list of variable names (no spaces)
+    time: ISO8601 or other string time
 
 --nopause tells the application not to prompt to ""Press any key to continue""
     at the end.

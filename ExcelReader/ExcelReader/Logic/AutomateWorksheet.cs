@@ -30,6 +30,7 @@ namespace ExcelReader.Logic
     public class AutomateWorksheet : IExcelReader
     {
         public Action<string> ShowSimOutput { get; set; }
+        public Action<bool> OnExit { get; set; }
 
         private ConfigSettings _settings;
         private string _filename;
@@ -51,6 +52,7 @@ namespace ExcelReader.Logic
             _settings = settings;
             _filename = inputFile;
             ShowSimOutput = ShowSimResults;
+            OnExit = CleanupMessages;
         }
 
         public void ProcessConfigSheet(bool attachToRunningProcess)
@@ -262,6 +264,17 @@ namespace ExcelReader.Logic
                         }
                         break;
 
+                    case "parameter":
+                        var param = new List<string> {data[i, 2].ToString()};
+                        for (int j = 3; j <= data.GetLength(1); j++)
+                        {
+                            var cell = data[i, j];
+                            if (cell != null)
+                                param.Add(cell.ToString());
+                        }
+                        _settings.ExtraArgList.Add(param);
+                        break;
+
                     default:
                         Console.WriteLine("unknown option: '" + s + "'");
                         break;
@@ -334,7 +347,6 @@ namespace ExcelReader.Logic
                         ChartObject resultChart = resultCharts.Add(150, 100, 300, 100);
                         _resultChartPage = resultChart.Chart;
 
-                        _resultsSheet.Activate();
                         _workBook.Application.Visible = true;
                     }
 
@@ -362,7 +374,6 @@ namespace ExcelReader.Logic
                         if (message.StartsWith("100"))
                         {
                             _resultsCell++;
-                            _resultsSheet.Activate();
                             _workBook.Application.StatusBar = "";
                         }
                         else
@@ -372,7 +383,7 @@ namespace ExcelReader.Logic
                     }
                     else
                     {
-                        _resultsSheet.Cells[_resultsCell++, 1] = message;
+                        _resultsSheet.Cells[++_resultsCell, 1] = message;
                     }
 
                     // accidentally discovered how to make a cell corner note:
@@ -382,6 +393,27 @@ namespace ExcelReader.Logic
                 {
 
                 }
+            }
+        }
+
+        public void CleanupMessages(bool success)
+        {
+            try
+            {
+                if (_workBook == null)
+                    return;
+
+                if (success)
+                    _workBook.Application.StatusBar = "";
+                else
+                {
+                    _workBook.Application.StatusBar = "Simulation completed with errors.";
+                    if (_resultsSheet != null)
+                        _resultsSheet.Activate();
+                }
+            }
+            catch (Exception)
+            {
             }
         }
 

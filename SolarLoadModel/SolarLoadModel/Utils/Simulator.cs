@@ -31,7 +31,6 @@ namespace SolarLoadModel.Utils
     class Simulator
     {
         public bool WaitForKeyPress { get; set; }
-        public ulong Iterations { get; set; }
 
         private class OutputOption
         {
@@ -47,16 +46,22 @@ namespace SolarLoadModel.Utils
         }
 
         public ulong Iteration { get; private set; }
-        public DateTime? StartTime { get; set; }
         private Timer _timer;
         private List<InputOption> _inputActors = new List<InputOption>();
         private List<OutputOption> _outputActors = new List<OutputOption>();
-        public string Watchfile { get; set; }
-        public string[] Watchvars { get; set; }
         private StreamWriter _watchWriter;
+        private readonly Dictionary<string, string> _controllers = new Dictionary<string, string>();
 
         private object _solarController;
-        private readonly Dictionary<string, string> _controllers = new Dictionary<string, string>();
+
+        #region Options
+
+        public ulong Iterations { get; set; }
+        public DateTime? StartTime { get; set; }
+        public string Watchfile { get; set; }
+        public string[] Watchvars { get; set; }
+        public bool GuessGeneratorState { get; set; }
+
         public Dictionary<string, string> Controllers
         {
             get { return _controllers; }
@@ -72,6 +77,8 @@ namespace SolarLoadModel.Utils
             _outputActors.Add(new OutputOption() { Filename = filename, Vars = variables, Period = period });
         }
 
+        #endregion Options
+
         public void Simulate()
         {
             var actors = new List<IActor>();
@@ -81,7 +88,7 @@ namespace SolarLoadModel.Utils
             // add extra simulation actors here.  Order is important:
             actors.Add(new Station());
             actors.Add(new DispatchMgr());
-            actors.Add(new GenMgr(GenMgrType.Calculate));
+            actors.Add(new GenMgr(GuessGeneratorState ? GenMgrType.Calculate : GenMgrType.Simulate));
             actors.Add(new Solar(LoadSolarDelegate()));
             _outputActors.ForEach(o => actors.Add(new OutputData(o.Filename, o.Vars, o.Period, StartTime, DateFormat.Other)));
 

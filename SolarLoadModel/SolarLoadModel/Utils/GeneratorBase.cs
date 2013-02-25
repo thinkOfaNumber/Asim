@@ -20,6 +20,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using SolarLoadModel.Exceptions;
 
 namespace SolarLoadModel.Utils
 {
@@ -219,7 +220,7 @@ namespace SolarLoadModel.Utils
             double largestGenP = 0;
             for (int i = 0; i < Settings.MAX_GENS; i ++)
             {
-                if (((ushort)_genAvailSet.Val & i) != i)
+                if (((ushort)_genAvailSet.Val & (1<<i)) == 0)
                     continue;
 
                 Gen[i].Run();
@@ -283,29 +284,37 @@ namespace SolarLoadModel.Utils
             // y = mx + b
             double m = 0;
             double b = double.NaN;
-            for (int i = 1; i < Settings.FuelCurvePoints - 1; i++)
+            int i;
+            for (i = 1; i < Settings.FuelCurvePoints - 1; i++)
             {
                 bool aboveMinPoint =
                     // ignore points that are unset (0,0)
-                    (_fuelCurveP[i - 1].Val == 0 && _fuelCurveL[i - 1].Val == 0) ||
+                    (_fuelCurveP[i - 1].Val != 0 || _fuelCurveL[i - 1].Val != 0) &&
                     // load is within this range
                     LoadFact >= _fuelCurveP[i - 1].Val;
 
                 bool belowMaxPoint = i == Settings.FuelCurvePoints - 2 ||
                     // ignore points that are unset (0,0)
-                    (_fuelCurveP[i].Val == 0 && _fuelCurveL[i].Val == 0) ||
+                    (_fuelCurveP[i].Val != 0 || _fuelCurveL[i].Val != 0) ||
                     // load is within this range
                     LoadFact < _fuelCurveP[i].Val;
 
                 if (aboveMinPoint && belowMaxPoint)
                 {
+                    // rise / run == L/kWh / LF == _fuelCurveL / _fuelCurveP
                     m = (_fuelCurveL[i].Val - _fuelCurveL[i-1].Val) / (_fuelCurveP[i].Val - _fuelCurveP[i-1].Val);
                     b = _fuelCurveL[i].Val - m * _fuelCurveP[i].Val;
                     break;
                 }
             }
-
-            return (m * LoadFact + b) * P * Settings.PerHourToSec;
+            double retval = (m * LoadFact + b) * P * Settings.PerHourToSec;
+#if DEBUG
+            if (double.IsNaN(retval))
+            {
+                System.Diagnostics.Debugger.Break();
+            }
+#endif
+            return retval;
         }
 
         public static void UpdateStates(ulong iteration)

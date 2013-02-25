@@ -30,6 +30,7 @@ namespace ExcelReader.Interface
 
         // Action property for showing output from sim
         Action<string> ShowSimOutput { get; set; }
+        Action<bool> OnExit { get; set; }
 
         // use templates to show analysis
         void ShowAnalyst();

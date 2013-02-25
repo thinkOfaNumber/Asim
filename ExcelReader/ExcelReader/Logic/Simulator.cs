@@ -31,7 +31,7 @@ namespace ExcelReader.Logic
             _settings = settings;
         }
 
-        public bool Run(Action<string> onOutputData)
+        public bool Run(Action<string> onOutputData, Action<bool> onExit)
         {
             bool success = false;
             if (_settings != null && _settings.RunSimulator)
@@ -63,6 +63,7 @@ namespace ExcelReader.Logic
                         simulator.BeginErrorReadLine();
                         simulator.WaitForExit();
                         success = simulator.ExitCode == 0;
+                        onExit(success);
                         simulator.Close();
                         simulator.Dispose();
                         Console.WriteLine("simulator finished.");
@@ -146,6 +147,12 @@ namespace ExcelReader.Logic
                 args.Append(" ");
                 args.Append(string.Join(",", settings.WatchGlobs));
             }
+
+            settings.ExtraArgList.ForEach(a => {
+                args.Append(" --" + a[0]);
+                a.RemoveAt(0);
+                a.ForEach(i => args.Append(" " + i));
+            });
             
             //Console.WriteLine(args);
             return args.ToString();

@@ -83,7 +83,8 @@ namespace SolarLoadModel.Actors
             GeneratorBase.UpdateStates(iteration);
             // force recalculation of configuration power once per cycle
             _configurationPower = new double?[Settings.MAX_CFG];
-            GeneratorManager();
+            if (_simulationType == GenMgrType.Simulate)
+                GeneratorManager();
             GeneratorBase.RunAll();
 
             //
@@ -100,11 +101,11 @@ namespace SolarLoadModel.Actors
                 switch (_simulationType)
                 {
                     case GenMgrType.Simulate:
-                        Gen[i] = new GeneratorStats(i);
+                        Gen[i] = new GeneratorFull(i);
                         break;
 
                     case GenMgrType.Calculate:
-                        Gen[i] = new GeneratorFull(i);
+                        Gen[i] = new GeneratorStats(i);
                         break;
                 }
             }

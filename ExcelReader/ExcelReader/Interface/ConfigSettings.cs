@@ -71,11 +71,14 @@ namespace ExcelReader.Logic
         public string WatchFile { get; set; }
         public List<string> WatchGlobs { get; set; }
 
+        public List<List<string>> ExtraArgList { get; set; }
+
         public ConfigSettings()
         {
             InputFiles = new List<InputInformation>();
             OutputFiles = new List<OutputInformation>();
             TemplateFiles = new List<TemplateInformation>();
+            ExtraArgList = new List<List<string>>();
             RunSimulator = true;
             _dateSimulatorRun = DateTime.Now;
         }

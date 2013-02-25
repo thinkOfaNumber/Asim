@@ -65,7 +65,7 @@ namespace ExcelReader
                 try
                 {
                     var sim = new Simulator(Settings);
-                    success = sim.Run(reader.ShowSimOutput);
+                    success = sim.Run(reader.ShowSimOutput, reader.OnExit);
                     reader.Finalise();
                 }
                 catch (Exception e)
