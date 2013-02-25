@@ -7,25 +7,25 @@ namespace SolarLoadModel.Utils
 {
     public class GeneratorStats : GeneratorBase
     {
-        private double _lastGenP;
+        private GeneratorState _lastState;
 
         public GeneratorStats(int id) : base(id)
         {
-            _lastGenP = 0;
+            _lastState = GeneratorState.Stopped;
         }
 
         protected override void Run()
         {
-            if (_lastGenP == 0D && GenP > 0D)
+            State = P > 0 ? GeneratorState.RunningClosed : GeneratorState.Stopped;
+            if (_lastState == GeneratorState.Stopped && State == GeneratorState.RunningClosed)
             {
                 StartCnt++;
-                State = GeneratorState.RunningClosed;
             }
-            else if (_lastGenP > 0D && GenP == 0D)
+            if (_lastState == GeneratorState.RunningClosed && State == GeneratorState.Stopped)
             {
                 StopCnt++;
-                State = GeneratorState.Stopped;
             }
+            _lastState = State;
             base.Run();
         }
 

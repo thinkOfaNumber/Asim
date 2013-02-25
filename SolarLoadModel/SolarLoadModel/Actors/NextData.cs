@@ -108,7 +108,7 @@ namespace SolarLoadModel.Actors
                     catch (Exception e)
                     {
                         throw new SimulationException(
-                            string.Format("Expected Number at Cell {0} line {1} of {2}, got '{3}'", i + 1, _lineNo, _filename, _cells[i]),
+                            string.Format("Expected Number at Cell {0} line {1} of {2}, got '{3}'", i + 1, _lineNo, _filename, _cells[i + 1]),
                             e);
                     }
                 }

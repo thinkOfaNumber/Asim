@@ -259,6 +259,7 @@ namespace SolarLoadModel.Utils
             if (IsRunningOffline())
             {
                 RunCnt += Settings.PerHourToSec;
+                FuelCnt += FuelConsumptionSecond();
             }
             else if (IsOnline())
             {
@@ -267,7 +268,7 @@ namespace SolarLoadModel.Utils
                 LoadFact = P / MaxP;
                 FuelCnt += FuelConsumptionSecond();
                 IdealP = MaxP * IdealPctP / 100;
-                _spinP = MaxP - P;
+                _spinP = Math.Max(MaxP - P, 0);
                 if (_serviceT.Val > 0 && RunCnt > _serviceT.Val)
                 {
                     Service();
@@ -308,12 +309,11 @@ namespace SolarLoadModel.Utils
                 }
             }
             double retval = (m * LoadFact + b) * P * Settings.PerHourToSec;
-#if DEBUG
+            // as requested by client:
             if (double.IsNaN(retval))
             {
-                System.Diagnostics.Debugger.Break();
+                throw new SimulationException("Invalid fuel consumption calculation.  Please check the fuel curve parameters.");
             }
-#endif
             return retval;
         }
 
