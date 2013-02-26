@@ -24,12 +24,13 @@ namespace SolarLoadModel.Contracts
         /// The basic solar controller algorithm used to determine the setpoint
         /// for the next iteration.
         /// </summary>
+        /// <param name="pvAvailP">Available Solar Energy.</param>
         /// <param name="lastSetP">Last setP as output by this algorith, or 0 at the beginning.</param>
         /// <param name="genP">Actual generator output.</param>
         /// <param name="genIdealP">Ideal generator output for online generators.</param>
         /// <param name="loadP">Actual system load.</param>
         /// <param name="statSpinSetP">Station spinning reserve setpoint parameter.</param>
         /// <returns>The new setpoint to feed to the ramp limit</returns>
-        public delegate double SolarController(double lastSetP, double genP, double genIdealP, double loadP, double statSpinSetP);
+        public delegate double SolarController(double pvAvailP, double lastSetP, double genP, double genIdealP, double loadP, double statSpinSetP);
     }
 }

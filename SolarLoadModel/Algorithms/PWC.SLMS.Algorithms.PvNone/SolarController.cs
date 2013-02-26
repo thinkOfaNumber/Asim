@@ -18,14 +18,14 @@
 
 using System;
 
-namespace PWC.SLMS.Algorithms.PvSimple
+namespace PWC.SLMS.Algorithms.PvNone
 {
     public class SolarController
     {
         public double Control(double pvAvailP, double lastSetP, double genP, double genIdealP, double loadP, double statSpinSetP)
         {
             // calculate desired setpoint
-            return Math.Max(0, statSpinSetP);
+            return pvAvailP;
         }
     }
 }

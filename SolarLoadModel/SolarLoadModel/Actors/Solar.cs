@@ -56,7 +56,7 @@ namespace SolarLoadModel.Actors
                 _pvAvailP.Val = Math.Min(_pvAvailP.Val, _pvMaxLimP.Val);
 
             // calculate desired setpoint
-            double setP = _solarController(_pvSetP.Val, _genP.Val, _genIdealP.Val, _loadP.Val, _statSpinSetP.Val);
+            double setP = _solarController(_pvAvailP.Val, _pvSetP.Val, _genP.Val, _genIdealP.Val, _loadP.Val, _statSpinSetP.Val);
 
             // calculate delta and ramp limits
             double deltaSetP = setP - _pvP.Val;
@@ -101,7 +101,7 @@ namespace SolarLoadModel.Actors
 
         #endregion
 
-        public static double DefaultSolarController(double lastSetP, double genP, double genIdealP, double loadP, double statSpinSetP)
+        public static double DefaultSolarController(double pvAvailP, double lastSetP, double genP, double genIdealP, double loadP, double statSpinSetP)
         {
             // calculate desired setpoint
             double setP = Math.Max(0, genP - genIdealP);
