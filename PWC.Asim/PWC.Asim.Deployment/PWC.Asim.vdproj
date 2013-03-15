@@ -15,19 +15,13 @@
     {
         "Entry"
         {
-        "MsmKey" = "8:_25D82B4039D643F79C8FF7452A52E099"
+        "MsmKey" = "8:_0D89715F554A4B86B374CE06BA7CAF02"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
-        "MsmKey" = "8:_36EBCDE9F4FB4BB8B8FE305C6B02FDD9"
-        "OwnerKey" = "8:_UNDEFINED"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_3EF6257B78AB4D809D2FE953E5F67035"
+        "MsmKey" = "8:_3EC1973C73DD4E81B0331AF6A1491258"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
@@ -39,19 +33,19 @@
         }
         "Entry"
         {
-        "MsmKey" = "8:_490A14F1E86C485E80E692FB6E257630"
-        "OwnerKey" = "8:_UNDEFINED"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_54406DED0D5244A38988DA76AC294BC8"
-        "OwnerKey" = "8:_UNDEFINED"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
         "MsmKey" = "8:_6A1FFDB6253C4E15BDF528D22AFE0F1A"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_761C014E7757490EB2A1041810FE2B90"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_96E3F77ACBBB4BC8822A1618CCA83B54"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
@@ -64,13 +58,25 @@
         "Entry"
         {
         "MsmKey" = "8:_UNDEFINED"
-        "OwnerKey" = "8:_25D82B4039D643F79C8FF7452A52E099"
+        "OwnerKey" = "8:_0336BBC0A8B345228C614EDB94A83405"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
         "MsmKey" = "8:_UNDEFINED"
-        "OwnerKey" = "8:_36EBCDE9F4FB4BB8B8FE305C6B02FDD9"
+        "OwnerKey" = "8:_D56D074EC8BD4019AE781523C54CCDD2"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_UNDEFINED"
+        "OwnerKey" = "8:_871276B9E0194727A679819B07D7AD28"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_UNDEFINED"
+        "OwnerKey" = "8:_0D89715F554A4B86B374CE06BA7CAF02"
         "MsmSig" = "8:_UNDEFINED"
         }
     }
@@ -178,12 +184,12 @@
         }
         "File"
         {
-            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_3EF6257B78AB4D809D2FE953E5F67035"
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_3EC1973C73DD4E81B0331AF6A1491258"
             {
-            "SourcePath" = "8:..\\..\\ExcelReader\\data\\Simulator Macros.xla"
-            "TargetName" = "8:Simulator Macros.xla"
+            "SourcePath" = "8:..\\Data\\Example.xlsx"
+            "TargetName" = "8:Example.xlsx"
             "Tag" = "8:"
-            "Folder" = "8:_6C0FBBB6C2034ABDB378CE9FE7CF9074"
+            "Folder" = "8:_B2811CEC04B341C0AABB6B67D725A43F"
             "Condition" = "8:"
             "Transitive" = "11:FALSE"
             "Vital" = "11:TRUE"
@@ -218,52 +224,52 @@
             "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
-            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_490A14F1E86C485E80E692FB6E257630"
-            {
-            "SourcePath" = "8:..\\..\\ExcelReader\\data\\Example.xlsx"
-            "TargetName" = "8:Example.xlsx"
-            "Tag" = "8:"
-            "Folder" = "8:_8BC1556DAC0F446C947143B25CEA7DB2"
-            "Condition" = "8:"
-            "Transitive" = "11:FALSE"
-            "Vital" = "11:TRUE"
-            "ReadOnly" = "11:FALSE"
-            "Hidden" = "11:FALSE"
-            "System" = "11:FALSE"
-            "Permanent" = "11:FALSE"
-            "SharedLegacy" = "11:FALSE"
-            "PackageAs" = "3:1"
-            "Register" = "3:1"
-            "Exclude" = "11:FALSE"
-            "IsDependency" = "11:FALSE"
-            "IsolateTo" = "8:"
-            }
-            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_54406DED0D5244A38988DA76AC294BC8"
-            {
-            "SourcePath" = "8:..\\..\\ExcelReader\\data\\Example.xls"
-            "TargetName" = "8:Example.xls"
-            "Tag" = "8:"
-            "Folder" = "8:_8BC1556DAC0F446C947143B25CEA7DB2"
-            "Condition" = "8:"
-            "Transitive" = "11:FALSE"
-            "Vital" = "11:TRUE"
-            "ReadOnly" = "11:FALSE"
-            "Hidden" = "11:FALSE"
-            "System" = "11:FALSE"
-            "Permanent" = "11:FALSE"
-            "SharedLegacy" = "11:FALSE"
-            "PackageAs" = "3:1"
-            "Register" = "3:1"
-            "Exclude" = "11:FALSE"
-            "IsDependency" = "11:FALSE"
-            "IsolateTo" = "8:"
-            }
             "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_6A1FFDB6253C4E15BDF528D22AFE0F1A"
             {
             "SourcePath" = "8:..\\..\\COPYING.rtf"
             "TargetName" = "8:COPYING.rtf"
             "Tag" = "8:"
             "Folder" = "8:_8BC1556DAC0F446C947143B25CEA7DB2"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            }
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_761C014E7757490EB2A1041810FE2B90"
+            {
+            "SourcePath" = "8:..\\Data\\Example.xls"
+            "TargetName" = "8:Example.xls"
+            "Tag" = "8:"
+            "Folder" = "8:_B2811CEC04B341C0AABB6B67D725A43F"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            }
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_96E3F77ACBBB4BC8822A1618CCA83B54"
+            {
+            "SourcePath" = "8:..\\Data\\Simulator Macros.xla"
+            "TargetName" = "8:Simulator Macros.xla"
+            "Tag" = "8:"
+            "Folder" = "8:_6C0FBBB6C2034ABDB378CE9FE7CF9074"
             "Condition" = "8:"
             "Transitive" = "11:FALSE"
             "Vital" = "11:TRUE"
@@ -325,6 +331,50 @@
             "Property" = "8:TARGETDIR"
                 "Folders"
                 {
+                    "{9EF0B969-E518-4E46-987F-47570745A589}:_B2811CEC04B341C0AABB6B67D725A43F"
+                    {
+                    "Name" = "8:samples"
+                    "AlwaysCreate" = "11:FALSE"
+                    "Condition" = "8:"
+                    "Transitive" = "11:FALSE"
+                    "Property" = "8:_3373B8D6DD91492AB5CA2BDF0F4194A1"
+                        "Folders"
+                        {
+                        }
+                    }
+                    "{9EF0B969-E518-4E46-987F-47570745A589}:_F8EE9271261A4324A8965DE511722509"
+                    {
+                    "Name" = "8:src"
+                    "AlwaysCreate" = "11:FALSE"
+                    "Condition" = "8:"
+                    "Transitive" = "11:FALSE"
+                    "Property" = "8:_7AA978EEAC0846C08DE36AE6E218DE0D"
+                        "Folders"
+                        {
+                            "{9EF0B969-E518-4E46-987F-47570745A589}:_79E844B27F554BE7B516DEEB1E50E0A8"
+                            {
+                            "Name" = "8:AsimExcelTools"
+                            "AlwaysCreate" = "11:FALSE"
+                            "Condition" = "8:"
+                            "Transitive" = "11:FALSE"
+                            "Property" = "8:_7156D67EDC7C420CBA0EF2AC8774EDE2"
+                                "Folders"
+                                {
+                                }
+                            }
+                            "{9EF0B969-E518-4E46-987F-47570745A589}:_E386D56D9A744D39AB1DA070634621F1"
+                            {
+                            "Name" = "8:Asim"
+                            "AlwaysCreate" = "11:FALSE"
+                            "Condition" = "8:"
+                            "Transitive" = "11:FALSE"
+                            "Property" = "8:_6E43B2AD10E74E3F9F68DF64E19D3401"
+                                "Folders"
+                                {
+                                }
+                            }
+                        }
+                    }
                 }
             }
             "{1525181F-901A-416C-8A58-119130FE478E}:_8D28557784E14F85B49028C79716ABD2"
@@ -387,15 +437,15 @@
         {
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:Asim"
-        "ProductCode" = "8:{AEFBF053-2C02-430A-B7E3-6BB875D2E04C}"
-        "PackageCode" = "8:{C8B9C546-F3A0-48C9-8858-727D4D6DD119}"
+        "ProductCode" = "8:{2AF04ADA-9D5E-4385-A04A-4E6FD4C0035C}"
+        "PackageCode" = "8:{A5F4A9DA-2723-4CA7-97EB-70C6AA12F01C}"
         "UpgradeCode" = "8:{3A370646-674D-4405-AD4C-C65B9F924BBA}"
         "AspNetVersion" = "8:4.0.30319.0"
         "RestartWWWService" = "11:FALSE"
         "RemovePreviousVersions" = "11:TRUE"
         "DetectNewerInstalledVersion" = "11:TRUE"
         "InstallAllUsers" = "11:FALSE"
-        "ProductVersion" = "8:1.0.2"
+        "ProductVersion" = "8:1.0.4"
         "Manufacturer" = "8:Power Water Corporation"
         "ARPHELPTELEPHONE" = "8:"
         "ARPHELPLINK" = "8:"
@@ -508,6 +558,34 @@
         }
         "Shortcut"
         {
+            "{970C0BB2-C7D0-45D7-ABFA-7EC378858BC0}:_61A52642924C419888897A1CB7B8F94E"
+            {
+            "Name" = "8:README.txt"
+            "Arguments" = "8:"
+            "Description" = "8:"
+            "ShowCmd" = "3:1"
+            "IconIndex" = "3:0"
+            "Transitive" = "11:FALSE"
+            "Target" = "8:_45E8DB3145C04C7FB9A273CC4CC4BA63"
+            "Folder" = "8:_87F4484061334D229BF2A2965AF9422C"
+            "WorkingFolder" = "8:_8BC1556DAC0F446C947143B25CEA7DB2"
+            "Icon" = "8:"
+            "Feature" = "8:"
+            }
+            "{970C0BB2-C7D0-45D7-ABFA-7EC378858BC0}:_84284FA73FEC41158292FA6CEF8122C2"
+            {
+            "Name" = "8:COPYING.rtf"
+            "Arguments" = "8:"
+            "Description" = "8:"
+            "ShowCmd" = "3:1"
+            "IconIndex" = "3:0"
+            "Transitive" = "11:FALSE"
+            "Target" = "8:_6A1FFDB6253C4E15BDF528D22AFE0F1A"
+            "Folder" = "8:_87F4484061334D229BF2A2965AF9422C"
+            "WorkingFolder" = "8:_8BC1556DAC0F446C947143B25CEA7DB2"
+            "Icon" = "8:"
+            "Feature" = "8:"
+            }
         }
         "UserInterface"
         {
@@ -1001,7 +1079,119 @@
         }
         "ProjectOutput"
         {
-            "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_25D82B4039D643F79C8FF7452A52E099"
+            "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_0336BBC0A8B345228C614EDB94A83405"
+            {
+            "SourcePath" = "8:..\\PWC.Asim.Sim\\obj\\x86\\Release\\Asim.exe"
+            "TargetName" = "8:"
+            "Tag" = "8:"
+            "Folder" = "8:_8BC1556DAC0F446C947143B25CEA7DB2"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            "ProjectOutputGroupRegister" = "3:1"
+            "OutputConfiguration" = "8:Release|x86"
+            "OutputGroupCanonicalName" = "8:Built"
+            "OutputProjectGuid" = "8:{F871DB06-EB95-4326-9DB9-7AF31EEAE5D5}"
+            "ShowKeyOutput" = "11:TRUE"
+                "ExcludeFilters"
+                {
+                }
+            }
+            "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_0D89715F554A4B86B374CE06BA7CAF02"
+            {
+            "SourcePath" = "8:..\\PWC.Asim.ExcelTools\\obj\\x86\\Release\\AsimExcelTools.exe"
+            "TargetName" = "8:"
+            "Tag" = "8:"
+            "Folder" = "8:_8BC1556DAC0F446C947143B25CEA7DB2"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            "ProjectOutputGroupRegister" = "3:1"
+            "OutputConfiguration" = "8:Release|x86"
+            "OutputGroupCanonicalName" = "8:Built"
+            "OutputProjectGuid" = "8:{3198A90B-6521-4630-8AAD-79E5E3E36D90}"
+            "ShowKeyOutput" = "11:TRUE"
+                "ExcludeFilters"
+                {
+                }
+            }
+            "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_35A66852DB3947378C05F5A35B783864"
+            {
+            "SourcePath" = "8:"
+            "TargetName" = "8:"
+            "Tag" = "8:"
+            "Folder" = "8:_E386D56D9A744D39AB1DA070634621F1"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            "ProjectOutputGroupRegister" = "3:1"
+            "OutputConfiguration" = "8:"
+            "OutputGroupCanonicalName" = "8:SourceFiles"
+            "OutputProjectGuid" = "8:{EDD3AC1D-36ED-44F0-AA18-0B3036E54318}"
+            "ShowKeyOutput" = "11:TRUE"
+                "ExcludeFilters"
+                {
+                }
+            }
+            "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_7EEDB5B8DC0C42C68E645BC452803E75"
+            {
+            "SourcePath" = "8:"
+            "TargetName" = "8:"
+            "Tag" = "8:"
+            "Folder" = "8:_79E844B27F554BE7B516DEEB1E50E0A8"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            "ProjectOutputGroupRegister" = "3:1"
+            "OutputConfiguration" = "8:Release|x86"
+            "OutputGroupCanonicalName" = "8:SourceFiles"
+            "OutputProjectGuid" = "8:{3198A90B-6521-4630-8AAD-79E5E3E36D90}"
+            "ShowKeyOutput" = "11:TRUE"
+                "ExcludeFilters"
+                {
+                }
+            }
+            "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_871276B9E0194727A679819B07D7AD28"
             {
             "SourcePath" = "8:..\\Algorithms\\PWC.SLMS.Algorithms.PvSimple\\obj\\Release\\PWC.SLMS.Algorithms.PvSimple.dll"
             "TargetName" = "8:"
@@ -1021,7 +1211,7 @@
             "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             "ProjectOutputGroupRegister" = "3:1"
-            "OutputConfiguration" = "8:"
+            "OutputConfiguration" = "8:Release|Any CPU"
             "OutputGroupCanonicalName" = "8:Built"
             "OutputProjectGuid" = "8:{6617A9B5-067C-4473-A69D-06526D323A31}"
             "ShowKeyOutput" = "11:TRUE"
@@ -1029,7 +1219,35 @@
                 {
                 }
             }
-            "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_36EBCDE9F4FB4BB8B8FE305C6B02FDD9"
+            "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_9230CFFD47574398AEDAD7A8E2D86997"
+            {
+            "SourcePath" = "8:"
+            "TargetName" = "8:"
+            "Tag" = "8:"
+            "Folder" = "8:_E386D56D9A744D39AB1DA070634621F1"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            "ProjectOutputGroupRegister" = "3:1"
+            "OutputConfiguration" = "8:"
+            "OutputGroupCanonicalName" = "8:SourceFiles"
+            "OutputProjectGuid" = "8:{F871DB06-EB95-4326-9DB9-7AF31EEAE5D5}"
+            "ShowKeyOutput" = "11:TRUE"
+                "ExcludeFilters"
+                {
+                }
+            }
+            "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_D56D074EC8BD4019AE781523C54CCDD2"
             {
             "SourcePath" = "8:..\\Algorithms\\PWC.SLMS.Algorithms.PvNone\\obj\\Release\\PWC.SLMS.Algorithms.PvNone.dll"
             "TargetName" = "8:"
@@ -1049,9 +1267,37 @@
             "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             "ProjectOutputGroupRegister" = "3:1"
-            "OutputConfiguration" = "8:"
+            "OutputConfiguration" = "8:Release|Any CPU"
             "OutputGroupCanonicalName" = "8:Built"
             "OutputProjectGuid" = "8:{EDD3AC1D-36ED-44F0-AA18-0B3036E54318}"
+            "ShowKeyOutput" = "11:TRUE"
+                "ExcludeFilters"
+                {
+                }
+            }
+            "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_E4BC4FA30EB84203AA405C78BE5C208E"
+            {
+            "SourcePath" = "8:"
+            "TargetName" = "8:"
+            "Tag" = "8:"
+            "Folder" = "8:_E386D56D9A744D39AB1DA070634621F1"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            "ProjectOutputGroupRegister" = "3:1"
+            "OutputConfiguration" = "8:"
+            "OutputGroupCanonicalName" = "8:SourceFiles"
+            "OutputProjectGuid" = "8:{6617A9B5-067C-4473-A69D-06526D323A31}"
             "ShowKeyOutput" = "11:TRUE"
                 "ExcludeFilters"
                 {
