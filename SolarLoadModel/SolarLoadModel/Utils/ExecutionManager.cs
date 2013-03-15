@@ -41,6 +41,11 @@ namespace SolarLoadModel.Utils
         private readonly List<DelayedExecution> _todo = new List<DelayedExecution>();
         private ulong _thisIter = 0;
 
+        /// <summary>
+        /// Queues the specified Action method to be run after t ticks
+        /// </summary>
+        /// <param name="t">number of ticks after which to run this action.  If t is 0, the action is run immediately.</param>
+        /// <param name="a">Action to perform</param>
         public void After(ulong t, Action a)
         {
             if (t == 0)
@@ -50,6 +55,11 @@ namespace SolarLoadModel.Utils
         }
 
         // todo: opportunity to speed this up as the number of actions gets larger, _todo is not sorted or searched well
+        /// <summary>
+        /// Tests all queued Actions against the given tick and runs those that are scheduled to be run now.  This function
+        /// must be called every cycle regardless of pending actions.
+        /// </summary>
+        /// <param name="iter">current tick</param>
         public void RunActions(ulong iter)
         {
             _thisIter = iter;
@@ -62,6 +72,15 @@ namespace SolarLoadModel.Utils
                     _todo.RemoveAt(i);
                 }
             }
+        }
+
+        /// <summary>
+        /// Removes all actions that are identical to the given Action reference.
+        /// </summary>
+        /// <param name="action">Action to remove</param>
+        public void RemoveActions(Action action)
+        {
+            _todo.Remove(_todo.FirstOrDefault(a => (a.Callback == action)));
         }
     }
 }

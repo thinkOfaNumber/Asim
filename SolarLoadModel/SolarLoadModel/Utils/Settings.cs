@@ -31,6 +31,7 @@ namespace SolarLoadModel.Utils
         public const int SecondsInADay    = 24 * SecondsInAnHour;
         public const int SecondsInAYear   = 365 * SecondsInADay;
         public static readonly DateTime Epoch = new DateTime(1970, 1, 1, 0, 0, 0, 0);
+        public const int GenStartStopDelay = 60; // seconds to wait between starting and going online
     }
 
     public enum DateFormat

@@ -64,7 +64,7 @@ namespace SolarLoadModel.Actors
         private ulong _iteration;
         private readonly Shared[] _configurations = new Shared[Settings.MAX_CFG];
         private Double?[] _configurationPower = new Double?[Settings.MAX_CFG];
-        private GenMgrType _simulationType;
+        private readonly GenMgrType _simulationType;
 
         public GenMgr(GenMgrType type)
         {
@@ -148,6 +148,12 @@ namespace SolarLoadModel.Actors
 
             if (newCfg != GenSetCfg)
             {
+                if (Station.IsBlack)
+                {
+                    // need to remove pending start/stop operations so all generators
+                    // start at the same time, since there are no feeders to control.
+                    GeneratorBase.ResetAllAvailableSets();
+                }
                 // prime the minimum run timer on config changes
                 _genMinRunT.Val = MinimumRunTime(newCfg);
             }

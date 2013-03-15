@@ -39,6 +39,11 @@ namespace SolarLoadModel.Utils
 
         }
 
+        protected override void Reset()
+        {
+
+        }
+
         public override void CriticalStop()
         {
 

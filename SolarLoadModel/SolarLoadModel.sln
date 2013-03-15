@@ -14,6 +14,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PWC.SLMS.Algorithms.PvSimpl
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PWC.SLMS.Algorithms.PvNone", "Algorithms\PWC.SLMS.Algorithms.PvNone\PWC.SLMS.Algorithms.PvNone.csproj", "{EDD3AC1D-36ED-44F0-AA18-0B3036E54318}"
 EndProject
+Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "Deployment", "Deployment\Deployment.vdproj", "{418681E4-C063-4D94-A1C8-367095DFE102}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -64,6 +66,12 @@ Global
 		{EDD3AC1D-36ED-44F0-AA18-0B3036E54318}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{EDD3AC1D-36ED-44F0-AA18-0B3036E54318}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{EDD3AC1D-36ED-44F0-AA18-0B3036E54318}.Release|x86.ActiveCfg = Release|Any CPU
+		{418681E4-C063-4D94-A1C8-367095DFE102}.Debug|Any CPU.ActiveCfg = Debug
+		{418681E4-C063-4D94-A1C8-367095DFE102}.Debug|Mixed Platforms.ActiveCfg = Debug
+		{418681E4-C063-4D94-A1C8-367095DFE102}.Debug|x86.ActiveCfg = Debug
+		{418681E4-C063-4D94-A1C8-367095DFE102}.Release|Any CPU.ActiveCfg = Release
+		{418681E4-C063-4D94-A1C8-367095DFE102}.Release|Mixed Platforms.ActiveCfg = Release
+		{418681E4-C063-4D94-A1C8-367095DFE102}.Release|x86.ActiveCfg = Release
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

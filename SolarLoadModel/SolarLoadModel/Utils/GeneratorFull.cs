@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using SolarLoadModel.Actors;
 
 namespace SolarLoadModel.Utils
 {
@@ -14,6 +11,29 @@ namespace SolarLoadModel.Utils
         {
         }
 
+        protected override void Run()
+        {
+            if (Station.BlackStartInit && IsAvailable())
+            {
+                Reset();
+            }
+            base.Run();
+        }
+
+        /// <summary>
+        /// Removes all pending start/stops.  Use with caution!
+        /// </summary>
+        protected override void Reset()
+        {
+            if (IsRunningOffline())
+                StopCnt++;
+            State = GeneratorState.Stopped;
+            ExecutionManager.RemoveActions(TransitionToStop);
+            ExecutionManager.RemoveActions(TransitionToOnline);
+            OnlineCfg &= (ushort)~_idBit;
+            _busy = false;
+        }
+
         public override void Start()
         {
             if (_busy)
@@ -21,7 +41,7 @@ namespace SolarLoadModel.Utils
 
             if (IsStopped() && IsAvailable())
             {
-                ExecutionManager.After(60, TransitionToOnline);
+                ExecutionManager.After(Settings.GenStartStopDelay, TransitionToOnline);
                 _busy = true;
                 State = GeneratorState.RunningOpen;
             }
@@ -35,7 +55,7 @@ namespace SolarLoadModel.Utils
             if (IsOnline())
             {
                 _busy = true;
-                ExecutionManager.After(60, TransitionToStop);
+                ExecutionManager.After(Settings.GenStartStopDelay, TransitionToStop);
                 State = GeneratorState.RunningOpen;
                 OnlineCfg &= (ushort)~_idBit;
             }
@@ -57,7 +77,7 @@ namespace SolarLoadModel.Utils
             if (IsOnline())
             {
                 _busy = true;
-                ExecutionManager.After(60, PerformService);
+                ExecutionManager.After(Settings.GenStartStopDelay, PerformService);
                 State = GeneratorState.RunningOpen | GeneratorState.Unavailable;
                 OnlineCfg &= (ushort)~_idBit;
             }

@@ -20,6 +20,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using SolarLoadModel.Actors;
 using SolarLoadModel.Exceptions;
 
 namespace SolarLoadModel.Utils
@@ -242,6 +243,19 @@ namespace SolarLoadModel.Utils
             }
             _genCapP.Val = _genCapP.Val - Gen[largestGeni].P;
         }
+
+        public static void ResetAllAvailableSets()
+        {
+            for (int i = 0; i < Settings.MAX_GENS; i++)
+            {
+                if (!Gen[i].IsAvailable())
+                    continue;
+
+                Gen[i].Reset();
+            }
+        }
+
+        protected abstract void Reset();
 
         public abstract void Start();
 

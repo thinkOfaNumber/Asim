@@ -42,8 +42,12 @@ namespace SolarLoadModel.Actors
         private readonly Shared _genSpinP = SharedContainer.GetOrNew("GenSpinP");
         private readonly Shared _genCapP = SharedContainer.GetOrNew("GenCapP");
         private readonly Shared _disP = SharedContainer.GetOrNew("DisP");
-        private bool _lastStatBlack = false;
+        private static bool _lastStatBlack;
         private readonly Shared _statBlack = SharedContainer.GetOrNew("StatBlack");
+
+        public static bool BlackStartInit { get; private set; }
+        public static bool IsBlack { get; private set; }
+        public static double GenSetP { get; private set; }
 
         #region Implementation of IActor
 
@@ -59,7 +63,7 @@ namespace SolarLoadModel.Actors
             // generator coverage setpoint
             _genCfgSetP.Val = _loadP.Val - _pvP.Val + reserve;
             // actual generator loading setpoint
-            _genSetP.Val = _loadP.Val - _pvP.Val;
+            GenSetP = _genSetP.Val = _loadP.Val - _pvP.Val;
             // station output
             _statP.Val = _genP.Val + _pvP.Val;
             // station spinning reserve
@@ -71,13 +75,15 @@ namespace SolarLoadModel.Actors
             _loadCapAl.Val = _genCapP.Val < (_loadMaxP.Val * _loadCapMargin.Val) ? 1.0D : 0.0D;
             
             // blackout detection
-            bool thisStatBlack = _genOnlineCfg.Val <= 0;
-            _statBlack.Val = thisStatBlack ? 1 : 0;
-            if (thisStatBlack && !_lastStatBlack)
+            IsBlack = _genOnlineCfg.Val <= 0;
+            _statBlack.Val = IsBlack ? 1 : 0;
+            BlackStartInit = false;
+            if (IsBlack && !_lastStatBlack)
             {
                 _statBlackCnt.Val++;
+                BlackStartInit = true;
             }
-            _lastStatBlack = thisStatBlack;
+            _lastStatBlack = IsBlack;
         }
 
         public void Init()
