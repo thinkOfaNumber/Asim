@@ -319,6 +319,28 @@
             "Property" = "8:ProgramMenuFolder"
                 "Folders"
                 {
+                    "{9EF0B969-E518-4E46-987F-47570745A589}:_35AAA71A311040279B9A2CF5155B3C27"
+                    {
+                    "Name" = "8:Power Water Corporation"
+                    "AlwaysCreate" = "11:FALSE"
+                    "Condition" = "8:"
+                    "Transitive" = "11:FALSE"
+                    "Property" = "8:_9E0776984A704D44A27AD5CD5C1DDE97"
+                        "Folders"
+                        {
+                            "{9EF0B969-E518-4E46-987F-47570745A589}:_E6973E599DCF4C28B3FF4FD381ADE276"
+                            {
+                            "Name" = "8:Asim"
+                            "AlwaysCreate" = "11:FALSE"
+                            "Condition" = "8:"
+                            "Transitive" = "11:FALSE"
+                            "Property" = "8:_23C20C5FAD6A4625AE85F5D5654A34CB"
+                                "Folders"
+                                {
+                                }
+                            }
+                        }
+                    }
                 }
             }
             "{3C67513D-01DD-4637-8A68-80971EB9504F}:_8BC1556DAC0F446C947143B25CEA7DB2"
@@ -438,7 +460,7 @@
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:Asim"
         "ProductCode" = "8:{2AF04ADA-9D5E-4385-A04A-4E6FD4C0035C}"
-        "PackageCode" = "8:{A5F4A9DA-2723-4CA7-97EB-70C6AA12F01C}"
+        "PackageCode" = "8:{AEAF7299-0D64-44EA-94C8-07B7CEB48613}"
         "UpgradeCode" = "8:{3A370646-674D-4405-AD4C-C65B9F924BBA}"
         "AspNetVersion" = "8:4.0.30319.0"
         "RestartWWWService" = "11:FALSE"
@@ -567,7 +589,7 @@
             "IconIndex" = "3:0"
             "Transitive" = "11:FALSE"
             "Target" = "8:_45E8DB3145C04C7FB9A273CC4CC4BA63"
-            "Folder" = "8:_87F4484061334D229BF2A2965AF9422C"
+            "Folder" = "8:_E6973E599DCF4C28B3FF4FD381ADE276"
             "WorkingFolder" = "8:_8BC1556DAC0F446C947143B25CEA7DB2"
             "Icon" = "8:"
             "Feature" = "8:"
@@ -581,7 +603,7 @@
             "IconIndex" = "3:0"
             "Transitive" = "11:FALSE"
             "Target" = "8:_6A1FFDB6253C4E15BDF528D22AFE0F1A"
-            "Folder" = "8:_87F4484061334D229BF2A2965AF9422C"
+            "Folder" = "8:_E6973E599DCF4C28B3FF4FD381ADE276"
             "WorkingFolder" = "8:_8BC1556DAC0F446C947143B25CEA7DB2"
             "Icon" = "8:"
             "Feature" = "8:"

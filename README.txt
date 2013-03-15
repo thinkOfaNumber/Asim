@@ -1,4 +1,4 @@
-These files constitute the Solar Load Model and the Excel Reader source code.
+These files constitut the project "Asim".
 
 Copyright (C) 2012, 2013  Power Water Corporation
 

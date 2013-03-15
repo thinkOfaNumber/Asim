@@ -1,9 +1,9 @@
 ﻿// Copyright (C) 2012, 2013  Power Water Corporation
 //
-// This file is part of the Solar Load Model - A Renewable Energy Power Station
+// This file is part of "Asim" - A Renewable Energy Power Station
 // Control System Simulator
 //
-// The Solar Load Model is free software: you can redistribute it and/or modify
+// Asim is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
@@ -176,7 +176,7 @@ namespace PWC.Asim.Sim
 
         private static void ShowCopyrightNotice()
         {
-            Console.WriteLine("Solar Load Model  Copyright (C) 2012, 2013  Power Water Corporation.");
+            Console.WriteLine("Asim  Copyright (C) 2012, 2013  Power Water Corporation.");
             Console.WriteLine("This program comes with ABSOLUTELY NO WARRANTY;");
             Console.WriteLine("This is free software, and you are welcome to redistribute it");
             Console.WriteLine("under certain conditions; see the file COPYING for details.");
