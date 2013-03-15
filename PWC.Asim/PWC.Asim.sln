@@ -7,7 +7,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PWC.SLMS.Algorithms.PvSimpl
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PWC.SLMS.Algorithms.PvNone", "Algorithms\PWC.SLMS.Algorithms.PvNone\PWC.SLMS.Algorithms.PvNone.csproj", "{EDD3AC1D-36ED-44F0-AA18-0B3036E54318}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PWC.SLMS.Sim", "PWC.Asim.Sim\PWC.SLMS.Sim.csproj", "{F871DB06-EB95-4326-9DB9-7AF31EEAE5D5}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PWC.Asim.Sim", "PWC.Asim.Sim\PWC.Asim.Sim.csproj", "{F871DB06-EB95-4326-9DB9-7AF31EEAE5D5}"
 EndProject
 Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "PWC.Asim.Deployment", "PWC.Asim.Deployment\PWC.Asim.vdproj", "{107A51C8-82A5-449A-A711-0D79E90895FE}"
 EndProject

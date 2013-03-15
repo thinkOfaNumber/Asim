@@ -58,7 +58,7 @@ namespace ConsoleTests
         private TextWriter _normalOutput;
         private StringWriter _testingConsole;
         private const string ConsoleDir = @"..\..\..\PWC.Asim.Sim\bin\Debug\";
-        private const string ConsoleApp = "Asim.exe";
+        private const string ConsoleApp = "PWC.Asim.Sim.exe";
 
 
         [TestFixtureSetUp]
