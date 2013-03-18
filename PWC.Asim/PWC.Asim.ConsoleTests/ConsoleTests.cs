@@ -212,19 +212,10 @@ namespace ConsoleTests
             double constLoad = 50;
 
             var values = new SortedDictionary<string, double[]>();
-            values["Gen1FuelCons1P"] = new double[] { 0 };
-            values["Gen1FuelCons1L"] = new double[] { fuelConst };
-            values["Gen1FuelCons2P"] = new double[] { 1 };
-            values["Gen1FuelCons2L"] = new double[] { fuelConst };
-            values["Gen1FuelCons3P"] = new double[] { 0 };
-            values["Gen1FuelCons3L"] = new double[] { 0 };
-            values["Gen1FuelCons4P"] = new double[] { 0 };
-            values["Gen1FuelCons4L"] = new double[] { 0 };
-            values["Gen1FuelCons5P"] = new double[] { 0 };
-            values["Gen1FuelCons5L"] = new double[] { 0 };
+            InsertFuelConsumption(values, fuelConst);
             values["Gen1MaxP"] = new double[] { 100 };
             values["GenConfig1"] = new double[] { 1 };
-            values["GenAvailCfg"] = new double[] { 1 };
+            values["GenAvailSet"] = new double[] { 1 };
             values["GenBlackCfg"] = new double[] { 1 };
             values["LoadP"] = new double[] { constLoad };
 
@@ -245,7 +236,7 @@ namespace ConsoleTests
             var totalFuel = Convert.ToDouble(fileArray[2][2]);
 
             // convert kWs to kWh
-            Assert.IsTrue(DoublesAreEqual((iterations - 60) * constLoad / 60 / 60, totalE));
+            Assert.IsTrue(DoublesAreEqual((iterations - 61) * constLoad / 60 / 60, totalE));
             Assert.IsTrue(DoublesAreEqual(totalFuel, fuelConst * totalE));
         }
 
@@ -264,11 +255,12 @@ namespace ConsoleTests
             var outFile = GetTempFilename;
 
             var values = new SortedDictionary<string, double[]>();
+            InsertFuelConsumption(values, 0.33);
             values["Gen1MaxP"] = new double[] { 100 };
             values["Gen1ServiceT"] = new double[] { serviceInterval };
             values["Gen1ServiceOutT"] = new double[] { serviceOutage };
             values["GenConfig1"] = new double[] { 1 };
-            values["GenAvailCfg"] = new double[] { 1 };
+            values["GenAvailSet"] = new double[] { 1 };
             values["GenBlackCfg"] = new double[] { 1 };
             values["LoadP"] = new double[] { 50 };
 
@@ -301,10 +293,11 @@ namespace ConsoleTests
             int period = 10 * 60;
 
             var values = new SortedDictionary<string, double[]>();
+            InsertFuelConsumption(values, 0.33);
             values["StatSpinSetP"] = new double[] { 50 };
             values["Gen1MaxP"] = new double[] { 500 };
             values["GenConfig1"] = new double[] { 1 };
-            values["GenAvailCfg"] = new double[] { 1 };
+            values["GenAvailSet"] = new double[] { 1 };
             values["GenBlackCfg"] = new double[] { 1 };
             values["DisLoadMaxT"] = new double[] { maxOffTime };
             values["DisLoadT"] = new double[] { offLatency };
@@ -362,6 +355,25 @@ namespace ConsoleTests
 
             // at 70m: load 400 + disload 40
             Assert.IsTrue(DoublesAreEqual(440, gen1P.ElementAt(70 * 60)));
+        }
+
+        /// <summary>
+        /// Inserts the given constant fuel consumption into the value dictionary
+        /// </summary>
+        /// <param name="values">dictionary of values for testing</param>
+        /// <param name="fuelConst">fuel consumption L/kWh</param>
+        private void InsertFuelConsumption(SortedDictionary<string, double[]> values, double fuelConst)
+        {
+            values["Gen1FuelCons1P"] = new double[] { 0 };
+            values["Gen1FuelCons1L"] = new double[] { fuelConst };
+            values["Gen1FuelCons2P"] = new double[] { 1 };
+            values["Gen1FuelCons2L"] = new double[] { fuelConst };
+            values["Gen1FuelCons3P"] = new double[] { 0 };
+            values["Gen1FuelCons3L"] = new double[] { 0 };
+            values["Gen1FuelCons4P"] = new double[] { 0 };
+            values["Gen1FuelCons4L"] = new double[] { 0 };
+            values["Gen1FuelCons5P"] = new double[] { 0 };
+            values["Gen1FuelCons5L"] = new double[] { 0 };
         }
     }
 }

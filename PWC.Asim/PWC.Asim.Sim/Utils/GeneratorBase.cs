@@ -326,7 +326,7 @@ namespace PWC.Asim.Sim.Utils
             // as requested by client:
             if (double.IsNaN(retval))
             {
-                throw new SimulationException("Invalid fuel consumption calculation.  Please check the fuel curve parameters.");
+                throw new SimulationException("Invalid fuel consumption calculation.  Please check the fuel curve parameters. i=" + i + ", it=" + _iteration);
             }
             return retval;
         }
