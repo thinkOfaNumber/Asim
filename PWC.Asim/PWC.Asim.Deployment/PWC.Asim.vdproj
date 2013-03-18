@@ -45,6 +45,12 @@
         }
         "Entry"
         {
+        "MsmKey" = "8:_7E42D0A73F074F60B8F8321FEE6BE0D8"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
         "MsmKey" = "8:_99C8EF0360E0462EB2B01C10AFBC5F58"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
@@ -82,13 +88,13 @@
         "Entry"
         {
         "MsmKey" = "8:_UNDEFINED"
-        "OwnerKey" = "8:_99C8EF0360E0462EB2B01C10AFBC5F58"
+        "OwnerKey" = "8:_C92AB88FE3844AB8B781DFD0D197EB1F"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
         "MsmKey" = "8:_UNDEFINED"
-        "OwnerKey" = "8:_C92AB88FE3844AB8B781DFD0D197EB1F"
+        "OwnerKey" = "8:_99C8EF0360E0462EB2B01C10AFBC5F58"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -207,7 +213,7 @@
             "SourcePath" = "8:..\\Data\\Example.xlsx"
             "TargetName" = "8:Example.xlsx"
             "Tag" = "8:"
-            "Folder" = "8:_B2811CEC04B341C0AABB6B67D725A43F"
+            "Folder" = "8:_8FD782D52D3E4E5CB65936BFC487BF3F"
             "Condition" = "8:"
             "Transitive" = "11:FALSE"
             "Vital" = "11:TRUE"
@@ -227,7 +233,7 @@
             "SourcePath" = "8:..\\..\\README.txt"
             "TargetName" = "8:README.txt"
             "Tag" = "8:"
-            "Folder" = "8:_8BC1556DAC0F446C947143B25CEA7DB2"
+            "Folder" = "8:_E60517AB45EC4B7ABDF1F10079514555"
             "Condition" = "8:"
             "Transitive" = "11:FALSE"
             "Vital" = "11:TRUE"
@@ -247,7 +253,7 @@
             "SourcePath" = "8:..\\..\\COPYING.rtf"
             "TargetName" = "8:COPYING.rtf"
             "Tag" = "8:"
-            "Folder" = "8:_8BC1556DAC0F446C947143B25CEA7DB2"
+            "Folder" = "8:_E60517AB45EC4B7ABDF1F10079514555"
             "Condition" = "8:"
             "Transitive" = "11:FALSE"
             "Vital" = "11:TRUE"
@@ -267,7 +273,27 @@
             "SourcePath" = "8:..\\Data\\Example.xls"
             "TargetName" = "8:Example.xls"
             "Tag" = "8:"
-            "Folder" = "8:_B2811CEC04B341C0AABB6B67D725A43F"
+            "Folder" = "8:_8FD782D52D3E4E5CB65936BFC487BF3F"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            }
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_7E42D0A73F074F60B8F8321FEE6BE0D8"
+            {
+            "SourcePath" = "8:..\\..\\..\\..\\Documentation\\Model User Manual.pdf"
+            "TargetName" = "8:Model User Manual.pdf"
+            "Tag" = "8:"
+            "Folder" = "8:_E60517AB45EC4B7ABDF1F10079514555"
             "Condition" = "8:"
             "Transitive" = "11:FALSE"
             "Vital" = "11:TRUE"
@@ -287,7 +313,7 @@
             "SourcePath" = "8:..\\..\\COPYING.txt"
             "TargetName" = "8:COPYING.txt"
             "Tag" = "8:"
-            "Folder" = "8:_8BC1556DAC0F446C947143B25CEA7DB2"
+            "Folder" = "8:_E60517AB45EC4B7ABDF1F10079514555"
             "Condition" = "8:"
             "Transitive" = "11:FALSE"
             "Vital" = "11:TRUE"
@@ -337,84 +363,18 @@
             "Property" = "8:ProgramMenuFolder"
                 "Folders"
                 {
-                    "{9EF0B969-E518-4E46-987F-47570745A589}:_35AAA71A311040279B9A2CF5155B3C27"
-                    {
-                    "Name" = "8:Power Water Corporation"
-                    "AlwaysCreate" = "11:FALSE"
-                    "Condition" = "8:"
-                    "Transitive" = "11:FALSE"
-                    "Property" = "8:_9E0776984A704D44A27AD5CD5C1DDE97"
-                        "Folders"
-                        {
-                            "{9EF0B969-E518-4E46-987F-47570745A589}:_E6973E599DCF4C28B3FF4FD381ADE276"
-                            {
-                            "Name" = "8:Asim"
-                            "AlwaysCreate" = "11:FALSE"
-                            "Condition" = "8:"
-                            "Transitive" = "11:FALSE"
-                            "Property" = "8:_23C20C5FAD6A4625AE85F5D5654A34CB"
-                                "Folders"
-                                {
-                                }
-                            }
-                        }
-                    }
                 }
             }
             "{3C67513D-01DD-4637-8A68-80971EB9504F}:_8BC1556DAC0F446C947143B25CEA7DB2"
             {
-            "DefaultLocation" = "8:[ProgramFilesFolder][Manufacturer]\\[ProductName]"
+            "DefaultLocation" = "8:[AppDataFolder][Manufacturer]\\[ProductName]"
             "Name" = "8:#1925"
-            "AlwaysCreate" = "11:TRUE"
+            "AlwaysCreate" = "11:FALSE"
             "Condition" = "8:"
             "Transitive" = "11:FALSE"
             "Property" = "8:TARGETDIR"
                 "Folders"
                 {
-                    "{9EF0B969-E518-4E46-987F-47570745A589}:_B2811CEC04B341C0AABB6B67D725A43F"
-                    {
-                    "Name" = "8:samples"
-                    "AlwaysCreate" = "11:FALSE"
-                    "Condition" = "8:"
-                    "Transitive" = "11:FALSE"
-                    "Property" = "8:_3373B8D6DD91492AB5CA2BDF0F4194A1"
-                        "Folders"
-                        {
-                        }
-                    }
-                    "{9EF0B969-E518-4E46-987F-47570745A589}:_F8EE9271261A4324A8965DE511722509"
-                    {
-                    "Name" = "8:src"
-                    "AlwaysCreate" = "11:FALSE"
-                    "Condition" = "8:"
-                    "Transitive" = "11:FALSE"
-                    "Property" = "8:_7AA978EEAC0846C08DE36AE6E218DE0D"
-                        "Folders"
-                        {
-                            "{9EF0B969-E518-4E46-987F-47570745A589}:_79E844B27F554BE7B516DEEB1E50E0A8"
-                            {
-                            "Name" = "8:AsimExcelTools"
-                            "AlwaysCreate" = "11:FALSE"
-                            "Condition" = "8:"
-                            "Transitive" = "11:FALSE"
-                            "Property" = "8:_7156D67EDC7C420CBA0EF2AC8774EDE2"
-                                "Folders"
-                                {
-                                }
-                            }
-                            "{9EF0B969-E518-4E46-987F-47570745A589}:_E386D56D9A744D39AB1DA070634621F1"
-                            {
-                            "Name" = "8:Asim"
-                            "AlwaysCreate" = "11:FALSE"
-                            "Condition" = "8:"
-                            "Transitive" = "11:FALSE"
-                            "Property" = "8:_6E43B2AD10E74E3F9F68DF64E19D3401"
-                                "Folders"
-                                {
-                                }
-                            }
-                        }
-                    }
                 }
             }
             "{1525181F-901A-416C-8A58-119130FE478E}:_8D28557784E14F85B49028C79716ABD2"
@@ -426,6 +386,72 @@
             "Property" = "8:AppDataFolder"
                 "Folders"
                 {
+                    "{9EF0B969-E518-4E46-987F-47570745A589}:_107E965B08B3403D9511BF6831F8D6D9"
+                    {
+                    "Name" = "8:Power Water Corporation"
+                    "AlwaysCreate" = "11:FALSE"
+                    "Condition" = "8:"
+                    "Transitive" = "11:FALSE"
+                    "Property" = "8:_B6DE719CA4F8410EB88D88BA115DC5F6"
+                        "Folders"
+                        {
+                            "{9EF0B969-E518-4E46-987F-47570745A589}:_E60517AB45EC4B7ABDF1F10079514555"
+                            {
+                            "Name" = "8:Asim"
+                            "AlwaysCreate" = "11:FALSE"
+                            "Condition" = "8:"
+                            "Transitive" = "11:FALSE"
+                            "Property" = "8:_E5F01C0DAA1E4E78920D446F79ABA8DF"
+                                "Folders"
+                                {
+                                    "{9EF0B969-E518-4E46-987F-47570745A589}:_2A61BC8574204BF4A363CBB0D1266B7B"
+                                    {
+                                    "Name" = "8:src"
+                                    "AlwaysCreate" = "11:FALSE"
+                                    "Condition" = "8:"
+                                    "Transitive" = "11:FALSE"
+                                    "Property" = "8:_7AA978EEAC0846C08DE36AE6E218DE0D"
+                                        "Folders"
+                                        {
+                                            "{9EF0B969-E518-4E46-987F-47570745A589}:_79E844B27F554BE7B516DEEB1E50E0A8"
+                                            {
+                                            "Name" = "8:AsimExcelTools"
+                                            "AlwaysCreate" = "11:FALSE"
+                                            "Condition" = "8:"
+                                            "Transitive" = "11:FALSE"
+                                            "Property" = "8:_7156D67EDC7C420CBA0EF2AC8774EDE2"
+                                                "Folders"
+                                                {
+                                                }
+                                            }
+                                            "{9EF0B969-E518-4E46-987F-47570745A589}:_E386D56D9A744D39AB1DA070634621F1"
+                                            {
+                                            "Name" = "8:Asim"
+                                            "AlwaysCreate" = "11:FALSE"
+                                            "Condition" = "8:"
+                                            "Transitive" = "11:FALSE"
+                                            "Property" = "8:_6E43B2AD10E74E3F9F68DF64E19D3401"
+                                                "Folders"
+                                                {
+                                                }
+                                            }
+                                        }
+                                    }
+                                    "{9EF0B969-E518-4E46-987F-47570745A589}:_8FD782D52D3E4E5CB65936BFC487BF3F"
+                                    {
+                                    "Name" = "8:samples"
+                                    "AlwaysCreate" = "11:FALSE"
+                                    "Condition" = "8:"
+                                    "Transitive" = "11:FALSE"
+                                    "Property" = "8:_3373B8D6DD91492AB5CA2BDF0F4194A1"
+                                        "Folders"
+                                        {
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
                     "{9EF0B969-E518-4E46-987F-47570745A589}:_AC10D5F7FB0B45589CD6357ADA6ACFD5"
                     {
                     "Name" = "8:Microsoft"
@@ -477,15 +503,15 @@
         {
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:Asim"
-        "ProductCode" = "8:{95D4232E-DEBC-49C6-AD00-580FB4E9F4A6}"
-        "PackageCode" = "8:{7D23A897-B080-491C-B845-F96BF1E39FE9}"
+        "ProductCode" = "8:{E1353606-B1DB-46D9-9F24-67C9BD0C8EB3}"
+        "PackageCode" = "8:{FFB72E52-BD31-46A4-81EA-67BFDDEB74AD}"
         "UpgradeCode" = "8:{3A370646-674D-4405-AD4C-C65B9F924BBA}"
         "AspNetVersion" = "8:4.0.30319.0"
         "RestartWWWService" = "11:FALSE"
         "RemovePreviousVersions" = "11:TRUE"
         "DetectNewerInstalledVersion" = "11:TRUE"
         "InstallAllUsers" = "11:FALSE"
-        "ProductVersion" = "8:1.0.9"
+        "ProductVersion" = "8:1.0.10"
         "Manufacturer" = "8:Power Water Corporation"
         "ARPHELPTELEPHONE" = "8:"
         "ARPHELPLINK" = "8:"
@@ -598,34 +624,6 @@
         }
         "Shortcut"
         {
-            "{970C0BB2-C7D0-45D7-ABFA-7EC378858BC0}:_61A52642924C419888897A1CB7B8F94E"
-            {
-            "Name" = "8:README.txt"
-            "Arguments" = "8:"
-            "Description" = "8:"
-            "ShowCmd" = "3:1"
-            "IconIndex" = "3:0"
-            "Transitive" = "11:FALSE"
-            "Target" = "8:_45E8DB3145C04C7FB9A273CC4CC4BA63"
-            "Folder" = "8:_E6973E599DCF4C28B3FF4FD381ADE276"
-            "WorkingFolder" = "8:_8BC1556DAC0F446C947143B25CEA7DB2"
-            "Icon" = "8:"
-            "Feature" = "8:"
-            }
-            "{970C0BB2-C7D0-45D7-ABFA-7EC378858BC0}:_84284FA73FEC41158292FA6CEF8122C2"
-            {
-            "Name" = "8:COPYING.rtf"
-            "Arguments" = "8:"
-            "Description" = "8:"
-            "ShowCmd" = "3:1"
-            "IconIndex" = "3:0"
-            "Transitive" = "11:FALSE"
-            "Target" = "8:_6A1FFDB6253C4E15BDF528D22AFE0F1A"
-            "Folder" = "8:_E6973E599DCF4C28B3FF4FD381ADE276"
-            "WorkingFolder" = "8:_8BC1556DAC0F446C947143B25CEA7DB2"
-            "Icon" = "8:"
-            "Feature" = "8:"
-            }
         }
         "UserInterface"
         {
@@ -780,41 +778,6 @@
                             "Setting" = "3:1"
                             "Value" = "8:#1203"
                             "DefaultValue" = "8:#1203"
-                            "UsePlugInResources" = "11:TRUE"
-                            }
-                        }
-                    }
-                    "{688940B3-5CA9-4162-8DEE-2993FA9D8CBC}:_FBB547A9FC8D4F10AB0A65A47F825897"
-                    {
-                    "Sequence" = "3:200"
-                    "DisplayName" = "8:Installation Folder"
-                    "UseDynamicProperties" = "11:TRUE"
-                    "IsDependency" = "11:FALSE"
-                    "SourcePath" = "8:<VsdDialogDir>\\VsdFolderDlg.wid"
-                        "Properties"
-                        {
-                            "BannerBitmap"
-                            {
-                            "Name" = "8:BannerBitmap"
-                            "DisplayName" = "8:#1001"
-                            "Description" = "8:#1101"
-                            "Type" = "3:8"
-                            "ContextData" = "8:Bitmap"
-                            "Attributes" = "3:4"
-                            "Setting" = "3:1"
-                            "UsePlugInResources" = "11:TRUE"
-                            }
-                            "InstallAllUsersVisible"
-                            {
-                            "Name" = "8:InstallAllUsersVisible"
-                            "DisplayName" = "8:#1059"
-                            "Description" = "8:#1159"
-                            "Type" = "3:5"
-                            "ContextData" = "8:1;True=1;False=0"
-                            "Attributes" = "3:0"
-                            "Setting" = "3:0"
-                            "Value" = "3:1"
-                            "DefaultValue" = "3:1"
                             "UsePlugInResources" = "11:TRUE"
                             }
                         }
@@ -1017,28 +980,6 @@
                             }
                         }
                     }
-                    "{688940B3-5CA9-4162-8DEE-2993FA9D8CBC}:_CF10D25D238849F1BC2F7C049F305F3A"
-                    {
-                    "Sequence" = "3:200"
-                    "DisplayName" = "8:Installation Folder"
-                    "UseDynamicProperties" = "11:TRUE"
-                    "IsDependency" = "11:FALSE"
-                    "SourcePath" = "8:<VsdDialogDir>\\VsdAdminFolderDlg.wid"
-                        "Properties"
-                        {
-                            "BannerBitmap"
-                            {
-                            "Name" = "8:BannerBitmap"
-                            "DisplayName" = "8:#1001"
-                            "Description" = "8:#1101"
-                            "Type" = "3:8"
-                            "ContextData" = "8:Bitmap"
-                            "Attributes" = "3:4"
-                            "Setting" = "3:1"
-                            "UsePlugInResources" = "11:TRUE"
-                            }
-                        }
-                    }
                     "{688940B3-5CA9-4162-8DEE-2993FA9D8CBC}:_DA1000ED249043DB8F7831BB3921497B"
                     {
                     "Sequence" = "3:300"
@@ -1124,7 +1065,7 @@
             "SourcePath" = "8:..\\Algorithms\\PWC.Asim.Algorithms.PvSimple\\obj\\Release\\PWC.SLMS.Algorithms.PvSimple.dll"
             "TargetName" = "8:"
             "Tag" = "8:"
-            "Folder" = "8:_8BC1556DAC0F446C947143B25CEA7DB2"
+            "Folder" = "8:_E60517AB45EC4B7ABDF1F10079514555"
             "Condition" = "8:"
             "Transitive" = "11:FALSE"
             "Vital" = "11:TRUE"
@@ -1208,7 +1149,7 @@
             "SourcePath" = "8:..\\PWC.Asim.Sim\\obj\\x86\\Release\\Asim.exe"
             "TargetName" = "8:"
             "Tag" = "8:"
-            "Folder" = "8:_8BC1556DAC0F446C947143B25CEA7DB2"
+            "Folder" = "8:_E60517AB45EC4B7ABDF1F10079514555"
             "Condition" = "8:"
             "Transitive" = "11:FALSE"
             "Vital" = "11:TRUE"
@@ -1236,7 +1177,7 @@
             "SourcePath" = "8:..\\Algorithms\\PWC.Asim.Algorithms.PvNone\\obj\\Release\\PWC.SLMS.Algorithms.PvNone.dll"
             "TargetName" = "8:"
             "Tag" = "8:"
-            "Folder" = "8:_8BC1556DAC0F446C947143B25CEA7DB2"
+            "Folder" = "8:_E60517AB45EC4B7ABDF1F10079514555"
             "Condition" = "8:"
             "Transitive" = "11:FALSE"
             "Vital" = "11:TRUE"
@@ -1264,7 +1205,7 @@
             "SourcePath" = "8:..\\PWC.Asim.ExcelTools\\obj\\x86\\Release\\AsimExcelTools.exe"
             "TargetName" = "8:"
             "Tag" = "8:"
-            "Folder" = "8:_8BC1556DAC0F446C947143B25CEA7DB2"
+            "Folder" = "8:_E60517AB45EC4B7ABDF1F10079514555"
             "Condition" = "8:"
             "Transitive" = "11:FALSE"
             "Vital" = "11:TRUE"
