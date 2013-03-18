@@ -15,12 +15,6 @@
     {
         "Entry"
         {
-        "MsmKey" = "8:_0D89715F554A4B86B374CE06BA7CAF02"
-        "OwnerKey" = "8:_UNDEFINED"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
         "MsmKey" = "8:_3EC1973C73DD4E81B0331AF6A1491258"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
@@ -33,19 +27,37 @@
         }
         "Entry"
         {
+        "MsmKey" = "8:_63E53B51341841AD956AA3E38CF456B4"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
         "MsmKey" = "8:_6A1FFDB6253C4E15BDF528D22AFE0F1A"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
-        "MsmKey" = "8:_761C014E7757490EB2A1041810FE2B90"
+        "MsmKey" = "8:_7A58462D79C940F3ADF5BDA62D128C60"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
-        "MsmKey" = "8:_96E3F77ACBBB4BC8822A1618CCA83B54"
+        "MsmKey" = "8:_99C8EF0360E0462EB2B01C10AFBC5F58"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_A3CD9C772D9E4910936ADD77EBD4E412"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_C92AB88FE3844AB8B781DFD0D197EB1F"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
@@ -57,26 +69,32 @@
         }
         "Entry"
         {
-        "MsmKey" = "8:_UNDEFINED"
-        "OwnerKey" = "8:_0336BBC0A8B345228C614EDB94A83405"
+        "MsmKey" = "8:_DB5DA150AAF14B499274CAE7647E889D"
+        "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
         "MsmKey" = "8:_UNDEFINED"
-        "OwnerKey" = "8:_D56D074EC8BD4019AE781523C54CCDD2"
+        "OwnerKey" = "8:_A3CD9C772D9E4910936ADD77EBD4E412"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
         "MsmKey" = "8:_UNDEFINED"
-        "OwnerKey" = "8:_871276B9E0194727A679819B07D7AD28"
+        "OwnerKey" = "8:_99C8EF0360E0462EB2B01C10AFBC5F58"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
         "MsmKey" = "8:_UNDEFINED"
-        "OwnerKey" = "8:_0D89715F554A4B86B374CE06BA7CAF02"
+        "OwnerKey" = "8:_C92AB88FE3844AB8B781DFD0D197EB1F"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_UNDEFINED"
+        "OwnerKey" = "8:_63E53B51341841AD956AA3E38CF456B4"
         "MsmSig" = "8:_UNDEFINED"
         }
     }
@@ -244,32 +262,12 @@
             "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
-            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_761C014E7757490EB2A1041810FE2B90"
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_7A58462D79C940F3ADF5BDA62D128C60"
             {
             "SourcePath" = "8:..\\Data\\Example.xls"
             "TargetName" = "8:Example.xls"
             "Tag" = "8:"
             "Folder" = "8:_B2811CEC04B341C0AABB6B67D725A43F"
-            "Condition" = "8:"
-            "Transitive" = "11:FALSE"
-            "Vital" = "11:TRUE"
-            "ReadOnly" = "11:FALSE"
-            "Hidden" = "11:FALSE"
-            "System" = "11:FALSE"
-            "Permanent" = "11:FALSE"
-            "SharedLegacy" = "11:FALSE"
-            "PackageAs" = "3:1"
-            "Register" = "3:1"
-            "Exclude" = "11:FALSE"
-            "IsDependency" = "11:FALSE"
-            "IsolateTo" = "8:"
-            }
-            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_96E3F77ACBBB4BC8822A1618CCA83B54"
-            {
-            "SourcePath" = "8:..\\Data\\Simulator Macros.xla"
-            "TargetName" = "8:Simulator Macros.xla"
-            "Tag" = "8:"
-            "Folder" = "8:_6C0FBBB6C2034ABDB378CE9FE7CF9074"
             "Condition" = "8:"
             "Transitive" = "11:FALSE"
             "Vital" = "11:TRUE"
@@ -290,6 +288,26 @@
             "TargetName" = "8:COPYING.txt"
             "Tag" = "8:"
             "Folder" = "8:_8BC1556DAC0F446C947143B25CEA7DB2"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            }
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_DB5DA150AAF14B499274CAE7647E889D"
+            {
+            "SourcePath" = "8:..\\Data\\Asim Addin.xla"
+            "TargetName" = "8:Asim Addin.xla"
+            "Tag" = "8:"
+            "Folder" = "8:_6C0FBBB6C2034ABDB378CE9FE7CF9074"
             "Condition" = "8:"
             "Transitive" = "11:FALSE"
             "Vital" = "11:TRUE"
@@ -459,15 +477,15 @@
         {
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:Asim"
-        "ProductCode" = "8:{2AF04ADA-9D5E-4385-A04A-4E6FD4C0035C}"
-        "PackageCode" = "8:{AEAF7299-0D64-44EA-94C8-07B7CEB48613}"
+        "ProductCode" = "8:{95D4232E-DEBC-49C6-AD00-580FB4E9F4A6}"
+        "PackageCode" = "8:{7D23A897-B080-491C-B845-F96BF1E39FE9}"
         "UpgradeCode" = "8:{3A370646-674D-4405-AD4C-C65B9F924BBA}"
         "AspNetVersion" = "8:4.0.30319.0"
         "RestartWWWService" = "11:FALSE"
         "RemovePreviousVersions" = "11:TRUE"
         "DetectNewerInstalledVersion" = "11:TRUE"
         "InstallAllUsers" = "11:FALSE"
-        "ProductVersion" = "8:1.0.4"
+        "ProductVersion" = "8:1.0.9"
         "Manufacturer" = "8:Power Water Corporation"
         "ARPHELPTELEPHONE" = "8:"
         "ARPHELPLINK" = "8:"
@@ -1101,9 +1119,9 @@
         }
         "ProjectOutput"
         {
-            "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_0336BBC0A8B345228C614EDB94A83405"
+            "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_63E53B51341841AD956AA3E38CF456B4"
             {
-            "SourcePath" = "8:..\\PWC.Asim.Sim\\obj\\x86\\Release\\Asim.exe"
+            "SourcePath" = "8:..\\Algorithms\\PWC.Asim.Algorithms.PvSimple\\obj\\Release\\PWC.SLMS.Algorithms.PvSimple.dll"
             "TargetName" = "8:"
             "Tag" = "8:"
             "Folder" = "8:_8BC1556DAC0F446C947143B25CEA7DB2"
@@ -1121,65 +1139,9 @@
             "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             "ProjectOutputGroupRegister" = "3:1"
-            "OutputConfiguration" = "8:Release|x86"
+            "OutputConfiguration" = "8:Release|Any CPU"
             "OutputGroupCanonicalName" = "8:Built"
-            "OutputProjectGuid" = "8:{F871DB06-EB95-4326-9DB9-7AF31EEAE5D5}"
-            "ShowKeyOutput" = "11:TRUE"
-                "ExcludeFilters"
-                {
-                }
-            }
-            "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_0D89715F554A4B86B374CE06BA7CAF02"
-            {
-            "SourcePath" = "8:..\\PWC.Asim.ExcelTools\\obj\\x86\\Release\\AsimExcelTools.exe"
-            "TargetName" = "8:"
-            "Tag" = "8:"
-            "Folder" = "8:_8BC1556DAC0F446C947143B25CEA7DB2"
-            "Condition" = "8:"
-            "Transitive" = "11:FALSE"
-            "Vital" = "11:TRUE"
-            "ReadOnly" = "11:FALSE"
-            "Hidden" = "11:FALSE"
-            "System" = "11:FALSE"
-            "Permanent" = "11:FALSE"
-            "SharedLegacy" = "11:FALSE"
-            "PackageAs" = "3:1"
-            "Register" = "3:1"
-            "Exclude" = "11:FALSE"
-            "IsDependency" = "11:FALSE"
-            "IsolateTo" = "8:"
-            "ProjectOutputGroupRegister" = "3:1"
-            "OutputConfiguration" = "8:Release|x86"
-            "OutputGroupCanonicalName" = "8:Built"
-            "OutputProjectGuid" = "8:{3198A90B-6521-4630-8AAD-79E5E3E36D90}"
-            "ShowKeyOutput" = "11:TRUE"
-                "ExcludeFilters"
-                {
-                }
-            }
-            "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_35A66852DB3947378C05F5A35B783864"
-            {
-            "SourcePath" = "8:"
-            "TargetName" = "8:"
-            "Tag" = "8:"
-            "Folder" = "8:_E386D56D9A744D39AB1DA070634621F1"
-            "Condition" = "8:"
-            "Transitive" = "11:FALSE"
-            "Vital" = "11:TRUE"
-            "ReadOnly" = "11:FALSE"
-            "Hidden" = "11:FALSE"
-            "System" = "11:FALSE"
-            "Permanent" = "11:FALSE"
-            "SharedLegacy" = "11:FALSE"
-            "PackageAs" = "3:1"
-            "Register" = "3:1"
-            "Exclude" = "11:FALSE"
-            "IsDependency" = "11:FALSE"
-            "IsolateTo" = "8:"
-            "ProjectOutputGroupRegister" = "3:1"
-            "OutputConfiguration" = "8:"
-            "OutputGroupCanonicalName" = "8:SourceFiles"
-            "OutputProjectGuid" = "8:{EDD3AC1D-36ED-44F0-AA18-0B3036E54318}"
+            "OutputProjectGuid" = "8:{6617A9B5-067C-4473-A69D-06526D323A31}"
             "ShowKeyOutput" = "11:TRUE"
                 "ExcludeFilters"
                 {
@@ -1213,34 +1175,6 @@
                 {
                 }
             }
-            "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_871276B9E0194727A679819B07D7AD28"
-            {
-            "SourcePath" = "8:..\\Algorithms\\PWC.SLMS.Algorithms.PvSimple\\obj\\Release\\PWC.SLMS.Algorithms.PvSimple.dll"
-            "TargetName" = "8:"
-            "Tag" = "8:"
-            "Folder" = "8:_8BC1556DAC0F446C947143B25CEA7DB2"
-            "Condition" = "8:"
-            "Transitive" = "11:FALSE"
-            "Vital" = "11:TRUE"
-            "ReadOnly" = "11:FALSE"
-            "Hidden" = "11:FALSE"
-            "System" = "11:FALSE"
-            "Permanent" = "11:FALSE"
-            "SharedLegacy" = "11:FALSE"
-            "PackageAs" = "3:1"
-            "Register" = "3:1"
-            "Exclude" = "11:FALSE"
-            "IsDependency" = "11:FALSE"
-            "IsolateTo" = "8:"
-            "ProjectOutputGroupRegister" = "3:1"
-            "OutputConfiguration" = "8:Release|Any CPU"
-            "OutputGroupCanonicalName" = "8:Built"
-            "OutputProjectGuid" = "8:{6617A9B5-067C-4473-A69D-06526D323A31}"
-            "ShowKeyOutput" = "11:TRUE"
-                "ExcludeFilters"
-                {
-                }
-            }
             "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_9230CFFD47574398AEDAD7A8E2D86997"
             {
             "SourcePath" = "8:"
@@ -1269,9 +1203,37 @@
                 {
                 }
             }
-            "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_D56D074EC8BD4019AE781523C54CCDD2"
+            "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_99C8EF0360E0462EB2B01C10AFBC5F58"
             {
-            "SourcePath" = "8:..\\Algorithms\\PWC.SLMS.Algorithms.PvNone\\obj\\Release\\PWC.SLMS.Algorithms.PvNone.dll"
+            "SourcePath" = "8:..\\PWC.Asim.Sim\\obj\\x86\\Release\\Asim.exe"
+            "TargetName" = "8:"
+            "Tag" = "8:"
+            "Folder" = "8:_8BC1556DAC0F446C947143B25CEA7DB2"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            "ProjectOutputGroupRegister" = "3:1"
+            "OutputConfiguration" = "8:Release|x86"
+            "OutputGroupCanonicalName" = "8:Built"
+            "OutputProjectGuid" = "8:{F871DB06-EB95-4326-9DB9-7AF31EEAE5D5}"
+            "ShowKeyOutput" = "11:TRUE"
+                "ExcludeFilters"
+                {
+                }
+            }
+            "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_A3CD9C772D9E4910936ADD77EBD4E412"
+            {
+            "SourcePath" = "8:..\\Algorithms\\PWC.Asim.Algorithms.PvNone\\obj\\Release\\PWC.SLMS.Algorithms.PvNone.dll"
             "TargetName" = "8:"
             "Tag" = "8:"
             "Folder" = "8:_8BC1556DAC0F446C947143B25CEA7DB2"
@@ -1297,12 +1259,12 @@
                 {
                 }
             }
-            "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_E4BC4FA30EB84203AA405C78BE5C208E"
+            "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_C92AB88FE3844AB8B781DFD0D197EB1F"
             {
-            "SourcePath" = "8:"
+            "SourcePath" = "8:..\\PWC.Asim.ExcelTools\\obj\\x86\\Release\\AsimExcelTools.exe"
             "TargetName" = "8:"
             "Tag" = "8:"
-            "Folder" = "8:_E386D56D9A744D39AB1DA070634621F1"
+            "Folder" = "8:_8BC1556DAC0F446C947143B25CEA7DB2"
             "Condition" = "8:"
             "Transitive" = "11:FALSE"
             "Vital" = "11:TRUE"
@@ -1317,9 +1279,9 @@
             "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             "ProjectOutputGroupRegister" = "3:1"
-            "OutputConfiguration" = "8:"
-            "OutputGroupCanonicalName" = "8:SourceFiles"
-            "OutputProjectGuid" = "8:{6617A9B5-067C-4473-A69D-06526D323A31}"
+            "OutputConfiguration" = "8:Release|x86"
+            "OutputGroupCanonicalName" = "8:Built"
+            "OutputProjectGuid" = "8:{3198A90B-6521-4630-8AAD-79E5E3E36D90}"
             "ShowKeyOutput" = "11:TRUE"
                 "ExcludeFilters"
                 {
