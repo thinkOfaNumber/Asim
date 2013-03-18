@@ -1,8 +1,9 @@
 ﻿// Copyright (C) 2012, 2013  Power Water Corporation
 //
-// This file is part of Excel Reader - An Excel Manipulation Program
+// This file is part of "Asim" - A Renewable Energy Power Station
+// Control System Simulator
 //
-// Excel Reader is free software: you can redistribute it and/or modify
+// Asim is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
@@ -19,7 +20,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace ExcelReader.Logic
+namespace PWC.Asim.ExcelTools.Logic
 {
     public class Helper
     {

@@ -1,8 +1,9 @@
 ﻿// Copyright (C) 2012, 2013  Power Water Corporation
 //
-// This file is part of Excel Reader - An Excel Manipulation Program
+// This file is part of "Asim" - A Renewable Energy Power Station
+// Control System Simulator
 //
-// Excel Reader is free software: you can redistribute it and/or modify
+// Asim is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
@@ -18,12 +19,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
-using ExcelReader.Interface;
-using ExcelReader.Logic;
-using System.IO;
+using PWC.Asim.ExcelTools.Interface;
+using PWC.Asim.ExcelTools.Logic;
 
-namespace ExcelReader
+namespace PWC.Asim.ExcelTools
 {
     class Program
     {
@@ -89,7 +88,7 @@ namespace ExcelReader
 
         private static void ShowCopyrightNotice()
         {
-            Console.WriteLine("Excel Reader  Copyright (C) 2012, 2013  Power Water Corporation.");
+            Console.WriteLine("AsimExcelTools  Copyright (C) 2012, 2013  Power Water Corporation.");
             Console.WriteLine("This program comes with ABSOLUTELY NO WARRANTY;");
             Console.WriteLine("This is free software, and you are welcome to redistribute it");
             Console.WriteLine("under certain conditions; see the file COPYING for details.");
@@ -144,12 +143,12 @@ namespace ExcelReader
             usage.Append(Environment.NewLine);
             usage.Append("Useage:");
             usage.Append(Environment.NewLine);
-            usage.Append("ExcelReader.exe [--input <filename>]");
+            usage.Append("AsimExcelTools.exe [--input <filename>]");
             usage.Append(Environment.NewLine);
             usage.Append(Environment.NewLine);
             usage.Append("Example:");
             usage.Append(Environment.NewLine);
-            usage.Append("ExcelReader.exe --input \"C:\\Users\\Joe\\Data\\Example.xlsm\"");
+            usage.Append("AsimExcelTools.exe --input \"C:\\Users\\Joe\\Data\\Example.xlsm\"");
             usage.Append(Environment.NewLine);
 
             Console.WriteLine("Error: " + s);

@@ -1,8 +1,9 @@
 ﻿// Copyright (C) 2012, 2013  Power Water Corporation
 //
-// This file is part of Excel Reader - An Excel Manipulation Program
+// This file is part of "Asim" - A Renewable Energy Power Station
+// Control System Simulator
 //
-// Excel Reader is free software: you can redistribute it and/or modify
+// Asim is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
@@ -20,7 +21,7 @@ using System.Text;
 using System.IO;
 using System.Diagnostics;
 
-namespace ExcelReader.Logic
+namespace PWC.Asim.ExcelTools.Logic
 {
     class Simulator
     {
@@ -36,47 +37,40 @@ namespace ExcelReader.Logic
             bool success = false;
             if (_settings != null && _settings.RunSimulator)
             {
-                if (!string.IsNullOrEmpty(_settings.Simulator))
+                FileInfo simulatorLocation = new FileInfo(_settings.Simulator);
+                if (simulatorLocation.Exists)
                 {
-                    FileInfo simulatorLocation = new FileInfo(_settings.Simulator);
-                    if (simulatorLocation.Exists)
-                    {
-                        var cliArgs = GenerateArguments(_settings);
-                        Console.WriteLine();
-                        Console.WriteLine("Spawning simulator with options:");
-                        Console.WriteLine(cliArgs);
-                        Console.WriteLine("Please wait...");
-                        Process simulator = new Process();
-                        ProcessStartInfo psi = new ProcessStartInfo(_settings.Simulator);
-                        psi.Arguments = cliArgs;
+                    var cliArgs = GenerateArguments(_settings);
+                    Console.WriteLine();
+                    Console.WriteLine("Spawning simulator with options:");
+                    Console.WriteLine(cliArgs);
+                    Console.WriteLine("Please wait...");
+                    Process simulator = new Process();
+                    ProcessStartInfo psi = new ProcessStartInfo(_settings.Simulator);
+                    psi.Arguments = cliArgs;
 
-                        psi.CreateNoWindow = true;
-                        psi.UseShellExecute = false;
-                        psi.RedirectStandardOutput = true;
-                        psi.RedirectStandardError = true;
+                    psi.CreateNoWindow = true;
+                    psi.UseShellExecute = false;
+                    psi.RedirectStandardOutput = true;
+                    psi.RedirectStandardError = true;
 
-                        simulator.StartInfo = psi;
-                        simulator.OutputDataReceived += (sender, args) => onOutputData(args.Data);
-                        simulator.ErrorDataReceived += (sender, args) => onOutputData(args.Data);
-                        simulator.Start();
-                        simulator.BeginOutputReadLine();
-                        simulator.BeginErrorReadLine();
-                        simulator.WaitForExit();
-                        success = simulator.ExitCode == 0;
-                        onExit(success);
-                        simulator.Close();
-                        simulator.Dispose();
-                        Console.WriteLine("simulator finished.");
-                    }
-                    else
-                    {
-                        Console.WriteLine("The simulator doesn't exist at the following location: " +
-                                          simulatorLocation.FullName);
-                    }
+                    simulator.StartInfo = psi;
+                    simulator.OutputDataReceived += (sender, args) => onOutputData(args.Data);
+                    simulator.ErrorDataReceived += (sender, args) => onOutputData(args.Data);
+                    simulator.Start();
+                    simulator.BeginOutputReadLine();
+                    simulator.BeginErrorReadLine();
+                    simulator.WaitForExit();
+                    success = simulator.ExitCode == 0;
+                    onExit(success);
+                    simulator.Close();
+                    simulator.Dispose();
+                    Console.WriteLine("simulator finished.");
                 }
                 else
                 {
-                    Console.WriteLine("No simulator location was provided.");
+                    Console.WriteLine("The simulator doesn't exist at the following location: " +
+                                        simulatorLocation.FullName);
                 }
             }
             return success;
