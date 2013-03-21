@@ -88,7 +88,6 @@
     <Compile Include="Actors\GenMgr.cs" />
     <Compile Include="Actors\NextData.cs" />
     <Compile Include="Actors\OutputData.cs" />
-    <Compile Include="Actors\ScaleValues.cs" />
     <Compile Include="Actors\Solar.cs" />
     <Compile Include="Actors\Station.cs" />
     <Compile Include="Actors\TestActor.cs" />

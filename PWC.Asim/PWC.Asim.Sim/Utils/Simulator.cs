@@ -84,7 +84,6 @@ namespace PWC.Asim.Sim.Utils
             var actors = new List<IActor>();
 
             _inputActors.ForEach(s => actors.Add(new NextData(s.Filename, StartTime, s.Recycle)));
-            actors.Add(new ScaleValues());
             // add extra simulation actors here.  Order is important:
             actors.Add(new Station());
             actors.Add(new DispatchMgr());

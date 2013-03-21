@@ -101,8 +101,8 @@ namespace PWC.Asim.Sim.Actors
                         else
                         {
                             // ignore first cell
-                            // note the scaling is not done here
-                            _values[i].Update.Val = Convert.ToDouble(_cells[i + 1]);
+                            var v = Convert.ToDouble(_cells[i + 1]);
+                            _values[i].Update.Val = _values[i].Update.ScaleFunction == null ? v : _values[i].Update.ScaleFunction(v);
                         }
                     }
                     catch (Exception e)
