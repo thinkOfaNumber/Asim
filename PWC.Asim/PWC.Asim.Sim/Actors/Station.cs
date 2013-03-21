@@ -63,12 +63,10 @@ namespace PWC.Asim.Sim.Actors
             double reserve = Math.Max(0, Math.Max(_statSpinSetP.Val, pvCoverage) - _disP.Val);
 
             // generator coverage setpoint
-            _genCoverP = _loadP.Val - _pvP.Val + reserve;
+            _genCoverP = (_loadP.Val - _pvP.Val) + reserve;
             if (_genCfgSetK.Val <= 0 || _genCfgSetK.Val > 1)
                 _genCfgSetK.Val = 1.0F;
-            // old version (0=unity?): _genCfgSetP.Val = _genCfgSetP.Val*_genCfgSetK.Val + (1 - _genCfgSetK.Val)*_genCoverP;
-            // my version, 1=unity:
-            _genCfgSetP.Val = _genCfgSetP.Val + _genCfgSetK.Val*(_genCoverP - _genCfgSetP.Val);
+            _genCfgSetP.Val = _genCfgSetP.Val * (1.0F - _genCfgSetK.Val) + _genCfgSetK.Val * _genCoverP;
 
             // actual generator loading setpoint
             GenSetP = _genSetP.Val = _loadP.Val - _pvP.Val;
