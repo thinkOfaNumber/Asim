@@ -3,8 +3,9 @@ set ZIP=C:\Program Files\7-Zip\7z.exe
 set BUILDDIR=Asim
 
 rem date/time
-For /f "tokens=2-4 delims=/ " %%a in ('date /t') do (set mydate=%%c-%%a-%%b)
+For /f "tokens=2-4 delims=/ " %%a in ('date /t') do (set mydate=%%c-%%b-%%a)
 For /f "tokens=1-2 delims=/:" %%a in ("%TIME%") do (set mytime=%%a%%b)
+set mytime=%mytime: =0%
 
 echo make sure you bild the release version manually first!
 rmdir /s /q Asim
@@ -12,6 +13,7 @@ mkdir %BUILDDIR%
 mkdir %BUILDDIR%\bin
 mkdir %BUILDDIR%\docs
 mkdir "%BUILDDIR%\Excel Addin"
+mkdir %BUILDDIR%\DropTests
 
 rem bin
 xcopy PWC.Asim.Sim\bin\Release\Asim.exe %BUILDDIR%\bin
@@ -31,5 +33,13 @@ rem samples
 xcopy Data\Example.xlsx %BUILDDIR%
 xcopy Data\Example.xls %BUILDDIR%
 
-"%ZIP%" a -r Asim%mydate%_%mytime%.zip %BUILDDIR%
+rem Tests
+xcopy /E /I ..\DropTests\bin %BUILDDIR%\DropTests\bin
+xcopy /E /I ..\DropTests\tests %BUILDDIR%\DropTests\tests
+xcopy ..\DropTests\README.txt %BUILDDIR%\DropTests\
+xcopy ..\DropTests\run-tests.sh %BUILDDIR%\DropTests\
+
+set ZIPFILE=Asim-%mydate%_%mytime%.zip
+"%ZIP%" a -r "%ZIPFILE%" %BUILDDIR%
 rmdir /s /q Asim
+pause
