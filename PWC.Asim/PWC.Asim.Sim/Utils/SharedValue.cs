@@ -25,35 +25,48 @@ namespace PWC.Asim.Sim.Utils
 {
     public class Shared
     {
+        private Func<double, double> _scaleFunction;
         /// <summary>
         /// A function with the definition:
         /// double Func(double input);
         /// which is called when a scaling modifier is required to be applied
         /// to this value.
         /// </summary>
-        public Func<double, double> ScaleFunction { get; set; }
+        public Func<double, double> ScaleFunction
+        {
+            get { return _scaleFunction; }
+            set
+            {
+                _scaleFunction = value;
+                _val = _scaleFunction == null ? _unscaled : ScaleFunction(_unscaled);
+            }
+        }
+
         /// <summary>
         /// An action method which is called before the internal value is set,
         /// only when a variable changes value, with the definition:
         /// void Method(double oldVal, double newVal);
         /// </summary>
-        public Action<double, double> SetFunction { get; set; }
+        public Action<double, double> OnValueChanged { get; set; }
         private double _val;
+        private double _unscaled;
         public double Val
         {
             get { return _val; }
-            set 
+            set
             {
-                if (SetFunction != null && _val != value)
+                _unscaled = value;
+                _val = _scaleFunction == null ? _unscaled : ScaleFunction(_unscaled);
+                if (OnValueChanged != null && _val != value)
                 {
-                    SetFunction(_val, value);
+                    OnValueChanged(_val, value);
                 }
-                _val = value;
             }
         }
 
 
         internal string Name;
+
         public Shared()
         {
             ScaleFunction = null;

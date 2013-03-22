@@ -183,7 +183,7 @@ namespace PWC.Asim.Sim.Utils
             {
                 var sv = SharedContainer.GetOrDefault(varname);
                 if (sv == null) continue;
-                sv.SetFunction = (oldval, newval) => _watchWriter.WriteLine(
+                sv.OnValueChanged = (oldval, newval) => _watchWriter.WriteLine(
                     (StartTime.HasValue ? StartTime.Value : Settings.Epoch).AddSeconds(Iteration).ToString("yyyy-MM-dd HH:mm:ss")
                     + "\t" + sv.Name + "\t" + oldval + " -> " + newval
                     );
