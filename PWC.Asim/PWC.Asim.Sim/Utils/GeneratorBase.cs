@@ -104,7 +104,7 @@ namespace PWC.Asim.Sim.Utils
         }
         private static bool Overload
         {
-            get { return _genOverload.Val != 0.0f; }
+            get { return _genOverload.Val != 0.0D; }
             set { _genOverload.Val = Convert.ToDouble(value); }
         }
         // counters

@@ -65,8 +65,8 @@ namespace PWC.Asim.Sim.Actors
             // generator coverage setpoint
             _genCoverP = (_loadP.Val - _pvP.Val) + reserve;
             if (_genCfgSetK.Val <= 0 || _genCfgSetK.Val > 1)
-                _genCfgSetK.Val = 1.0F;
-            _genCfgSetP.Val = _genCfgSetP.Val * (1.0F - _genCfgSetK.Val) + _genCfgSetK.Val * _genCoverP;
+                _genCfgSetK.Val = 1.0D;
+            _genCfgSetP.Val = _genCfgSetP.Val * (1.0D - _genCfgSetK.Val) + _genCfgSetK.Val * _genCoverP;
 
             // actual generator loading setpoint
             GenSetP = _genSetP.Val = _loadP.Val - _pvP.Val;
