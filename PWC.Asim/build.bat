@@ -1,6 +1,7 @@
 @echo off
 set ZIP=C:\Program Files\7-Zip\7z.exe
 set BUILDDIR=Asim
+SET ILMERGE=%ProgramFiles(x86)%\Microsoft\ILMerge\ILMerge.exe
 
 rem date/time
 For /f "tokens=2-4 delims=/ " %%a in ('date /t') do (set mydate=%%c-%%b-%%a)

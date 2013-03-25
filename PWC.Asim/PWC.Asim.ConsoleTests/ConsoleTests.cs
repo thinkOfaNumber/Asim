@@ -357,23 +357,76 @@ namespace ConsoleTests
             Assert.IsTrue(DoublesAreEqual(440, gen1P.ElementAt(70 * 60)));
         }
 
+        [Test]
+        public void LoadCapAl()
+        {
+            // Arrange
+            var settingsFile1 = GetTempFilename;
+            var settingsFile2 = GetTempFilename;
+            var outFile = GetTempFilename;
+            const int period = 10 * 60;
+
+            var values = new SortedDictionary<string, double[]>();
+            InsertFuelConsumption(values, 0.33, 4);
+            values["LoadCapMargin"] = new double[] { 1 };
+            values["Gen1MaxP"] = new double[] { 500 };
+            values["Gen2MaxP"] = new double[] { 500 };
+            values["Gen3MaxP"] = new double[] { 500 };
+            values["Gen4MaxP"] = new double[] { 500 };
+            values["GenAvailSet"] = new double[] { 15 };
+            values["GenConfig1"] = new double[] { 15 };
+            var loadProfile = new double[] { 1400, 1400, 1500, 1500, 1999, 1999, 2000, 2000, 2001 };
+            int iterations = (loadProfile.Count() + 1) * period;
+
+            StringBuilder settings = BuildCsvFor(values.Keys.ToList(), values.Values.ToArray());
+            File.WriteAllText(settingsFile1, settings.ToString());
+            settings = BuildCsvFor("LoadP", loadProfile, period);
+            File.WriteAllText(settingsFile2, settings.ToString());
+
+            // Act
+            int retValue = StartConsoleApplication(
+                string.Format("--iterations {0} --input {1} --input {2} --output {3} GenP,LoadP,LoadCapAl",
+                    iterations, settingsFile1, settingsFile2, outFile));
+
+            // Assert
+            // completed successfully
+            Assert.AreEqual(0, retValue);
+            var fileArray = CsvFileToArray(outFile);
+            var genP = fileArray.Select(col => col[1]).Where((s, i) => i > 0).Select(Convert.ToDouble).ToList();
+            var loadP = fileArray.Select(col => col[2]).Where((s, i) => i > 0).Select(Convert.ToDouble).ToList();
+            var loadCapAl = fileArray.Select(col => col[3]).Where((s, i) => i > 0).Select(Convert.ToDouble).ToList();
+
+            for (int i = 0; i < 2400; i++)
+            {
+                Assert.AreEqual(loadCapAl[i], 0.0D);
+            }
+            for (int i = 2400; i < loadCapAl.Count; i++)
+            {
+                Assert.AreEqual(loadCapAl[i], 1.0D);
+            }
+        }
+
         /// <summary>
         /// Inserts the given constant fuel consumption into the value dictionary
         /// </summary>
         /// <param name="values">dictionary of values for testing</param>
         /// <param name="fuelConst">fuel consumption L/kWh</param>
-        private void InsertFuelConsumption(SortedDictionary<string, double[]> values, double fuelConst)
+        /// <param name="nGens">number of Generators to insert values for</param>
+        private void InsertFuelConsumption(SortedDictionary<string, double[]> values, double fuelConst, int nGens = 1)
         {
-            values["Gen1FuelCons1P"] = new double[] { 0 };
-            values["Gen1FuelCons1L"] = new double[] { fuelConst };
-            values["Gen1FuelCons2P"] = new double[] { 1 };
-            values["Gen1FuelCons2L"] = new double[] { fuelConst };
-            values["Gen1FuelCons3P"] = new double[] { 0 };
-            values["Gen1FuelCons3L"] = new double[] { 0 };
-            values["Gen1FuelCons4P"] = new double[] { 0 };
-            values["Gen1FuelCons4L"] = new double[] { 0 };
-            values["Gen1FuelCons5P"] = new double[] { 0 };
-            values["Gen1FuelCons5L"] = new double[] { 0 };
+            for (int i = 1; i < nGens + 1; i++)
+            {
+                values["Gen" + i + "FuelCons1P"] = new double[] { 0 };
+                values["Gen" + i + "FuelCons1L"] = new double[] { fuelConst };
+                values["Gen" + i + "FuelCons2P"] = new double[] { 1 };
+                values["Gen" + i + "FuelCons2L"] = new double[] { fuelConst };
+                values["Gen" + i + "FuelCons3P"] = new double[] { 0 };
+                values["Gen" + i + "FuelCons3L"] = new double[] { 0 };
+                values["Gen" + i + "FuelCons4P"] = new double[] { 0 };
+                values["Gen" + i + "FuelCons4L"] = new double[] { 0 };
+                values["Gen" + i + "FuelCons5P"] = new double[] { 0 };
+                values["Gen" + i + "FuelCons5L"] = new double[] { 0 };
+            }
         }
     }
 }

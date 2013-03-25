@@ -217,6 +217,7 @@ namespace PWC.Asim.Sim.Utils
             Overload = false;
             _genSpinP.Val = 0;
             _genAvailCfg.Val = 0;
+            _genCapP.Val = 0;
             int largestGeni = 0;
             double largestGenP = 0;
             for (int i = 0; i < Settings.MAX_GENS; i ++)
@@ -326,7 +327,9 @@ namespace PWC.Asim.Sim.Utils
             // as requested by client:
             if (double.IsNaN(retval))
             {
-                throw new SimulationException("Invalid fuel consumption calculation.  Please check the fuel curve parameters. i=" + i + ", it=" + _iteration);
+                throw new SimulationException(
+                    string.Format("Invalid fuel consumption calculation.  Please check the fuel curve parameters for Gen{0}. i={1}, it={2}",
+                    _id + 1, i, _iteration));
             }
             return retval;
         }

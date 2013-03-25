@@ -77,8 +77,8 @@ namespace PWC.Asim.Sim.Actors
 
             // maximun load value
             _loadMaxP.Val = Math.Max(_loadP.Val, _loadMaxP.Val);
-            // load capacity warning
-            _loadCapAl.Val = _genCapP.Val < (_loadMaxP.Val * _loadCapMargin.Val) ? 1.0D : 0.0D;
+            // load capacity warning (GenCapP not set until after Station Run())
+            _loadCapAl.Val = iteration > 0 && _genCapP.Val < (_loadMaxP.Val * _loadCapMargin.Val) ? 1.0D : 0.0D;
             
             // blackout detection
             IsBlack = _genOnlineCfg.Val <= 0;
