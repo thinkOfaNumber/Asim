@@ -34,11 +34,10 @@ namespace PWC.Asim.Sim.Utils
         /// </summary>
         public Func<double, double> ScaleFunction
         {
-            get { return _scaleFunction; }
             set
             {
                 _scaleFunction = value;
-                _val = _scaleFunction == null ? _unscaled : ScaleFunction(_unscaled);
+                _val = _scaleFunction == null ? _unscaled : _scaleFunction(_unscaled);
             }
         }
 
@@ -56,7 +55,7 @@ namespace PWC.Asim.Sim.Utils
             set
             {
                 _unscaled = value;
-                _val = _scaleFunction == null ? _unscaled : ScaleFunction(_unscaled);
+                _val = _scaleFunction == null ? _unscaled : _scaleFunction(_unscaled);
                 if (OnValueChanged != null && _val != value)
                 {
                     OnValueChanged(_val, value);
