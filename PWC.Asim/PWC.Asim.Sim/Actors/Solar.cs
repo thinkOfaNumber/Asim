@@ -103,8 +103,9 @@ namespace PWC.Asim.Sim.Actors
 
         public static double DefaultSolarController(double pvAvailP, double lastSetP, double genP, double genIdealP, double loadP, double statSpinSetP)
         {
-            // calculate desired setpoint
-            double setP = Math.Max(0, genP - genIdealP);
+            // calculate desired setpoint.  Note this won't share with other
+            // energy providers.
+            double setP = Math.Max(0, loadP - genIdealP);
             // limit setpoint to total station load
             return Math.Min(setP, loadP);
         }

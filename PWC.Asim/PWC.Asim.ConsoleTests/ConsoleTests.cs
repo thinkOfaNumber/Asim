@@ -406,6 +406,52 @@ namespace ConsoleTests
             }
         }
 
+        [Test]
+        public void GeneratorIdealLoading()
+        {
+            // Arrange
+            var settingsFile1 = GetTempFilename;
+            var settingsFile2 = GetTempFilename;
+            var outFile = GetTempFilename;
+            const int period = 10 * 60;
+
+            var values = new SortedDictionary<string, double[]>();
+            InsertFuelConsumption(values, 0.33, 4);
+            values["Gen1MaxP"] = new double[] { 500 };
+            values["Gen2MaxP"] = new double[] { 500 };
+            values["Gen3MaxP"] = new double[] { 500 };
+            values["Gen4MaxP"] = new double[] { 500 };
+            values["GenAvailSet"] = new double[] { 15 };
+            values["GenConfig1"] = new double[] { 15 };
+            values["Gen1IdealPctP"] = new double[] { 40 };
+            values["Gen2IdealPctP"] = new double[] { 40 };
+            values["Gen3IdealPctP"] = new double[] { 40 };
+            values["Gen4IdealPctP"] = new double[] { 40 };
+            values["PvAvailP"] = new double[] { 3000 };
+            var loadProfile = new double[] { 500, 500, 800, 800, 1000, 1000, 1500, 1500, 2000, 3000 };
+            int iterations = (loadProfile.Count() + 1) * period;
+
+            StringBuilder settings = BuildCsvFor(values.Keys.ToList(), values.Values.ToArray());
+            File.WriteAllText(settingsFile1, settings.ToString());
+            settings = BuildCsvFor("LoadP", loadProfile, period);
+            File.WriteAllText(settingsFile2, settings.ToString());
+
+            // Act
+            int retValue = StartConsoleApplication(
+                string.Format("--iterations {0} --input {1} --input {2} --output {3} LoadP,GenP,PvP",
+                    iterations, settingsFile1, settingsFile2, outFile));
+
+            // Assert
+            // completed successfully
+            Assert.AreEqual(0, retValue);
+            var fileArray = CsvFileToArray(outFile);
+            var loadP = fileArray.Select(col => col[1]).Where((s, i) => i > 0).Select(Convert.ToDouble).ToList();
+            var genP = fileArray.Select(col => col[2]).Where((s, i) => i > 0).Select(Convert.ToDouble).ToList();
+            var pvP = fileArray.Select(col => col[3]).Where((s, i) => i > 0).Select(Convert.ToDouble).ToList();
+
+            genP.Where((s, i) => i > 1200).ToList().ForEach(v => Assert.IsTrue(v >= 800));
+        }
+
         /// <summary>
         /// Inserts the given constant fuel consumption into the value dictionary
         /// </summary>

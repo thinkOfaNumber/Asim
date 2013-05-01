@@ -16,7 +16,12 @@ namespace PWC.Asim.Sim.Utils
 
         protected override void Run()
         {
-            State = P > 0 ? GeneratorState.RunningClosed : GeneratorState.Stopped;
+            if (P > 10)
+                State = GeneratorState.RunningClosed;
+            else if (P < 5)
+                State = GeneratorState.Stopped;
+            else
+                State = _lastState;
             if (_lastState == GeneratorState.Stopped && State == GeneratorState.RunningClosed)
             {
                 StartCnt++;
