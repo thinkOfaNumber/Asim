@@ -40,6 +40,10 @@ xcopy /E /I ..\DropTests\tests %BUILDDIR%\DropTests\tests
 xcopy ..\DropTests\README.txt %BUILDDIR%\DropTests\
 xcopy ..\DropTests\run-tests.sh %BUILDDIR%\DropTests\
 
+rem Source
+mkdir %BUILDDIR%\src
+robocopy . %BUILDDIR%\src *.cs /S /PURGE /XF AssemblyInfo.cs /NFL /NDL /XD %BUILDDIR%
+
 set ZIPFILE=Asim-%mydate%_%mytime%.zip
 "%ZIP%" a -r "%ZIPFILE%" %BUILDDIR%
 rmdir /s /q Asim
