@@ -85,6 +85,7 @@ namespace PWC.Asim.Sim.Utils
 
             _inputActors.ForEach(s => actors.Add(new NextData(s.Filename, StartTime, s.Recycle)));
             // add extra simulation actors here.  Order is important:
+            actors.Add(new Load());
             actors.Add(new Station());
             actors.Add(new DispatchMgr());
             actors.Add(new GenMgr(GuessGeneratorState ? GenMgrType.Calculate : GenMgrType.Simulate));
@@ -183,9 +184,9 @@ namespace PWC.Asim.Sim.Utils
             {
                 var sv = SharedContainer.GetOrDefault(varname);
                 if (sv == null) continue;
-                sv.OnValueChanged = (oldval, newval) => _watchWriter.WriteLine(
+                sv.OnValueChanged += (s, e) => _watchWriter.WriteLine(
                     (StartTime.HasValue ? StartTime.Value : Settings.Epoch).AddSeconds(Iteration).ToString("yyyy-MM-dd HH:mm:ss")
-                    + "\t" + sv.Name + "\t" + oldval + " -> " + newval
+                    + "\t" + sv.Name + "\t" + e.OldValue + " -> " + e.NewValue
                     );
             }
         }

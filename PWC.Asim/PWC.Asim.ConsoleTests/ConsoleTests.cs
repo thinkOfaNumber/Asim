@@ -302,7 +302,7 @@ namespace ConsoleTests
             values["DisLoadMaxT"] = new double[] { maxOffTime };
             values["DisLoadT"] = new double[] { offLatency };
             values["Dis1LoadP"] = new double[] { 40 };
-            var loadProfile = new double[] { 50, 100, 200, 300, 440, 440, 440, 440, 400 };
+            var loadProfile = new double[] { 50, 100, 200, 300, 496, 496, 496, 496, 400 };
             int iterations = (loadProfile.Count() + 1) * period;
 
             StringBuilder settings = BuildCsvFor(values.Keys.ToList(), values.Values.ToArray());
@@ -312,7 +312,7 @@ namespace ConsoleTests
 
             // Act
             int retValue = StartConsoleApplication(
-                string.Format("--iterations {0} --input {1} --input {2} --output {3} Gen1P,DisLoadP,GenSpinP,DisP",
+                string.Format("--iterations {0} --input {1} --input {2} --output {3} Gen1P,DisLoadP,GenSpinP,DisP,Gen1LoadFact",
                     iterations, settingsFile1, settingsFile2, outFile));
 
             // Assert
@@ -323,38 +323,39 @@ namespace ConsoleTests
             var disLoadP = fileArray.Select(col => col[2]).Where((s, i) => i > 0).Select(Convert.ToDouble).ToList();
             var geSpinP = fileArray.Select(col => col[3]).Where((s, i) => i > 0).Select(Convert.ToDouble).ToList();
             var disP = fileArray.Select(col => col[4]).Where((s, i) => i > 0).Select(Convert.ToDouble).ToList();
+            var loadFact = fileArray.Select(col => col[5]).Where((s, i) => i > 0).Select(Convert.ToDouble).ToList();
 
-            // at 60s: load 50 + disLoad 0
-            Assert.IsTrue(DoublesAreEqual(50, gen1P.ElementAt(60)));
-            // at 65s: load 50 + disload 40
-            Assert.IsTrue(DoublesAreEqual(90, gen1P.ElementAt(65)));
-            // at 10m: load 100 + disload 40
-            Assert.IsTrue(DoublesAreEqual(140, gen1P.ElementAt(10 * 60)));
-            // at 20m: load 200 + disload 40
-            Assert.IsTrue(DoublesAreEqual(240, gen1P.ElementAt(20 * 60)));
-            // at 30m: load 300 + disload 40
-            Assert.IsTrue(DoublesAreEqual(340, gen1P.ElementAt(30 * 60)));
-            // at 40m: load 440 + disload 40
-            Assert.IsTrue(DoublesAreEqual(480, gen1P.ElementAt(40 * 60)));
+            // at 61s: load 50 - disLoad 40 = 10
+            Assert.IsTrue(DoublesAreEqual(10, gen1P.ElementAt(61)));
+            // at 65s: load 50 (disLoad on)
+            Assert.IsTrue(DoublesAreEqual(50, gen1P.ElementAt(65)));
+            // at 10m: load 100
+            Assert.IsTrue(DoublesAreEqual(100, gen1P.ElementAt(10 * 60)));
+            // at 20m: load 200
+            Assert.IsTrue(DoublesAreEqual(200, gen1P.ElementAt(20 * 60)));
+            // at 30m: load 300
+            Assert.IsTrue(DoublesAreEqual(300, gen1P.ElementAt(30 * 60)));
+            // at 40m: load 496
+            Assert.IsTrue(DoublesAreEqual(496, gen1P.ElementAt(40 * 60)));
 
-            // StatSpinSetP is no longer maintained so the dispatchable load
+            // Load Factor > 99% so the dispatchable load
             // should shut off automatically
-            // at 40m+latency: load 440 + disload 0
-            Assert.IsTrue(DoublesAreEqual(440, gen1P.ElementAt(40 * 60 + offLatency + 5)));
+            // at 40m+latency: load 496 - 40 = 456
+            Assert.IsTrue(DoublesAreEqual(456, gen1P.ElementAt(40 * 60 + offLatency + 5)));
 
-            // at 50m: load 440 + disload 0
-            Assert.IsTrue(DoublesAreEqual(440, gen1P.ElementAt(50 * 60)));
-            // at 60m: load 440 + disload 0
-            Assert.IsTrue(DoublesAreEqual(440, gen1P.ElementAt(60 * 60)));
+            // at 50m: load 496 - 40 = 456
+            Assert.IsTrue(DoublesAreEqual(456, gen1P.ElementAt(50 * 60)));
+            // at 60m: load 496 - 40 = 456
+            Assert.IsTrue(DoublesAreEqual(456, gen1P.ElementAt(60 * 60)));
 
             // this tests that the dispatchable load turns on when the min run
-            // time has expired, regardless of spinning reserve.  This is twenty
-            // minutes after it turned off (at 42m).
-            // at 60m+5s: load 440 + disload 40
-            Assert.IsTrue(DoublesAreEqual(480, gen1P.ElementAt(60 * 60 + offLatency + 5)));
+            // time has expired, regardless of load factor.  This is twenty
+            // minutes after it turned off (at 40m).
+            // at 60m+5s: load 496
+            Assert.IsTrue(DoublesAreEqual(496, gen1P.ElementAt(60 * 60 + offLatency + 5)));
 
-            // at 70m: load 400 + disload 40
-            Assert.IsTrue(DoublesAreEqual(440, gen1P.ElementAt(70 * 60)));
+            // at 70m: load 400
+            Assert.IsTrue(DoublesAreEqual(400, gen1P.ElementAt(80 * 60)));
         }
 
         [Test]

@@ -147,6 +147,7 @@ namespace PWC.Asim.Sim.Utils
         private readonly Shared[] _fuelCurveL = new Shared[Settings.FuelCurvePoints];
         private static readonly Shared _onlineCfg = SharedContainer.GetOrNew("GenOnlineCfg");
         private static readonly Shared _genIdealP = SharedContainer.GetOrNew("GenIdealP");
+        private static readonly Shared _genMaxP = SharedContainer.GetOrNew("GenMaxP");
         private static readonly Shared _genP = SharedContainer.GetOrNew("GenP");
         private static readonly Shared _genOverload = SharedContainer.GetOrNew("GenOverload");
         private static readonly Shared _genSpinP = SharedContainer.GetOrNew("GenSpinP");
@@ -218,6 +219,7 @@ namespace PWC.Asim.Sim.Utils
             _genSpinP.Val = 0;
             _genAvailCfg.Val = 0;
             _genCapP.Val = 0;
+            _genMaxP.Val = 0;
             int largestGeni = 0;
             double largestGenP = 0;
             for (int i = 0; i < Settings.MAX_GENS; i ++)
@@ -236,6 +238,7 @@ namespace PWC.Asim.Sim.Utils
                 GenP += Gen[i].P;
                 _genSpinP.Val += Gen[i]._spinP;
                 _genCapP.Val += Gen[i]._maxP.Val;
+                _genMaxP.Val += Gen[i].IsOnline() ? Gen[i]._maxP.Val : 0;
                 if (Gen[i].MaxP > largestGenP)
                 {
                     largestGenP = Gen[i].MaxP;

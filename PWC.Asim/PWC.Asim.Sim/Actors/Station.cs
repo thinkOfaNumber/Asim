@@ -31,8 +31,7 @@ namespace PWC.Asim.Sim.Actors
         private readonly Shared _loadCapAl = SharedContainer.GetOrNew("LoadCapAl");
         private readonly Shared _loadCapMargin = SharedContainer.GetOrNew("LoadCapMargin");
         private readonly Shared _loadMaxP = SharedContainer.GetOrNew("LoadMaxP");
-        private readonly Shared _loadP = SharedContainer.GetOrNew("LoadP");
-        private readonly Shared _loadMaxLimP = SharedContainer.GetOrNew("LoadMaxLimP");
+        private readonly Shared _loadP = SharedContainer.GetOrNew("LoadSetP");
         private readonly Shared _pvP = SharedContainer.GetOrNew("PvP");
         private readonly Shared _pvCvgPct = SharedContainer.GetOrNew("PvCvgPct");
         private readonly Shared _genCfgSetP = SharedContainer.GetOrNew("GenCfgSetP");
@@ -43,6 +42,7 @@ namespace PWC.Asim.Sim.Actors
         private readonly Shared _genSpinP = SharedContainer.GetOrNew("GenSpinP");
         private readonly Shared _genCapP = SharedContainer.GetOrNew("GenCapP");
         private readonly Shared _disP = SharedContainer.GetOrNew("DisP");
+        private readonly Shared _disOffP = SharedContainer.GetOrNew("DisOffP");
         private static bool _lastStatBlack;
         private readonly Shared _statBlack = SharedContainer.GetOrNew("StatBlack");
         private double _genCoverP;
@@ -56,11 +56,8 @@ namespace PWC.Asim.Sim.Actors
         public void Run(ulong iteration)
         {
             // calc
-            if (_loadMaxLimP.Val > 0)
-                _loadP.Val = Math.Min(_loadP.Val, _loadMaxLimP.Val);
-
             double pvCoverage = _pvP.Val * _pvCvgPct.Val / 100D;
-            double reserve = Math.Max(0, Math.Max(_statSpinSetP.Val, pvCoverage) - _disP.Val);
+            double reserve = Math.Max(0, Math.Max(_statSpinSetP.Val, pvCoverage) - _disP.Val + _disOffP.Val);
 
             // generator coverage setpoint
             _genCoverP = (_loadP.Val - _pvP.Val) + reserve;

@@ -42,7 +42,7 @@ namespace PWC.Asim.Sim.Contracts
         /// </summary>
         double DisSpinP { get; }
 
-        void Run();
+        void Run(ulong iteration);
         void Stop();
         void Start();
     }

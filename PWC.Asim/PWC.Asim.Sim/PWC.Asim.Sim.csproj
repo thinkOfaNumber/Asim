@@ -86,6 +86,7 @@
   <ItemGroup>
     <Compile Include="Actors\DispatchMgr.cs" />
     <Compile Include="Actors\GenMgr.cs" />
+    <Compile Include="Actors\Load.cs" />
     <Compile Include="Actors\NextData.cs" />
     <Compile Include="Actors\OutputData.cs" />
     <Compile Include="Actors\Solar.cs" />

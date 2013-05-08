@@ -35,7 +35,7 @@ namespace PWC.Asim.Sim.Actors
         private readonly Shared _pvSetMaxUpP = SharedContainer.GetOrNew("PvSetMaxUpP");
         private readonly Shared _pvMaxLimP = SharedContainer.GetOrNew("PvMaxLimP");
 
-        private readonly Shared _loadP = SharedContainer.GetOrNew("LoadP");
+        private readonly Shared _loadP = SharedContainer.GetOrNew("LoadSetP");
         private readonly Shared _statSpinSetP = SharedContainer.GetOrNew("StatSpinSetP");
         private readonly Shared _statBlack = SharedContainer.GetOrNew("StatBlack");
         private readonly Shared _genP = SharedContainer.GetOrNew("GenP");

@@ -23,6 +23,12 @@ using System.Text.RegularExpressions;
 
 namespace PWC.Asim.Sim.Utils
 {
+    public class SharedEventArgs : EventArgs
+    {
+        public double OldValue { get; set; }
+        public double NewValue { get; set; }
+    }
+
     public class Shared
     {
         private Func<double, double> _scaleFunction;
@@ -46,7 +52,7 @@ namespace PWC.Asim.Sim.Utils
         /// only when a variable changes value, with the definition:
         /// void Method(double oldVal, double newVal);
         /// </summary>
-        public Action<double, double> OnValueChanged { get; set; }
+        public event EventHandler<SharedEventArgs> OnValueChanged;
         private double _val;
         private double _unscaled;
         public double Val
@@ -54,15 +60,14 @@ namespace PWC.Asim.Sim.Utils
             get { return _val; }
             set
             {
+                if (OnValueChanged != null && _unscaled != value)
+                {
+                    OnValueChanged(this, new SharedEventArgs { OldValue = _unscaled, NewValue = value });
+                }
                 _unscaled = value;
                 _val = _scaleFunction == null ? _unscaled : _scaleFunction(_unscaled);
-                if (OnValueChanged != null && _val != value)
-                {
-                    OnValueChanged(_val, value);
-                }
             }
         }
-
 
         internal string Name;
 

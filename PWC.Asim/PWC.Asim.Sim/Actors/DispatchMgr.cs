@@ -31,24 +31,25 @@ namespace PWC.Asim.Sim.Actors
         // Offline load
         private readonly Shared _disOffP = SharedContainer.GetOrNew("DisOffP");
 
+        private readonly Shared _statBlack = SharedContainer.GetOrNew("StatBlack");
         private readonly Shared _genP = SharedContainer.GetOrNew("GenP");
         private readonly Shared _genMaxP = SharedContainer.GetOrNew("GenMaxP");
         private readonly IDispatchLoad[] Load = new IDispatchLoad[Settings.MAX_GENS];
         private readonly ExecutionManager _executionManager = new ExecutionManager();
+        private static bool debug = true;
         
         public void Run(ulong iteration)
         {
             _executionManager.RunActions(iteration);
-            
+
+            // todo: fix magic numbers - stop with 2% of max load and start when more than 8%
+            double pctMaxLoad = GetLoadFactor();
+            bool stop = pctMaxLoad > 99.0D;
+            bool start = _statBlack.Val == 0 && pctMaxLoad < 92.0D;
+
             _disLoadP.Val = 0;
             _disP.Val = 0;
             _disOffP.Val = 0;
-
-            // todo: fix magic numbers - stop with 2% of max load and start when more than 8%
-            double pctMaxLoad = (_genMaxP.Val - _genP.Val) / _genMaxP.Val * 100;
-            bool stop = pctMaxLoad < 2;
-            bool start = pctMaxLoad > 8;
-
             for (int i = 0; i < Settings.MAX_GENS; i++)
             {
                 if (Load[i] == null)
@@ -59,7 +60,7 @@ namespace PWC.Asim.Sim.Actors
                 if (start)
                     Load[i].Start();
 
-                Load[i].Run();
+                Load[i].Run(iteration);
                 _disP.Val += Load[i].DisP;
                 _disOffP.Val += Load[i].DisOffP;
                 _disLoadP.Val += Load[i].DisLoadP;
@@ -74,6 +75,16 @@ namespace PWC.Asim.Sim.Actors
 
         public void Finish()
         {
+        }
+
+        /// <summary>
+        /// The dispatchable load manager makes decisions based on the load
+        /// factor if all dispatchable load was turned on.
+        /// </summary>
+        /// <returns></returns>
+        public double GetLoadFactor()
+        {
+            return _genMaxP.Val <= 0 ? 0 : (_genP.Val + _disOffP.Val) / _genMaxP.Val * 100;
         }
     }
 
@@ -118,19 +129,22 @@ namespace PWC.Asim.Sim.Actors
         private static readonly Shared DisLoadT = SharedContainer.GetOrNew("DisLoadT");
 
         private ulong _actualOffTime;
+        private ulong _actualOnTime;
         private bool _online;
         private bool _busy;
-        private ulong _maxOffTime;
+        private ulong _maxCycleTime;
+        private ulong _it;
 
         private ExecutionManager _executionManager;
 
         private bool MaxOffTimeExpired
         {
-            get
-            {
-                _maxOffTime = (ulong)Math.Max(_disLoadMaxT.Val, DisLoadMaxT.Val);
-                return (_actualOffTime > _maxOffTime);
-            }
+            get { return _maxCycleTime != 0 && _actualOffTime > _maxCycleTime; }
+        }
+
+        private bool MinOnTimeSatisfied
+        {
+            get { return _maxCycleTime == 0 || _actualOnTime > _maxCycleTime; }
         }
 
         public StaticLoad(int id, ExecutionManager executionManager)
@@ -149,20 +163,25 @@ namespace PWC.Asim.Sim.Actors
         }
 
 
-        public void Run()
+        public void Run(ulong iteration)
         {
+            _it = iteration;
+            _maxCycleTime = (ulong)Math.Max(_disLoadMaxT.Val, DisLoadMaxT.Val);
+
             if (MaxOffTimeExpired)
                 Start();
 
             if (_online)
             {
                 _actualOffTime = 0;
+                _actualOnTime ++;
                 _disP.Val = _disLoadP.Val;
                 _disOffP.Val = 0;
             }
             else
             {
                 _actualOffTime++;
+                _actualOnTime = 0;
                 _disP.Val = 0;
                 _disOffP.Val = _disLoadP.Val;
             }
@@ -175,7 +194,7 @@ namespace PWC.Asim.Sim.Actors
 
         public void Stop()
         {
-            if (_busy)
+            if (_busy || !MinOnTimeSatisfied)
                 return;
 
             _busy = true;
