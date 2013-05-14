@@ -17,10 +17,6 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using PWC.Asim.Sim.Actors;
 using PWC.Asim.Sim.Exceptions;
 
 namespace PWC.Asim.Sim.Utils
@@ -300,41 +296,60 @@ namespace PWC.Asim.Sim.Utils
         /// <returns>Fuel used this second, in L</returns>
         protected double FuelConsumptionSecond()
         {
-            // y = mx + b
-            double m = 0;
-            double b = double.NaN;
-            int i;
-            for (i = 1; i < Settings.FuelCurvePoints - 1; i++)
+            int i = FindFirstPoint();
+
+            // slope
+            double m = (_fuelCurveL[i].Val - _fuelCurveL[i + 1].Val) / (_fuelCurveP[i].Val - _fuelCurveP[i + 1].Val);
+
+            // use the point slope formula where x1,y1 is the point using [i], and x is the load factor
+            // y - y1 = m(x - x1)
+            // or
+            // y = m(x - x1) + y1
+
+            double y = m*(LoadFact - _fuelCurveP[i].Val) + _fuelCurveL[i].Val;
+
+            // now y is the L/kWh, but we want L so multiply by kWh per iteration
+            double consumptionSecond = y*P*Settings.PerHourToSec;
+
+            return consumptionSecond;
+        }
+
+        /// <summary>
+        /// Finds the first of two x,y (LoadFactor vs L/kWh) points that a
+        /// given Load Factor falls within.
+        /// </summary>
+        /// <returns></returns>
+        private int FindFirstPoint()
+        {
+            int? lastPoint = null;
+
+            // find the last point
+            for (int i = 1; i < Settings.FuelCurvePoints; i++)
             {
-                bool aboveMinPoint =
-                    // ignore points that are unset (0,0)
-                    (_fuelCurveP[i - 1].Val != 0 || _fuelCurveL[i - 1].Val != 0) &&
-                    // load is within this range
-                    LoadFact >= _fuelCurveP[i - 1].Val;
-
-                bool belowMaxPoint = i == Settings.FuelCurvePoints - 2 ||
-                    // ignore points that are unset (0,0)
-                    (_fuelCurveP[i].Val != 0 || _fuelCurveL[i].Val != 0) ||
-                    // load is within this range
-                    LoadFact < _fuelCurveP[i].Val;
-
-                if (aboveMinPoint && belowMaxPoint)
+                if (_fuelCurveP[i].Val != 0 || _fuelCurveL[i].Val != 0)
                 {
-                    // rise / run == L/kWh / LF == _fuelCurveL / _fuelCurveP
-                    m = (_fuelCurveL[i].Val - _fuelCurveL[i-1].Val) / (_fuelCurveP[i].Val - _fuelCurveP[i-1].Val);
-                    b = _fuelCurveL[i].Val - m * _fuelCurveP[i].Val;
-                    break;
+                    lastPoint = i;
                 }
             }
-            double retval = (m * LoadFact + b) * P * Settings.PerHourToSec;
-            // as requested by client:
-            if (double.IsNaN(retval))
+            if (!lastPoint.HasValue)
             {
-                throw new SimulationException(
-                    string.Format("Invalid fuel consumption calculation.  Please check the fuel curve parameters for Gen{0}. i={1}, it={2}",
-                    _id + 1, i, _iteration));
+                throw new SimulationException("Only one fuel curve point was found for Generator " + (_id + 1) + ", iteration " + _iteration);
             }
-            return retval;
+
+            // found is set to zero since we now know at least 2 points exist, and if the LoadFactor
+            // is less than all given points, we should extend the first point backwards.
+            int found = 0;
+            for (int i = 0; i < lastPoint; i++)
+            {
+                if (LoadFact > _fuelCurveP[i].Val)
+                    found = i;
+            }
+            // if the load factor is beyond the end of the array, then use the
+            // previous two points and extend the curve
+            if (found == Settings.FuelCurvePoints - 1)
+                found = Settings.FuelCurvePoints - 2;
+
+            return found;
         }
 
         public static void UpdateStates(ulong iteration)

@@ -202,8 +202,111 @@ namespace ConsoleTests
             Assert.AreEqual(loadPmaxT, maxT);
         }
 
+        protected void FuelUsagePointTest(double[] p, double[] l)
+        {
+            // In these instances we don't care about results as the program should fail
+            FuelUsagePointTest(p, l, 0, 0.5, false);
+        }
+
+        protected void FuelUsagePointTest(double[] p, double[] l, double expectedConsumption, double loadFactor, bool expectSuccess)
+        {
+            const int iterations = 1000;
+            const double gen1MaxP = 100;
+            var settingsFile = GetTempFilename;
+            var outFile = GetTempFilename;
+            if (loadFactor < 0 || loadFactor > 1)
+            {
+                throw new ArgumentException("loadFactor must be: 0 <= x <= 1");
+            }
+
+            var values = new SortedDictionary<string, double[]>();
+            values["Gen1FuelCons1P"] = new [] { p[0] };
+            values["Gen1FuelCons1L"] = new [] { l[0] };
+            values["Gen1FuelCons2P"] = new [] { p[1] };
+            values["Gen1FuelCons2L"] = new [] { l[1] };
+            values["Gen1FuelCons3P"] = new [] { p[2] };
+            values["Gen1FuelCons3L"] = new [] { l[2] };
+            values["Gen1FuelCons4P"] = new [] { p[3] };
+            values["Gen1FuelCons4L"] = new [] { l[3] };
+            values["Gen1FuelCons5P"] = new [] { p[4] };
+            values["Gen1FuelCons5L"] = new [] { l[4] };
+            values["Gen1MaxP"] = new double[] { gen1MaxP };
+            values["GenConfig1"] = new double[] { 1 };
+            values["GenAvailSet"] = new double[] { 1 };
+            values["GenBlackCfg"] = new double[] { 1 };
+            values["LoadP"] = new double[] { gen1MaxP * loadFactor };
+
+            StringBuilder fuelsettings = BuildCsvFor(values.Keys.ToList(), values.Values.ToArray());
+            File.WriteAllText(settingsFile, fuelsettings.ToString());
+
+            // Act
+            int retValue = StartConsoleApplication(
+                string.Format("--iterations {0} --input {1} --output {2} {0} Gen1E,Gen1FuelCnt",
+                    iterations, settingsFile, outFile));
+
+            // Assert
+            // Completed with or without errors
+            Assert.AreEqual(expectSuccess ? 0 : 1, retValue);
+            if (!expectSuccess)
+                return;
+
+            var fileArray = CsvFileToArray(outFile);
+
+            var totalE = Convert.ToDouble(fileArray[2][1]);
+            var totalFuel = Convert.ToDouble(fileArray[2][2]);
+            
+            Assert.IsTrue(DoublesAreEqual(totalFuel, totalE * expectedConsumption));
+        }
+
         [Test]
-        public void FuelUsage()
+        public void FuelUsageNoPoints()
+        {
+            // this will fail as there are no fuel curve points at all
+            FuelUsagePointTest(new double[] {0, 0, 0, 0, 0}, new double[] {0, 0, 0, 0, 0});
+        }
+
+        [Test]
+        public void FuelUsageOnePoint()
+        {
+            // this will fail as there are no fuel curve points at all
+            FuelUsagePointTest(new double[] { 1, 0, 0, 0, 0 }, new double[] { 0.33, 0, 0, 0, 0 });
+        }
+
+        [Test]
+        public void FuelUsageLoadFactorNotFound()
+        {
+            const double fuelConst = 0.33;
+
+            // this will pass even though the load facter is beyond the highest point
+            FuelUsagePointTest(new double[] { 0, .2, 0.4, 0, 0 }, new double[] { fuelConst, fuelConst, fuelConst, 0, 0 }, fuelConst, 0.5, true );
+        }
+
+        [Test]
+        public void FuelUsageOnPointStart()
+        {
+            // This tests that the fuel usage should be equal to the first fuel usage point since the load factor is on that point
+
+            FuelUsagePointTest(new double[] { 0.5, 1, 0, 0, 0 }, new double[] { 0.6, 0.4, 0, 0, 0 }, 0.6, 0.5, true);
+        }
+
+        [Test]
+        public void FuelUsageOnPointEnd()
+        {
+            // This tests that the fuel usage should be equal to the second fuel usage point since the load factor is on that point
+
+            FuelUsagePointTest(new double[] { 0.1, 0.5, 1, 0, 0 }, new double[] { 0.1, 0.6, 0.4, 0, 0 }, 0.4, 1, true);
+        }
+
+        [Test]
+        public void FuelUsageMidWay()
+        {
+            // This tests that the fuel usage should be midway between the two point since the load factor is midway
+
+            FuelUsagePointTest(new double[] { 0.1, 0.4, 1, 0, 0 }, new double[] { 0.1, 0.7, 0.3, 0, 0, 0 }, 0.5, 0.7, true);
+        }
+
+        [Test]
+        public void FuelUsageFlatLine()
         {
             var settingsFile = GetTempFilename;
             int iterations = 100000;
