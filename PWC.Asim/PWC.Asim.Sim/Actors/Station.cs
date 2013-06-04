@@ -28,6 +28,7 @@ namespace PWC.Asim.Sim.Actors
         private readonly Shared _statBlackCnt = SharedContainer.GetOrNew("StatBlackCnt");
         private readonly Shared _statSpinP = SharedContainer.GetOrNew("StatSpinP");
         private readonly Shared _statSpinSetP = SharedContainer.GetOrNew("StatSpinSetP");
+        private readonly Shared _statMaintainSpin = SharedContainer.GetOrNew("StatMaintainSpin");
         private readonly Shared _loadCapAl = SharedContainer.GetOrNew("LoadCapAl");
         private readonly Shared _loadCapMargin = SharedContainer.GetOrNew("LoadCapMargin");
         private readonly Shared _loadMaxP = SharedContainer.GetOrNew("LoadMaxP");
@@ -57,7 +58,10 @@ namespace PWC.Asim.Sim.Actors
         {
             // calc
             double pvCoverage = _pvP.Val * _pvCvgPct.Val / 100D;
-            double reserve = Math.Max(0, Math.Max(_statSpinSetP.Val, pvCoverage) - _disP.Val + _disOffP.Val);
+            double statSpinWithCov = _statMaintainSpin.Val > 0 ? 0 : _statSpinSetP.Val;
+            double statSpinAlways  = _statMaintainSpin.Val > 0 ? _statSpinSetP.Val : 0;
+
+            double reserve = Math.Max(statSpinAlways, Math.Max(statSpinWithCov, pvCoverage) - _disP.Val + _disOffP.Val);
 
             // generator coverage setpoint
             _genCoverP = (_loadP.Val - _pvP.Val) + reserve;
