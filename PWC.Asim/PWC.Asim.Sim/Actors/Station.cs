@@ -60,7 +60,6 @@ namespace PWC.Asim.Sim.Actors
             double pvCoverage = _pvP.Val * _pvCvgPct.Val / 100D;
             double statSpinWithCov = _statMaintainSpin.Val > 0 ? 0 : _statSpinSetP.Val;
             double statSpinAlways  = _statMaintainSpin.Val > 0 ? _statSpinSetP.Val : 0;
-
             double reserve = Math.Max(statSpinAlways, Math.Max(statSpinWithCov, pvCoverage) - _disP.Val + _disOffP.Val);
 
             // generator coverage setpoint

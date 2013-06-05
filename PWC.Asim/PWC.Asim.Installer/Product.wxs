@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
-	<Product Id="*" Name="Asim" Language="1033" Version="1.0.0.0" Manufacturer="" UpgradeCode="63e5a38f-8d91-46c9-924c-9f49dec85f48">
+	<Product Id="*" Name="Asim" Language="1033" Version="1.0.0.0" Manufacturer="Radical Systems" UpgradeCode="63e5a38f-8d91-46c9-924c-9f49dec85f48">
 		<Package InstallerVersion="200" Compressed="yes" InstallScope="perMachine" />
 
 		<MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." />

@@ -556,6 +556,69 @@ namespace ConsoleTests
             genP.Where((s, i) => i > 1200).ToList().ForEach(v => Assert.IsTrue(v >= 800));
         }
 
+        [Test]
+        public void MaintainSpinTrue()
+        {
+            MaintainSpinTest(true);
+        }
+
+        [Test]
+        public void MaintainSpinFalse()
+        {
+            MaintainSpinTest(false);
+        }
+
+        protected void MaintainSpinTest(bool maintainSpin)
+        {
+            // Arrange
+            var settingsFile1 = GetTempFilename;
+            var settingsFile2 = GetTempFilename;
+            var outFile = GetTempFilename;
+            const int period = 10 * 60;
+
+            var values = new SortedDictionary<string, double[]>();
+            InsertFuelConsumption(values, 0.33, 4);
+            values["Gen1MaxP"] = new double[] { 500 };
+            values["Gen1IdealPctP"] = new double[] { 0 };
+            values["GenAvailSet"] = new double[] { 1 };
+            values["GenConfig1"] = new double[] { 1 };
+            values["StatMaintainSpin"] = new double[] { maintainSpin ? 1 : 0 };
+            values["StatSpinSetP"] = new double[] { 50 };
+            values["LoadP"] = new double[] { 200 };
+            var disPprofile = new double[] { 0, 10, 20, 30, 40, 50 };
+            int iterations = (disPprofile.Count() + 1) * period;
+
+            StringBuilder settings = BuildCsvFor(values.Keys.ToList(), values.Values.ToArray());
+            File.WriteAllText(settingsFile1, settings.ToString());
+            settings = BuildCsvFor("Dis1LoadP", disPprofile, period);
+            File.WriteAllText(settingsFile2, settings.ToString());
+
+            // Act
+            int retValue = StartConsoleApplication(
+                string.Format("--iterations {0} --input {1} --input {2} --output {3} LoadP,Gen1P,GenCfgSetP",
+                    iterations, settingsFile1, settingsFile2, outFile));
+
+            // Assert
+            // completed successfully
+            Assert.AreEqual(0, retValue);
+            var fileArray = CsvFileToArray(outFile);
+
+            var genCfgSetP = fileArray.Select(col => col[3]).Where((s, i) => i > 0).Select(Convert.ToDouble).ToList();
+            if (maintainSpin)
+            {
+                genCfgSetP.Where((s, i) => i > 65).ToList().ForEach(v => Assert.IsTrue(DoublesAreEqual(v, 250)));
+            }
+            else
+            {
+                Assert.IsTrue(DoublesAreEqual(genCfgSetP[65], 250));
+                Assert.IsTrue(DoublesAreEqual(genCfgSetP[605], 240));
+                Assert.IsTrue(DoublesAreEqual(genCfgSetP[1205], 230));
+                Assert.IsTrue(DoublesAreEqual(genCfgSetP[1805], 220));
+                Assert.IsTrue(DoublesAreEqual(genCfgSetP[2405], 210));
+                Assert.IsTrue(DoublesAreEqual(genCfgSetP[3005], 200));
+            }
+        }
+
         /// <summary>
         /// Inserts the given constant fuel consumption into the value dictionary
         /// </summary>
