@@ -87,7 +87,7 @@ namespace PWC.Asim.Sim.Utils
             // add extra simulation actors here.  Order is important:
             actors.Add(new Load());
             actors.Add(new Station());
-            actors.Add(new DispatchMgr());
+            actors.Add(new SheddableLoadMgr());
             actors.Add(new GenMgr(GuessGeneratorState ? GenMgrType.Calculate : GenMgrType.Simulate));
             actors.Add(new Solar(LoadSolarDelegate()));
             _outputActors.ForEach(o => actors.Add(new OutputData(o.Filename, o.Vars, o.Period, StartTime, DateFormat.Other)));

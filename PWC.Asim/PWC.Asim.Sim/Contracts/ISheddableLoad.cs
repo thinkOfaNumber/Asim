@@ -17,30 +17,27 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace PWC.Asim.Sim.Contracts
 {
-    public interface IDispatchLoad
+    public interface ISheddableLoad
     {
         /// <summary>
-        /// Total / rated dispatchable load
+        /// Total / rated sheddable load
         /// </summary>
-        double DisLoadP { get; }
+        double ShedLoadP { get; }
         /// <summary>
-        /// Online dispatchable load
+        /// Online sheddable load
         /// </summary>
-        double DisP { get; }
+        double ShedP { get; }
         /// <summary>
-        /// Offline portion of dispatchable load
+        /// Offline portion of sheddable load
         /// </summary>
-        double DisOffP { get; }
+        double ShedOffP { get; }
         /// <summary>
         /// Proportion of load that can be switched off soon
         /// </summary>
-        double DisSpinP { get; }
+        double ShedSpinP { get; }
 
         void Run(ulong iteration);
         void Stop();

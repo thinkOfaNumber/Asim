@@ -386,7 +386,7 @@ namespace ConsoleTests
         }
 
         [Test]
-        public void DispatchableLoad()
+        public void SheddableLoad()
         {
             var settingsFile1 = GetTempFilename;
             var settingsFile2 = GetTempFilename;
@@ -402,9 +402,9 @@ namespace ConsoleTests
             values["GenConfig1"] = new double[] { 1 };
             values["GenAvailSet"] = new double[] { 1 };
             values["GenBlackCfg"] = new double[] { 1 };
-            values["DisLoadMaxT"] = new double[] { maxOffTime };
-            values["DisLoadT"] = new double[] { offLatency };
-            values["Dis1LoadP"] = new double[] { 40 };
+            values["ShedLoadMaxT"] = new double[] { maxOffTime };
+            values["ShedLoadT"] = new double[] { offLatency };
+            values["Shed1LoadP"] = new double[] { 40 };
             var loadProfile = new double[] { 50, 100, 200, 300, 496, 496, 496, 496, 400 };
             int iterations = (loadProfile.Count() + 1) * period;
 
@@ -415,7 +415,7 @@ namespace ConsoleTests
 
             // Act
             int retValue = StartConsoleApplication(
-                string.Format("--iterations {0} --input {1} --input {2} --output {3} Gen1P,DisLoadP,GenSpinP,DisP,Gen1LoadFact",
+                string.Format("--iterations {0} --input {1} --input {2} --output {3} Gen1P,ShedLoadP,GenSpinP,ShedP,Gen1LoadFact",
                     iterations, settingsFile1, settingsFile2, outFile));
 
             // Assert
@@ -423,14 +423,14 @@ namespace ConsoleTests
             Assert.AreEqual(0, retValue);
             var fileArray = CsvFileToArray(outFile);
             var gen1P = fileArray.Select(col => col[1]).Where((s, i) => i > 0).Select(Convert.ToDouble).ToList();
-            var disLoadP = fileArray.Select(col => col[2]).Where((s, i) => i > 0).Select(Convert.ToDouble).ToList();
+            var shedLoadP = fileArray.Select(col => col[2]).Where((s, i) => i > 0).Select(Convert.ToDouble).ToList();
             var geSpinP = fileArray.Select(col => col[3]).Where((s, i) => i > 0).Select(Convert.ToDouble).ToList();
-            var disP = fileArray.Select(col => col[4]).Where((s, i) => i > 0).Select(Convert.ToDouble).ToList();
+            var shedP = fileArray.Select(col => col[4]).Where((s, i) => i > 0).Select(Convert.ToDouble).ToList();
             var loadFact = fileArray.Select(col => col[5]).Where((s, i) => i > 0).Select(Convert.ToDouble).ToList();
 
-            // at 61s: load 50 - disLoad 40 = 10
+            // at 61s: load 50 - shedLoad 40 = 10
             Assert.IsTrue(DoublesAreEqual(10, gen1P.ElementAt(61)));
-            // at 65s: load 50 (disLoad on)
+            // at 65s: load 50 (shedLoad on)
             Assert.IsTrue(DoublesAreEqual(50, gen1P.ElementAt(65)));
             // at 10m: load 100
             Assert.IsTrue(DoublesAreEqual(100, gen1P.ElementAt(10 * 60)));
@@ -441,7 +441,7 @@ namespace ConsoleTests
             // at 40m: load 496
             Assert.IsTrue(DoublesAreEqual(496, gen1P.ElementAt(40 * 60)));
 
-            // Load Factor > 99% so the dispatchable load
+            // Load Factor > 99% so the sheddable load
             // should shut off automatically
             // at 40m+latency: load 496 - 40 = 456
             Assert.IsTrue(DoublesAreEqual(456, gen1P.ElementAt(40 * 60 + offLatency + 5)));
@@ -451,7 +451,7 @@ namespace ConsoleTests
             // at 60m: load 496 - 40 = 456
             Assert.IsTrue(DoublesAreEqual(456, gen1P.ElementAt(60 * 60)));
 
-            // this tests that the dispatchable load turns on when the min run
+            // this tests that the sheddable load turns on when the min run
             // time has expired, regardless of load factor.  This is twenty
             // minutes after it turned off (at 40m).
             // at 60m+5s: load 496
@@ -585,12 +585,12 @@ namespace ConsoleTests
             values["StatMaintainSpin"] = new double[] { maintainSpin ? 1 : 0 };
             values["StatSpinSetP"] = new double[] { 50 };
             values["LoadP"] = new double[] { 200 };
-            var disPprofile = new double[] { 0, 10, 20, 30, 40, 50 };
-            int iterations = (disPprofile.Count() + 1) * period;
+            var shedPprofile = new double[] { 0, 10, 20, 30, 40, 50 };
+            int iterations = (shedPprofile.Count() + 1) * period;
 
             StringBuilder settings = BuildCsvFor(values.Keys.ToList(), values.Values.ToArray());
             File.WriteAllText(settingsFile1, settings.ToString());
-            settings = BuildCsvFor("Dis1LoadP", disPprofile, period);
+            settings = BuildCsvFor("Shed1LoadP", shedPprofile, period);
             File.WriteAllText(settingsFile2, settings.ToString());
 
             // Act

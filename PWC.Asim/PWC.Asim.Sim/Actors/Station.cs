@@ -42,8 +42,8 @@ namespace PWC.Asim.Sim.Actors
         private readonly Shared _genOnlineCfg = SharedContainer.GetOrNew("GenOnlineCfg");
         private readonly Shared _genSpinP = SharedContainer.GetOrNew("GenSpinP");
         private readonly Shared _genCapP = SharedContainer.GetOrNew("GenCapP");
-        private readonly Shared _disP = SharedContainer.GetOrNew("DisP");
-        private readonly Shared _disOffP = SharedContainer.GetOrNew("DisOffP");
+        private readonly Shared _shedP = SharedContainer.GetOrNew("ShedP");
+        private readonly Shared _shedOffP = SharedContainer.GetOrNew("ShedOffP");
         private static bool _lastStatBlack;
         private readonly Shared _statBlack = SharedContainer.GetOrNew("StatBlack");
         private double _genCoverP;
@@ -60,7 +60,7 @@ namespace PWC.Asim.Sim.Actors
             double pvCoverage = _pvP.Val * _pvCvgPct.Val / 100D;
             double statSpinWithCov = _statMaintainSpin.Val > 0 ? 0 : _statSpinSetP.Val;
             double statSpinAlways  = _statMaintainSpin.Val > 0 ? _statSpinSetP.Val : 0;
-            double reserve = Math.Max(statSpinAlways, Math.Max(statSpinWithCov, pvCoverage) - _disP.Val + _disOffP.Val);
+            double reserve = Math.Max(statSpinAlways, Math.Max(statSpinWithCov, pvCoverage) - _shedP.Val + _shedOffP.Val);
 
             // generator coverage setpoint
             _genCoverP = (_loadP.Val - _pvP.Val) + reserve;
@@ -73,7 +73,7 @@ namespace PWC.Asim.Sim.Actors
             // station output
             _statP.Val = _genP.Val + _pvP.Val;
             // station spinning reserve
-            _statSpinP.Val = _genSpinP.Val + _disP.Val;
+            _statSpinP.Val = _genSpinP.Val + _shedP.Val;
 
             // maximun load value
             _loadMaxP.Val = Math.Max(_loadP.Val, _loadMaxP.Val);

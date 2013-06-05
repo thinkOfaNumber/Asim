@@ -24,7 +24,7 @@ namespace PWC.Asim.Sim.Actors
 {
     /// <summary>
     /// The Load class manages changes to station load due to the maximum load
-    /// limit (LoadMaxLimP) and dispatchable load online.  The simulator load
+    /// limit (LoadMaxLimP) and sheddable load online.  The simulator load
     /// is LoadSetP.
     /// </summary>
     class Load : IActor
@@ -32,7 +32,7 @@ namespace PWC.Asim.Sim.Actors
         private readonly Shared _loadMaxLimP = SharedContainer.GetOrNew("LoadMaxLimP");
         private readonly Shared _loadP = SharedContainer.GetOrNew("LoadP");
         private readonly Shared _loadSetP = SharedContainer.GetOrNew("LoadSetP");
-        private readonly Shared _disOffP = SharedContainer.GetOrNew("DisOffP");
+        private readonly Shared _shedOffP = SharedContainer.GetOrNew("ShedOffP");
 
         public void Init()
         {
@@ -44,8 +44,8 @@ namespace PWC.Asim.Sim.Actors
             // limit load based on LoadMaxLimP
             double realLoadP = _loadMaxLimP.Val > 0 ? Math.Min(_loadP.Val, _loadMaxLimP.Val) : _loadP.Val;
 
-            // simulate dispatchable load switching off by substracting offline dispatchable load component
-            realLoadP -= _disOffP.Val;
+            // simulate sheddable load switching off by substracting offline sheddable load component
+            realLoadP -= _shedOffP.Val;
 
             _loadSetP.Val = realLoadP;
         }

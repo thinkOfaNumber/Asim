@@ -84,7 +84,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Actors\DispatchMgr.cs" />
+    <Compile Include="Actors\SheddableLoadMgr.cs" />
     <Compile Include="Actors\GenMgr.cs" />
     <Compile Include="Actors\Load.cs" />
     <Compile Include="Actors\NextData.cs" />
@@ -93,7 +93,7 @@
     <Compile Include="Actors\Station.cs" />
     <Compile Include="Actors\TestActor.cs" />
     <Compile Include="Contracts\Delegates.cs" />
-    <Compile Include="Contracts\IDispatchLoad.cs" />
+    <Compile Include="Contracts\ISheddableLoad.cs" />
     <Compile Include="Utils\GeneratorBase.cs" />
     <Compile Include="Utils\GeneratorFull.cs" />
     <Compile Include="Utils\GeneratorStats.cs" />
