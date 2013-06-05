@@ -568,6 +568,23 @@ namespace ConsoleTests
             MaintainSpinTest(false);
         }
 
+        [Test]
+        public void IgnoreMsTimes()
+        {
+            const string msFile = "t,LoadP\r\n2012-10-24T20:54:31.299,393\r\n2012-10-24T20:54:31.399,367\r\n2012-10-24T20:54:31.499,367";
+
+            var settingsFile1 = GetTempFilename;
+            File.WriteAllText(settingsFile1, msFile);
+
+            // Act
+            int retValue = StartConsoleApplication(
+                string.Format("--iterations 1000 --input {0} --starttime 2012-10-24T20:54:30", settingsFile1));
+
+            // Assert
+            // completed successfully
+            Assert.AreEqual(0, retValue);
+        }
+
         protected void MaintainSpinTest(bool maintainSpin)
         {
             // Arrange

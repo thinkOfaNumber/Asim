@@ -58,12 +58,12 @@ namespace PWC.Asim.Sim.Actors
         private UInt64 _offset;
         private UInt64 _period;
         private readonly bool _recycle;
-        private string _nextline;
         private ulong _lineNo;
         private int _columnCount;
         private readonly char[] _scaleChars = new[] { '*', '+' };
+        private bool _noMoreData = false;
         
-        private DateFormat _dateFormat;
+        private DateFormat? _dateFormat;
         private readonly DateTime _simStartTime;
         private readonly ulong _simOffset;
 
@@ -81,12 +81,11 @@ namespace PWC.Asim.Sim.Actors
 
         public void Run(ulong iteration)
         {
-            if (iteration != (ulong)_nextT || _nextline == null)
+            if (iteration != (ulong)_nextT || _noMoreData)
                 return;
 
             try
             {
-                _cells = _nextline.Split(',');
                 for (int i = 0; i < _columnCount; i++)
                 {
                     try
@@ -112,14 +111,7 @@ namespace PWC.Asim.Sim.Actors
                     }
                 }
 
-                ReadLine();
-                if (_nextline != null)
-                {
-                    var nextT = DateToInt64(_nextline.Substring(0, _nextline.IndexOf(',')));
-                    if (nextT <= _nextT)
-                        throw new Exception("Time stood still or went backwards!");
-                    _nextT = nextT;
-                }
+                ReadTo(x=>true); // read next line
             }
             catch (SimulationException)
             {
@@ -136,8 +128,8 @@ namespace PWC.Asim.Sim.Actors
             _period = 1;
             _offset = 0;
             // get headers
-            ReadLine();
-            List<string> headers = _nextline.Split(',').ToList();
+            _lineNo = 1;
+            List<string> headers = _stream.ReadLine().Split(',').ToList();
             if (!headers[0].Equals("t"))
             {
                 throw new FormatException(_filename + ": Cell 0,0 must contain 't' to be a valid input file");
@@ -166,17 +158,7 @@ namespace PWC.Asim.Sim.Actors
             }
 
             // get first data row
-            do
-            {
-                ReadLine();
-                if (_nextline == null)
-                    break;
-                string time = _nextline.Substring(0, _nextline.IndexOf(','));
-                _dateFormat = GetDateFormat(time);
-                _nextT = DateToInt64(time);
-                // times less than zero represent a start time after the beginning
-                // of the data file's first sample, so ignore up to "zero"
-            } while (_nextT < 0);
+            ReadTo(t=>t.IterTime >= 0);
         }
 
         public void Finish()
@@ -187,24 +169,43 @@ namespace PWC.Asim.Sim.Actors
         #endregion
 
         /// <summary>
-        /// Read the next line from the input file, and parse the date from it.
-        /// The line is stored in _nextline, and the date in _nextT.
+        /// Read up to the next matching line from the input file, and parse the date from it.
+        /// The cells are stored in _cells, and the date in _nextT.
         /// </summary>
-        /// <returns></returns>
-        private void ReadLine()
+        /// <param name="readUntil">A predicate expression to match against a TimeFields object
+        /// representing the date from the current line.</param>
+        private void ReadTo(Predicate<TimeFields> readUntil)
         {
-            _nextline = _stream.ReadLine();
-            _lineNo++;
-
-            if (_nextline == null && _recycle)
+            TimeFields line = null;
+            do
             {
-                _file.Seek(0, SeekOrigin.Begin);
-                _stream = new StreamReader(_file);
-                _stream.ReadLine(); // ignore header row
-                _nextline = _stream.ReadLine();
-                _lineNo = 1;
-                _offset = (ulong)(_nextT + (long)_period);
-            }
+                var nextline = _stream.ReadLine();
+                if (nextline == null && _recycle)
+                {
+                    _file.Seek(0, SeekOrigin.Begin);
+                    _stream = new StreamReader(_file);
+                    _stream.ReadLine(); // ignore header row
+                    nextline = _stream.ReadLine();
+
+                    _lineNo = 1;
+                    _offset = (ulong) (_nextT + (long) _period);
+                }
+                if (nextline == null)
+                {
+                    _noMoreData = true;
+                    break;
+                }
+
+                _cells = nextline.Split(',');
+
+                line = new TimeFields
+                    {
+                        LineNumber = ++_lineNo,
+                        StringTime = _cells[0],
+                        IterTime = DateToInt64(_cells[0])
+                    };
+            } while (!readUntil(line) || line.IterTime < _nextT);
+            _nextT = line == null ? 0 : line.IterTime;
         }
 
         /// <summary>
@@ -216,6 +217,7 @@ namespace PWC.Asim.Sim.Actors
         private Int64 DateToInt64(string time)
         {
             Int64 seconds = 0;
+            _dateFormat = _dateFormat ?? GetDateFormat(time);
             try
             {
                 switch (_dateFormat)
@@ -236,7 +238,7 @@ namespace PWC.Asim.Sim.Actors
             }
             catch (Exception e)
             {
-                throw new SimulationException(_filename + ": Couldn't parse date on line " + _lineNo, e);
+                throw new SimulationException(_filename + ": Couldn't parse date on line " + _lineNo + ": " + time, e);
             }
             if (seconds != 0)
             {
@@ -257,5 +259,12 @@ namespace PWC.Asim.Sim.Actors
             }
             return DateFormat.Other;
         }
+    }
+
+    public class TimeFields
+    {
+        public string StringTime { get; set; }
+        public long IterTime { get; set; }
+        public ulong LineNumber { get; set; }
     }
 }
