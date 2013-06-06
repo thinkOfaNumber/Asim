@@ -109,13 +109,13 @@ namespace PWC.Asim.Sim.Actors
 
             // by now all vars will exist in varPool, so expand globs
             var varStats = new List<string[]>();
-            var regex = new Regex(@"^(.*)(\{(.*)\})?$", RegexOptions.IgnoreCase);
+            var regex = new Regex(@"^(.*?)(\{(.*)\})?$", RegexOptions.IgnoreCase);
             foreach (string varGlob in _varGlobs)
             {
                 var match = regex.Match(varGlob);
-                var statistics = match.Groups[2].Success ? match.Groups[1].ToString() : "All";
+                var statistics = match.Groups[3].Success ? match.Groups[3].ToString() : "All";
 
-                varStats.AddRange(SharedContainer.MatchGlobs(new[] {match.Groups[0].ToString()})
+                varStats.AddRange(SharedContainer.MatchGlobs(new[] {match.Groups[1].ToString()})
                                                  .Select(variable => new[]
                                                      {
                                                          variable, // the variable name
@@ -129,7 +129,6 @@ namespace PWC.Asim.Sim.Actors
             for (int i = 0; i < _nvars; i++)
             {
                 var variableName = varStats[i][0];
-                Console.WriteLine("Getting variable " + variableName);
                 _outVars[i].Act = SharedContainer.GetOrNew(variableName);
                 if (_outputEvery == 1)
                     _outVars[i].Stats = OutputStats.Act;
