@@ -205,7 +205,8 @@ namespace PWC.Asim.Sim.Actors
                         IterTime = DateToInt64(_cells[0])
                     };
             } while (!readUntil(line) || line.IterTime < _nextT);
-            _nextT = line == null ? 0 : line.IterTime;
+            if (line != null )
+                _nextT = line.IterTime;
         }
 
         /// <summary>

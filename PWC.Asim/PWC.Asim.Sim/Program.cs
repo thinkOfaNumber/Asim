@@ -95,9 +95,11 @@ namespace PWC.Asim.Sim
 
                         case Arguments.Output:
                             outputFile = arglist.Dequeue();
-                            uint period = 1;
+                            uint period;
                             if (UInt32.TryParse(arglist.Peek(), out period))
                                 arglist.Dequeue();
+                            else
+                                period = 1;
 
                             var vars = arglist.Dequeue().Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
                             _simulator.AddOutput(outputFile, vars, period);
