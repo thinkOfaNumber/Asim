@@ -571,6 +571,7 @@ namespace ConsoleTests
         [Test]
         public void IgnoreMsTimes()
         {
+            // Arrange
             const string msFile = "t,LoadP\r\n2012-10-24T20:54:31.299,393\r\n2012-10-24T20:54:31.399,367\r\n2012-10-24T20:54:31.499,367";
 
             var settingsFile1 = GetTempFilename;
@@ -583,6 +584,45 @@ namespace ConsoleTests
             // Assert
             // completed successfully
             Assert.AreEqual(0, retValue);
+        }
+
+        [Test]
+        public void StatisticsSelection()
+        {
+            // Arrange
+            var outFile = GetTempFilename;
+            var stats = "LoadP{Min},Gen[1-3]P{MinT},Gen[1-3]StartCnt{MAx},Gen[1-3]StopCnt{MaxT}," +
+                        "Gen[1-3]E,PvP{Max},GenSpinP{MaxT},Gen[1-3]LoadFact{All},ShedLoadP,ShedP{Act},GenCfgSetP,StatSpinP";
+            var resultHeaders = new List<string>()
+                {
+                    "t",
+                    "LoadP_min", "Gen1P_minT", "Gen2P_minT", "Gen3P_minT", "Gen1StartCnt", "Gen2StartCnt", "Gen3StartCnt",
+                    "Gen1StopCnt", "Gen2StopCnt", "Gen3StopCnt", "Gen1E", "Gen2E", "Gen3E", "PvP_max", "GenSpinP_maxT",
+                    "Gen1LoadFact_min", "Gen1LoadFact_max", "Gen1LoadFact_minT", "Gen1LoadFact_maxT", "Gen1LoadFact_ave",
+                    "Gen2LoadFact_min", "Gen2LoadFact_max", "Gen2LoadFact_minT", "Gen2LoadFact_maxT", "Gen2LoadFact_ave",
+                    "Gen3LoadFact_min", "Gen3LoadFact_max", "Gen3LoadFact_minT", "Gen3LoadFact_maxT", "Gen3LoadFact_ave",
+                    "ShedLoadP_min", "ShedLoadP_max", "ShedLoadP_minT", "ShedLoadP_maxT", "ShedLoadP_ave",
+                    "ShedP",
+                    "GenCfgSetP_min", "GenCfgSetP_max", "GenCfgSetP_minT", "GenCfgSetP_maxT", "GenCfgSetP_ave",
+                    "StatSpinP_min", "StatSpinP_max", "StatSpinP_minT", "StatSpinP_maxT", "StatSpinP_ave"
+                };
+
+            // Act
+            int retValue = StartConsoleApplication(
+                string.Format("--iterations {0} --output {1} {0} {2}",
+                    86400, outFile, stats));
+
+            // Assert
+            // completed successfully
+            Assert.AreEqual(0, retValue);
+
+            var headerRow = CsvFileToArray(outFile)[0].ToList();
+            foreach (var h in resultHeaders)
+            {
+                Console.WriteLine("testing " + h);
+                Assert.IsTrue(headerRow.Remove(h));
+            }
+            Assert.AreEqual(headerRow.Count, 0);
         }
 
         protected void MaintainSpinTest(bool maintainSpin)
