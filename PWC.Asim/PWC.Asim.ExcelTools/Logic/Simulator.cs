@@ -122,7 +122,7 @@ namespace PWC.Asim.ExcelTools.Logic
                         if (oi.Variables.Any())
                         {
                             args.Append(" ");
-                            args.Append(string.Join(",", oi.Variables));
+                            args.Append(string.Join(" ", oi.Variables));
                         }
                     }
                 });

@@ -63,7 +63,7 @@ namespace ConsoleTests
 
             // Act
             int retValue = StartConsoleApplication(
-                string.Format("--iterations {0} --input {1} recycle --input {2} --output {3} {4} RecycleCnt,NoRecycleCnt",
+                string.Format("--iterations {0} --input {1} recycle --input {2} --output {3} {4} RecycleCnt NoRecycleCnt",
                     iterations, recycledFile, readOnceFile, outFile, period));
 
             // Assert
@@ -241,7 +241,7 @@ namespace ConsoleTests
 
             // Act
             int retValue = StartConsoleApplication(
-                string.Format("--iterations {0} --input {1} --output {2} {0} Gen1E,Gen1FuelCnt",
+                string.Format("--iterations {0} --input {1} --output {2} {0} Gen1E Gen1FuelCnt",
                     iterations, settingsFile, outFile));
 
             // Assert
@@ -327,7 +327,7 @@ namespace ConsoleTests
 
             // Act
             int retValue = StartConsoleApplication(
-                string.Format("--iterations {0} --input {1} --output {2} {0} Gen1E,Gen1FuelCnt",
+                string.Format("--iterations {0} --input {1} --output {2} {0} Gen1E Gen1FuelCnt",
                     iterations, settingsFile, outFile));
 
             // Assert
@@ -372,7 +372,7 @@ namespace ConsoleTests
 
             // Act
             int retValue = StartConsoleApplication(
-                string.Format("--iterations {0} --input {1} --output {2} {0} Gen1RunCnt,Gen1ServiceCnt",
+                string.Format("--iterations {0} --input {1} --output {2} {0} Gen1RunCnt Gen1ServiceCnt",
                     iterations, settingsFile, outFile));
 
             // Assert
@@ -415,7 +415,7 @@ namespace ConsoleTests
 
             // Act
             int retValue = StartConsoleApplication(
-                string.Format("--iterations {0} --input {1} --input {2} --output {3} Gen1P,ShedLoadP,GenSpinP,ShedP,Gen1LoadFact",
+                string.Format("--iterations {0} --input {1} --input {2} --output {3} Gen1P ShedLoadP GenSpinP ShedP Gen1LoadFact",
                     iterations, settingsFile1, settingsFile2, outFile));
 
             // Assert
@@ -489,7 +489,7 @@ namespace ConsoleTests
 
             // Act
             int retValue = StartConsoleApplication(
-                string.Format("--iterations {0} --input {1} --input {2} --output {3} GenP,LoadP,LoadCapAl",
+                string.Format("--iterations {0} --input {1} --input {2} --output {3} GenP LoadP LoadCapAl",
                     iterations, settingsFile1, settingsFile2, outFile));
 
             // Assert
@@ -542,7 +542,7 @@ namespace ConsoleTests
 
             // Act
             int retValue = StartConsoleApplication(
-                string.Format("--iterations {0} --input {1} --input {2} --output {3} LoadP,GenP,PvP",
+                string.Format("--iterations {0} --input {1} --input {2} --output {3} LoadP GenP PvP",
                     iterations, settingsFile1, settingsFile2, outFile));
 
             // Assert
@@ -591,8 +591,8 @@ namespace ConsoleTests
         {
             // Arrange
             var outFile = GetTempFilename;
-            var stats = "LoadP{Min},Gen[1-3]P{MinT},Gen[1-3]StartCnt{MAx},Gen[1-3]StopCnt{MaxT}," +
-                        "Gen[1-3]E,PvP{Max},GenSpinP{MaxT},Gen[1-3]LoadFact{All},ShedLoadP,ShedP{Act},GenCfgSetP,StatSpinP";
+            const string stats = "LoadP{Min} Gen[1-3]P{MinT} Gen[1-3]StartCnt{MAx} Gen[1-3]StopCnt{MaxT} " +
+                "Gen[1-3]E PvP{Max} GenSpinP{MaxT} Gen[1-3]LoadFact{All} ShedLoadP ShedP{Act} GenCfgSetP StatSpinP{Min,Max,Ave}";
             var resultHeaders = new List<string>()
                 {
                     "t",
@@ -604,7 +604,7 @@ namespace ConsoleTests
                     "ShedLoadP_min", "ShedLoadP_max", "ShedLoadP_minT", "ShedLoadP_maxT", "ShedLoadP_ave",
                     "ShedP",
                     "GenCfgSetP_min", "GenCfgSetP_max", "GenCfgSetP_minT", "GenCfgSetP_maxT", "GenCfgSetP_ave",
-                    "StatSpinP_min", "StatSpinP_max", "StatSpinP_minT", "StatSpinP_maxT", "StatSpinP_ave"
+                    "StatSpinP_min", "StatSpinP_max", "StatSpinP_ave"
                 };
 
             // Act
@@ -652,7 +652,7 @@ namespace ConsoleTests
 
             // Act
             int retValue = StartConsoleApplication(
-                string.Format("--iterations {0} --input {1} --input {2} --output {3} LoadP,Gen1P,GenCfgSetP",
+                string.Format("--iterations {0} --input {1} --input {2} --output {3} LoadP Gen1P GenCfgSetP",
                     iterations, settingsFile1, settingsFile2, outFile));
 
             // Assert

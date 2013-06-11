@@ -101,8 +101,14 @@ namespace PWC.Asim.Sim
                             else
                                 period = 1;
 
-                            var vars = arglist.Dequeue().Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
-                            _simulator.AddOutput(outputFile, vars, period);
+                            var vars = new List<string>();
+                            var nextArg = arglist.Peek();
+                            while (!string.IsNullOrEmpty(nextArg) && !nextArg.StartsWith("--"))
+                            {
+                                vars.Add(arglist.Dequeue());
+                                nextArg = arglist.Peek();
+                            }
+                            _simulator.AddOutput(outputFile, vars.ToArray(), period);
                             break;
 
                         case Arguments.Directory:
