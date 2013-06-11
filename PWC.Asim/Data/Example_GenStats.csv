@@ -1,2 +1,2 @@
 t,Gen1MaxP,Gen2MaxP,Gen3MaxP,Gen4MaxP,Gen5MaxP,Gen6MaxP,Gen7MaxP,Gen8MaxP,GenAvailSet,GenBlackCfg,GenMinRunTPa,Gen1MinRunTPa,Gen2MinRunTPa,Gen3MinRunTPa,Gen4MinRunTPa,Gen5MinRunTPa,Gen6MinRunTPa,Gen7MinRunTPa,Gen8MinRunTPa,Gen1IdealPctP,Gen2IdealPctP,Gen3IdealPctP,Gen4IdealPctP,Gen5IdealPctP,Gen6IdealPctP,Gen7IdealPctP,Gen8IdealPctP
-0,80,80,80,80,100,100,100,500,255,240,3600,0,0,0,0,0,0,0,0,40,40,40,40,40,40,40,40
+0,80,100,100,400,100,100,100,500,255,240,3600,0,0,0,0,0,0,0,0,40,40,40,40,40,40,40,40

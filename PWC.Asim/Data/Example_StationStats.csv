@@ -1,2 +1,2 @@
-t,StatHystP,StatSpinSetP
-0,30,50
+t,StatHystP,StatSpinSetP,LoadCapMargin
+0,30,50,1
