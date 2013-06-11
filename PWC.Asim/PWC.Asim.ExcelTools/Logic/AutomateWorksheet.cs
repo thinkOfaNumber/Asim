@@ -136,7 +136,16 @@ namespace PWC.Asim.ExcelTools.Logic
                     Name = sheet.Name
                 };
                 Range excelRange = sheet.UsedRange;
-                ws.Data = (object[,])excelRange.Value[XlRangeValueDataType.xlRangeValueDefault];
+                var data = excelRange.Value[XlRangeValueDataType.xlRangeValueDefault];
+                if (data is string)
+                {
+                    // one-cell worksheets evaluate to strings, and won't have any time-value data in them
+                    ws.Data = null;
+                }
+                else
+                {
+                    ws.Data = (object[,])data;
+                }
                 _workBookData.Add(ws);
             }
         }
@@ -274,6 +283,10 @@ namespace PWC.Asim.ExcelTools.Logic
                                 param.Add(cell.ToString());
                         }
                         _settings.ExtraArgList.Add(param);
+                        break;
+
+                    case "batch command":
+                        _settings.BatchCommands.Add(data[i,2].ToString());
                         break;
 
                     default:

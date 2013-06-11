@@ -61,9 +61,9 @@ namespace PWC.Asim.ExcelTools
 
                 // call the external system
                 bool success = false;
+                var sim = new Simulator(Settings);
                 try
                 {
-                    var sim = new Simulator(Settings);
                     success = sim.Run(reader.ShowSimOutput, reader.OnExit);
                     reader.Finalise();
                 }
@@ -81,6 +81,22 @@ namespace PWC.Asim.ExcelTools
                     catch (Exception e)
                     {
                         Error("Error running analyst: " + e.Message);
+                    }
+                }
+
+                if (success)
+                {
+                    Console.WriteLine("Running Batch commands");
+                    foreach (var cmd in Settings.BatchCommands)
+                    {
+                        try
+                        {
+                            sim.RunBatchCommand(cmd, null);
+                        }
+                        catch (Exception e)
+                        {
+                            Console.WriteLine("Error running batch command '" + cmd + "': " + e.Message);
+                        }
                     }
                 }
             }

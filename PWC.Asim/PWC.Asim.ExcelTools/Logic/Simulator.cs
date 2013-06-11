@@ -32,21 +32,40 @@ namespace PWC.Asim.ExcelTools.Logic
             _settings = settings;
         }
 
+        public bool RunBatchCommand(string cmd, Action<string> onOutputData)
+        {
+            bool success = true;
+            if (!string.IsNullOrEmpty(cmd))
+            {
+                FileInfo location = new FileInfo(cmd);
+                success = Run(onOutputData, null, location, null);
+            }
+            return success;
+        }
+
         public bool Run(Action<string> onOutputData, Action<bool> onExit)
         {
-            bool success = false;
+            bool success = true;
             if (_settings != null && _settings.RunSimulator)
             {
                 FileInfo simulatorLocation = new FileInfo(_settings.Simulator);
-                if (simulatorLocation.Exists)
+                success = Run(onOutputData, onExit, simulatorLocation, GenerateArguments(_settings));
+            }
+            return success;
+        }
+
+        private bool Run(Action<string> onOutputData, Action<bool> onExit, FileInfo execute, string cliArgs)
+        {
+            bool success = false;
+
+                if (execute.Exists)
                 {
-                    var cliArgs = GenerateArguments(_settings);
                     Console.WriteLine();
-                    Console.WriteLine("Spawning simulator with options:");
+                    Console.WriteLine("Running with options:");
                     Console.WriteLine(cliArgs);
                     Console.WriteLine("Please wait...");
-                    Process simulator = new Process();
-                    ProcessStartInfo psi = new ProcessStartInfo(_settings.Simulator);
+                    Process runner = new Process();
+                    ProcessStartInfo psi = new ProcessStartInfo(execute.FullName);
                     psi.Arguments = cliArgs;
 
                     psi.CreateNoWindow = true;
@@ -54,25 +73,29 @@ namespace PWC.Asim.ExcelTools.Logic
                     psi.RedirectStandardOutput = true;
                     psi.RedirectStandardError = true;
 
-                    simulator.StartInfo = psi;
-                    simulator.OutputDataReceived += (sender, args) => onOutputData(args.Data);
-                    simulator.ErrorDataReceived += (sender, args) => onOutputData(args.Data);
-                    simulator.Start();
-                    simulator.BeginOutputReadLine();
-                    simulator.BeginErrorReadLine();
-                    simulator.WaitForExit();
-                    success = simulator.ExitCode == 0;
-                    onExit(success);
-                    simulator.Close();
-                    simulator.Dispose();
-                    Console.WriteLine("simulator finished.");
+                    runner.StartInfo = psi;
+                    if (onOutputData != null)
+                    {
+                        runner.OutputDataReceived += (sender, args) => onOutputData(args.Data);
+                        runner.ErrorDataReceived += (sender, args) => onOutputData(args.Data);
+                    }
+                    runner.Start();
+                    runner.BeginOutputReadLine();
+                    runner.BeginErrorReadLine();
+                    runner.WaitForExit();
+                    success = runner.ExitCode == 0;
+                    if (onExit != null)
+                        onExit(success);
+                    runner.Close();
+                    runner.Dispose();
+                    Console.WriteLine("Finished.");
                 }
                 else
                 {
-                    Console.WriteLine("The simulator doesn't exist at the following location: " +
-                                        simulatorLocation.FullName);
+                    Console.WriteLine("The executable doesn't exist at the following location: " +
+                                        execute.FullName);
                 }
-            }
+
             return success;
         }
 
