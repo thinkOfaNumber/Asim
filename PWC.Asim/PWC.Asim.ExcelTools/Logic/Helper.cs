@@ -24,6 +24,11 @@ namespace PWC.Asim.ExcelTools.Logic
 {
     public class Helper
     {
+        public const char Quote = '"';
+        public const char Delim = ',';
+        public const string Squote = "\"";
+        public const string Sdelim = ",";
+
         public static bool IsFalse(string s)
         {
             var test = s.ToLower();

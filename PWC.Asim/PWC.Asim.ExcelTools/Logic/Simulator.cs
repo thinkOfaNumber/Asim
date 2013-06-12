@@ -16,6 +16,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.IO;
@@ -32,13 +33,34 @@ namespace PWC.Asim.ExcelTools.Logic
             _settings = settings;
         }
 
-        public bool RunBatchCommand(string cmd, Action<string> onOutputData)
+        public bool RunBatchCommand(List<string> cmd, Action<string> onOutputData, string excelfile)
         {
             bool success = true;
-            if (!string.IsNullOrEmpty(cmd))
+            if (cmd.Any())
             {
-                FileInfo location = new FileInfo(cmd);
-                success = Run(onOutputData, null, location, null);
+                FileInfo location = new FileInfo(cmd[0]);
+                StringBuilder args = new StringBuilder(Helper.Quote);
+                cmd.Where((s, i) => i > 0).ToList().ForEach(c =>
+                    {
+                        args.Append(c);
+                        args.Append(Helper.Quote + " ");
+                    });
+                var environment = new Dictionary<string, string>
+                    {
+                        {"ASIM_INPUTFILES", string.Join(Helper.Sdelim, _settings.InputFiles.Select(f => f.Filename))},
+                        {"ASIM_OUTPUTFILES", string.Join(Helper.Sdelim, _settings.OutputFiles.Select(f => f.Filename))},
+                        {"ASIM_COMMUNITYNAME", _settings.CommunityName},
+                        {"ASIM_ITERATIONS", _settings.Iterations},
+                        {
+                            "ASIM_STARTTIME",
+                            _settings.StartDate.HasValue
+                                ? _settings.StartDate.Value.ToString("yyyy-MM-dd HH:mm:ss")
+                                : ""
+                        },
+                        {"ASIM_DIRECTORY", _settings.Directory},
+                        {"ASIM_EXCELFILE", excelfile}
+                    };
+                success = Run(onOutputData, null, location, string.Join(Helper.Sdelim, args.ToString()), environment);
             }
             return success;
         }
@@ -54,7 +76,7 @@ namespace PWC.Asim.ExcelTools.Logic
             return success;
         }
 
-        private bool Run(Action<string> onOutputData, Action<bool> onExit, FileInfo execute, string cliArgs)
+        private bool Run(Action<string> onOutputData, Action<bool> onExit, FileInfo execute, string cliArgs, Dictionary<string,string> env = null)
         {
             bool success = false;
 
@@ -72,6 +94,13 @@ namespace PWC.Asim.ExcelTools.Logic
                     psi.UseShellExecute = false;
                     psi.RedirectStandardOutput = true;
                     psi.RedirectStandardError = true;
+                    if (env != null)
+                    {
+                        foreach (KeyValuePair<string, string> e in env)
+                        {
+                            psi.EnvironmentVariables.Add(e.Key, e.Value);
+                        }
+                    }
 
                     runner.StartInfo = psi;
                     if (onOutputData != null)
@@ -123,7 +152,7 @@ namespace PWC.Asim.ExcelTools.Logic
                 if (!string.IsNullOrEmpty(file.Filename))
                 {
                     args.Append(" --input ");
-                    args.Append(file.Filename);
+                    args.Append(Helper.Quote + file.Filename + Helper.Quote);
                     if (file.Recycle)
                         args.Append(" recycle ");
                 }
@@ -136,7 +165,7 @@ namespace PWC.Asim.ExcelTools.Logic
                     if (oi != null && !string.IsNullOrEmpty(oi.Filename))
                     {
                         args.Append(" --output ");
-                        args.Append(oi.Filename);
+                        args.Append(Helper.Quote + oi.Filename + Helper.Quote);
                         if(!string.IsNullOrEmpty(oi.Period))
                         {
                             args.Append(" ");
@@ -154,15 +183,15 @@ namespace PWC.Asim.ExcelTools.Logic
             if (!string.IsNullOrEmpty(settings.Directory))
             {
                 args.Append(" --directory ");
-                args.Append(settings.Directory);
+                args.Append(Helper.Quote + settings.Directory + Helper.Quote);
             }
 
             if (!string.IsNullOrWhiteSpace(settings.WatchFile) && settings.WatchGlobs.Any())
             {
                 args.Append(" --watch ");
-                args.Append(settings.WatchFile);
+                args.Append(Helper.Quote + settings.WatchFile + Helper.Quote);
                 args.Append(" ");
-                args.Append(string.Join(",", settings.WatchGlobs));
+                args.Append(string.Join(Helper.Sdelim, settings.WatchGlobs));
             }
 
             settings.ExtraArgList.ForEach(a => {
@@ -170,8 +199,7 @@ namespace PWC.Asim.ExcelTools.Logic
                 a.RemoveAt(0);
                 a.ForEach(i => args.Append(" " + i));
             });
-            
-            //Console.WriteLine(args);
+
             return args.ToString();
         }
 

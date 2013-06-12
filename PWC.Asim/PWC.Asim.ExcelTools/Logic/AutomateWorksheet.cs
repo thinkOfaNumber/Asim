@@ -36,8 +36,6 @@ namespace PWC.Asim.ExcelTools.Logic
         private ConfigSettings _settings;
         private string _filename;
         Workbook _workBook;
-        private const char q = '"';
-        private const char delim = ',';
         private bool _weOpened;
         private List<MyWorksheet> _workBookData;
         private static readonly object LockResults = new Object();
@@ -97,12 +95,6 @@ namespace PWC.Asim.ExcelTools.Logic
 
             _settings.SplitFilePrefix = fileInfo.Name.Replace(fileInfo.Extension, "_");
 
-            // add the quotes to the directory
-            if (!string.IsNullOrEmpty(_settings.Directory))
-            {
-                _settings.Directory = q + _settings.Directory + q;
-            }
-
             // prefix the community name.
             string date = _settings.NoDate ? "" : _settings.DateSimulatorRun.ToString(" yyyy-MM-dd-HH-mm-ss");
             string prefixFileName = (_settings.CommunityName + date).Trim();
@@ -112,14 +104,10 @@ namespace PWC.Asim.ExcelTools.Logic
                 _settings.TemplateFiles = new List<TemplateInformation>();
 
             _settings.OutputFiles.Where(f => !_settings.TemplateFiles.Any(t => t.OutputName.Equals(f.Filename))).ToList()
-                .ForEach(o => o.Filename = q +
-                    string.Join(" ", new List<string>() { prefixFileName, o.Period, o.Filename }.Where(s => !string.IsNullOrWhiteSpace(s)))
-                    + q);
+                .ForEach(o => o.Filename = string.Join(" ", new List<string>() { prefixFileName, o.Period, o.Filename }.Where(s => !string.IsNullOrWhiteSpace(s))));
             if (!string.IsNullOrWhiteSpace(_settings.WatchFile))
             {
-                _settings.WatchFile = q +
-                    string.Join(" ", new List<string>() { prefixFileName, _settings.WatchFile }.Where(s => !string.IsNullOrWhiteSpace(s)))
-                    + q;
+                _settings.WatchFile = string.Join(" ", new List<string>() { prefixFileName, _settings.WatchFile }.Where(s => !string.IsNullOrWhiteSpace(s)));
             }
         }
         
@@ -178,8 +166,8 @@ namespace PWC.Asim.ExcelTools.Logic
                         // ensure ends with \\
                         if (!string.IsNullOrEmpty(_settings.Directory))
                         {
-                            _settings.Directory = _settings.Directory.TrimStart(new [] { q });
-                            _settings.Directory = _settings.Directory.TrimEnd(new [] { q, '\\' });
+                            _settings.Directory = _settings.Directory.TrimStart(new[] { Helper.Quote });
+                            _settings.Directory = _settings.Directory.TrimEnd(new[] { Helper.Quote, '\\' });
                         }
                         break;
 
@@ -192,10 +180,10 @@ namespace PWC.Asim.ExcelTools.Logic
                         break;
 
                     case "input":
-                        var file = data[i, 2].ToString().TrimStart(new[] { q }).TrimEnd(new[] { q });
+                        var file = data[i, 2].ToString().TrimStart(new[] { Helper.Quote }).TrimEnd(new[] { Helper.Quote });
                         var input = new InputInformation
                                         {
-                                            Filename = q + file + q,
+                                            Filename = file,
                                             Recycle = data[i, 3] != null && data[i, 3].ToString().ToLower().Equals("recycle")
                                         };
                         _settings.InputFiles.Add(input);
@@ -286,7 +274,14 @@ namespace PWC.Asim.ExcelTools.Logic
                         break;
 
                     case "batch command":
-                        _settings.BatchCommands.Add(data[i,2].ToString());
+                        var batch = new List<string> { data[i, 2].ToString() };
+                        for (int j = 3; j <= data.GetLength(1); j++)
+                        {
+                            var cell = data[i, j];
+                            if (cell != null)
+                                batch.Add(cell.ToString());
+                        }
+                        _settings.BatchCommands.Add(batch);
                         break;
 
                     default:
@@ -313,7 +308,7 @@ namespace PWC.Asim.ExcelTools.Logic
                         lock (_settings)
                         {
                             _settings.InputFiles.Add(
-                                new InputInformation() { Filename = q + filename + q, Recycle = false }
+                                new InputInformation() { Filename = filename, Recycle = false }
                             );
                         }
                     }
@@ -449,7 +444,7 @@ namespace PWC.Asim.ExcelTools.Logic
                     row.Append(data[i,1]);
                     for (int j = 2; j <= data.GetLength(1); j++)
                     {
-                        row.Append(delim);
+                        row.Append(Helper.Delim);
                         row.Append(data[i, j]);
                     }
                     streamWriter.WriteLine(row);

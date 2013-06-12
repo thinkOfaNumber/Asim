@@ -74,7 +74,7 @@ namespace PWC.Asim.ExcelTools.Logic
 
         public List<List<string>> ExtraArgList { get; set; }
 
-        public List<string> BatchCommands { get; set; }
+        public List<List<string>> BatchCommands { get; set; }
 
         public ConfigSettings()
         {
@@ -82,7 +82,7 @@ namespace PWC.Asim.ExcelTools.Logic
             OutputFiles = new List<OutputInformation>();
             TemplateFiles = new List<TemplateInformation>();
             ExtraArgList = new List<List<string>>();
-            BatchCommands = new List<string>();
+            BatchCommands = new List<List<string>>();
             RunSimulator = true;
             _dateSimulatorRun = DateTime.Now;
             Simulator = Environment.GetEnvironmentVariable("ProgramFiles") + @"\Power Water Corporation\Asim\Asim.exe";
