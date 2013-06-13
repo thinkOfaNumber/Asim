@@ -83,7 +83,7 @@ namespace PWC.Asim.ExcelTools.Logic
                 if (execute.Exists)
                 {
                     Console.WriteLine();
-                    Console.WriteLine("Running with options:");
+                    Console.WriteLine("Running '" + execute + "' with options:");
                     Console.WriteLine(cliArgs);
                     Console.WriteLine("Please wait...");
                     Process runner = new Process();
@@ -180,11 +180,11 @@ namespace PWC.Asim.ExcelTools.Logic
                 });
             }
 
-            if (!string.IsNullOrEmpty(settings.Directory))
-            {
-                args.Append(" --directory ");
-                args.Append(Helper.Quote + settings.Directory + Helper.Quote);
-            }
+            //if (!string.IsNullOrEmpty(settings.Directory))
+            //{
+            //    args.Append(" --directory ");
+            //    args.Append(Helper.Quote + settings.Directory + Helper.Quote);
+            //}
 
             if (!string.IsNullOrWhiteSpace(settings.WatchFile) && settings.WatchGlobs.Any())
             {

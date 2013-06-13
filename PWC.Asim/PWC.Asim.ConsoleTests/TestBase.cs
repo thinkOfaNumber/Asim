@@ -59,6 +59,8 @@ namespace ConsoleTests
         private StringWriter _testingConsole;
         private const string ConsoleDir = @"..\..\..\PWC.Asim.Sim\bin\Debug\";
         private const string ConsoleApp = "Asim.exe";
+        private const string ExcelApp = @"..\..\..\PWC.Asim.ExcelTools\bin\Debug\AsimExcelTools.exe";
+        protected const string TestDir = @"..\..\tmp";
 
 
         [TestFixtureSetUp]
@@ -152,6 +154,41 @@ namespace ConsoleTests
 
             // set working directory
             proc.StartInfo.WorkingDirectory = Environment.CurrentDirectory;
+
+            // start and wait for exit
+            proc.Start();
+            proc.WaitForExit();
+
+            // get output to testing console.
+            System.Console.WriteLine(proc.StandardOutput.ReadToEnd());
+            System.Console.Write(proc.StandardError.ReadToEnd());
+
+            // return exit code
+            return proc.ExitCode;
+        }
+
+        /// <summary>
+        /// Starts the Excel integration application
+        /// </summary>
+        /// <param name="arguments">The arguments for the Excel application. 
+        /// Specify empty string to run with no arguments</param>
+        /// <returns>exit code of console app</returns>
+        public int StartExcelApplication(string arguments)
+        {
+            Process proc = new Process();
+            proc.StartInfo.FileName = ExcelApp;
+            // add arguments as whole string
+            proc.StartInfo.Arguments = "--NoDate " + arguments;
+
+            // use it to start from testing environment
+            proc.StartInfo.UseShellExecute = false;
+
+            // redirect outputs to have it in testing console
+            proc.StartInfo.RedirectStandardOutput = true;
+            proc.StartInfo.RedirectStandardError = true;
+
+            // set working directory
+            // proc.StartInfo.WorkingDirectory = Environment.CurrentDirectory;
 
             // start and wait for exit
             proc.Start();
