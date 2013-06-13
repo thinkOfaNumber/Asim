@@ -158,7 +158,8 @@ namespace PWC.Asim.Sim.Actors
             }
 
             // get first data row
-            ReadTo(t=>t.IterTime >= 0);
+            _nextT = -1;
+            ReadTo(t => t.IterTime >= 0);
         }
 
         public void Finish()
@@ -204,7 +205,7 @@ namespace PWC.Asim.Sim.Actors
                         StringTime = _cells[0],
                         IterTime = DateToInt64(_cells[0])
                     };
-            } while (!readUntil(line) || line.IterTime < _nextT);
+            } while (!readUntil(line) || line.IterTime <= _nextT);
             if (line != null )
                 _nextT = line.IterTime;
         }

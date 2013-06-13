@@ -92,7 +92,7 @@ namespace ConsoleTests
         [TearDown]
         public void TestTearDown()
         {
-            // ClearTemp();
+            ClearTemp();
         }
 
         private void ClearTemp()

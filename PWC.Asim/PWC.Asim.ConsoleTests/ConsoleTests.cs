@@ -572,18 +572,27 @@ namespace ConsoleTests
         public void IgnoreMsTimes()
         {
             // Arrange
-            const string msFile = "t,LoadP\r\n2012-10-24T20:54:31.299,393\r\n2012-10-24T20:54:31.399,367\r\n2012-10-24T20:54:31.499,367";
+            const string msFile = "t,LoadP\r\n2012-10-24T20:54:30.299,393\r\n2012-10-24T20:54:30.399,367\r\n2012-10-24T20:54:30.499,369\r\n2012-10-24T20:54:35.000,5";
+            var outFile = GetTempFilename;
+            int iterations = 1000;
 
             var settingsFile1 = GetTempFilename;
             File.WriteAllText(settingsFile1, msFile);
 
             // Act
             int retValue = StartConsoleApplication(
-                string.Format("--iterations 1000 --input {0} --starttime 2012-10-24T20:54:30", settingsFile1));
+                string.Format("--iterations {1} --input {0} --starttime 2012-10-24T20:54:30 --output {2} 1 LoadP",
+                settingsFile1, iterations, outFile));
 
             // Assert
             // completed successfully
             Assert.AreEqual(0, retValue);
+
+            var output = CsvFileToArray(outFile);
+            string sloadP = output.Select(col => col[1]).Last();
+            double loadP = Convert.ToDouble(sloadP);
+            // LoadP should end up at the latest input of 5, not get stuck on the first one.
+            Assert.IsTrue(DoublesAreEqual(5D, loadP));
         }
 
         [Test]

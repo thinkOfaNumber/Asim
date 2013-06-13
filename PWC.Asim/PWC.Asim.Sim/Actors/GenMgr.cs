@@ -22,12 +22,6 @@ using PWC.Asim.Sim.Contracts;
 
 namespace PWC.Asim.Sim.Actors
 {
-    struct Configuration
-    {
-        public Shared GenReg;
-        public double Pmax;
-    }
-
     public enum GenMgrType
     {
         /// <summary>
