@@ -33,7 +33,7 @@ namespace PWC.Asim.ExcelTools.Logic
             _settings = settings;
         }
 
-        public bool RunBatchCommand(List<string> cmd, Action<string> onOutputData, string excelfile)
+        public bool RunBatchCommand(List<string> cmd, Action<string> onOutputData)
         {
             bool success = true;
             if (cmd.Any())
@@ -45,22 +45,7 @@ namespace PWC.Asim.ExcelTools.Logic
                         args.Append(c);
                         args.Append(Helper.Quote + " ");
                     });
-                var environment = new Dictionary<string, string>
-                    {
-                        {"ASIM_INPUTFILES", string.Join(Helper.Sdelim, _settings.InputFiles.Select(f => f.Filename))},
-                        {"ASIM_OUTPUTFILES", string.Join(Helper.Sdelim, _settings.OutputFiles.Select(f => f.Filename))},
-                        {"ASIM_COMMUNITYNAME", _settings.CommunityName},
-                        {"ASIM_ITERATIONS", _settings.Iterations},
-                        {
-                            "ASIM_STARTTIME",
-                            _settings.StartDate.HasValue
-                                ? _settings.StartDate.Value.ToString("yyyy-MM-dd HH:mm:ss")
-                                : ""
-                        },
-                        {"ASIM_DIRECTORY", _settings.Directory},
-                        {"ASIM_EXCELFILE", excelfile}
-                    };
-                success = Run(onOutputData, null, location, string.Join(Helper.Sdelim, args.ToString()), environment);
+                success = Run(onOutputData, null, location, string.Join(Helper.Sdelim, args.ToString()));
             }
             return success;
         }
@@ -76,7 +61,7 @@ namespace PWC.Asim.ExcelTools.Logic
             return success;
         }
 
-        private bool Run(Action<string> onOutputData, Action<bool> onExit, FileInfo execute, string cliArgs, Dictionary<string,string> env = null)
+        private bool Run(Action<string> onOutputData, Action<bool> onExit, FileInfo execute, string cliArgs)
         {
             bool success = false;
 
@@ -94,13 +79,20 @@ namespace PWC.Asim.ExcelTools.Logic
                     psi.UseShellExecute = false;
                     psi.RedirectStandardOutput = true;
                     psi.RedirectStandardError = true;
-                    if (env != null)
-                    {
-                        foreach (KeyValuePair<string, string> e in env)
-                        {
-                            psi.EnvironmentVariables.Add(e.Key, e.Value);
-                        }
-                    }
+
+                    // populate environment
+                    psi.EnvironmentVariables.Add("ASIM_INPUTFILES", string.Join(Helper.Sdelim, _settings.InputFiles.Select(f => f.Filename)));
+                    psi.EnvironmentVariables.Add("ASIM_OUTPUTFILES", string.Join(Helper.Sdelim, _settings.OutputFiles.Select(f => f.Filename)));
+                    psi.EnvironmentVariables.Add("ASIM_COMMUNITYNAME", _settings.CommunityName);
+                    psi.EnvironmentVariables.Add("ASIM_ITERATIONS", _settings.Iterations);
+                    psi.EnvironmentVariables.Add(
+                        "ASIM_STARTTIME",
+                        _settings.StartDate.HasValue
+                            ? _settings.StartDate.Value.ToString("yyyy-MM-dd HH:mm:ss")
+                            : ""
+                    );
+                    psi.EnvironmentVariables.Add("ASIM_DIRECTORY", _settings.Directory);
+                    psi.EnvironmentVariables.Add("ASIM_EXCELFILE", _settings.ExcelFile);
 
                     runner.StartInfo = psi;
                     if (onOutputData != null)
@@ -180,11 +172,17 @@ namespace PWC.Asim.ExcelTools.Logic
                 });
             }
 
-            //if (!string.IsNullOrEmpty(settings.Directory))
-            //{
-            //    args.Append(" --directory ");
-            //    args.Append(Helper.Quote + settings.Directory + Helper.Quote);
-            //}
+            settings.Reports.ForEach(file =>
+            {
+                if (!string.IsNullOrWhiteSpace(file.TemplateName) && !string.IsNullOrWhiteSpace(file.OutputName))
+                {
+                    args.Append(" --report ");
+                    args.Append(Helper.Quote + file.TemplateName + Helper.Quote);
+                    args.Append(" ");
+                    args.Append(Helper.Quote + file.OutputName + Helper.Quote);
+                    args.Append(" ");
+                }
+            });
 
             if (!string.IsNullOrWhiteSpace(settings.WatchFile) && settings.WatchGlobs.Any())
             {

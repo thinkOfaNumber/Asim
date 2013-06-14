@@ -91,7 +91,7 @@ namespace PWC.Asim.ExcelTools
                     {
                         try
                         {
-                            sim.RunBatchCommand(cmd, null, _inputFile);
+                            sim.RunBatchCommand(cmd, null);
                         }
                         catch (Exception e)
                         {

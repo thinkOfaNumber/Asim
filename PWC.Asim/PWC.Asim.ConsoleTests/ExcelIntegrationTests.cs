@@ -53,6 +53,23 @@ namespace ConsoleTests
             Assert.AreEqual(_batchLog, contents);
         }
 
+        [Test]
+        public void TemplateDocument()
+        {
+            // Arrange
+            var template = TestDir + "\\templatetest.txt";
+            var output = TestDir + "\\SomeCommunityName templateout.txt";
+            File.WriteAllText(template, _templateIn);
+
+            // Act
+            int retValue = StartExcelApplication(@"--attach --input ..\..\report.xlsx");
+
+            // Assert
+            Assert.AreEqual(0, retValue);
+            string templateOutput = File.ReadAllText(output);
+            Assert.AreEqual(_templateOut, templateOutput);
+        }
+
         private bool CompareFiles(string filename, List<string[]> array)
         {
             var file = CsvFileToArray(TestDir + "\\" + filename);
@@ -159,5 +176,29 @@ namespace ConsoleTests
             "ASIM_ITERATIONS=86400" + Environment.NewLine +
             "ASIM_OUTPUTFILES=" + Environment.NewLine +
             "ASIM_STARTTIME=2012-10-14 14:25:00" + Environment.NewLine;
+
+        private readonly string _templateIn =
+            "This is a test of the emergency template system." + Environment.NewLine +
+            "This is a simulator environment var %ASIM_COMMUNITYNAME% from Excel" + Environment.NewLine +
+            "This is a system environment var %OS%" + Environment.NewLine +
+            "This is a Shared Var Gen1P: %Gen1P%" + Environment.NewLine +
+            "This is a foo bar %fooBar%foo" + Environment.NewLine +
+            "This is %broken" + Environment.NewLine +
+            "This is isn't broken Gen2P: %Gen2P%" + Environment.NewLine +
+            "These two are on the same line %Gen3P%%Gen4P%" + Environment.NewLine +
+            "This is the end of the test.  If this was a real template," + Environment.NewLine +
+            "you would have been replaced." + Environment.NewLine;
+
+        private readonly string _templateOut =
+            "This is a test of the emergency template system." + Environment.NewLine +
+            "This is a simulator environment var SomeCommunityName from Excel" + Environment.NewLine +
+            "This is a system environment var Windows_NT" + Environment.NewLine +
+            "This is a Shared Var Gen1P: 0" + Environment.NewLine +
+            "This is a foo bar %fooBar%foo" + Environment.NewLine +
+            "This is %broken" + Environment.NewLine +
+            "This is isn't broken Gen2P: 0" + Environment.NewLine +
+            "These two are on the same line 00" + Environment.NewLine +
+            "This is the end of the test.  If this was a real template," + Environment.NewLine +
+            "you would have been replaced." + Environment.NewLine;
     }
 }

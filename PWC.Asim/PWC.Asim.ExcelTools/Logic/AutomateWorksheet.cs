@@ -52,6 +52,8 @@ namespace PWC.Asim.ExcelTools.Logic
             _filename = inputFile;
             ShowSimOutput = ShowSimResults;
             OnExit = CleanupMessages;
+
+            _settings.ExcelFile = inputFile;
         }
 
         public void ProcessConfigSheet(bool attachToRunningProcess)
@@ -105,6 +107,8 @@ namespace PWC.Asim.ExcelTools.Logic
 
             _settings.OutputFiles.Where(f => !_settings.TemplateFiles.Any(t => t.OutputName.Equals(f.Filename))).ToList()
                 .ForEach(o => o.Filename = string.Join(" ", new List<string>() { prefixFileName, o.Period, o.Filename }.Where(s => !string.IsNullOrWhiteSpace(s))));
+            _settings.Reports.ToList()
+                .ForEach(r => r.OutputName = string.Join(" ", new List<string>() { prefixFileName, r.OutputName }.Where(s => !string.IsNullOrWhiteSpace(s))));
             if (!string.IsNullOrWhiteSpace(_settings.WatchFile))
             {
                 _settings.WatchFile = string.Join(" ", new List<string>() { prefixFileName, _settings.WatchFile }.Where(s => !string.IsNullOrWhiteSpace(s)));
@@ -282,6 +286,14 @@ namespace PWC.Asim.ExcelTools.Logic
                                 batch.Add(cell.ToString());
                         }
                         _settings.BatchCommands.Add(batch);
+                        break;
+
+                    case "report":
+                        _settings.Reports.Add(new TemplateInformation()
+                            {
+                                TemplateName = data[i, 2].ToString(),
+                                OutputName = data[i, 3].ToString()
+                            });
                         break;
 
                     default:

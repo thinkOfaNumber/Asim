@@ -30,7 +30,14 @@ namespace PWC.Asim.ExcelTools.Logic
         /// Whether or not the simulator is to be run.
         /// </summary>
         public bool RunSimulator { get; set; }
+        /// <summary>
+        /// Total number of iterations to run.
+        /// </summary>
         public string Iterations { get; set; }
+        /// <summary>
+        /// Location of the Excel File used in this application
+        /// </summary>
+        public string ExcelFile { get; set; }
         /// <summary>
         /// The list of files that are to be used in the simulator.
         /// </summary>
@@ -58,6 +65,8 @@ namespace PWC.Asim.ExcelTools.Logic
 
         public List<TemplateInformation> TemplateFiles { get; set; }
 
+        public List<TemplateInformation> Reports { get; set; }
+
         public LogFileInformation LogInformation { get; set; }
 
         private DateTime _dateSimulatorRun;
@@ -81,6 +90,7 @@ namespace PWC.Asim.ExcelTools.Logic
             InputFiles = new List<InputInformation>();
             OutputFiles = new List<OutputInformation>();
             TemplateFiles = new List<TemplateInformation>();
+            Reports = new List<TemplateInformation>();
             ExtraArgList = new List<List<string>>();
             BatchCommands = new List<List<string>>();
             RunSimulator = true;

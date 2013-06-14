@@ -21,6 +21,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Text;
+using System.Text.RegularExpressions;
 using System.Timers;
 using PWC.Asim.Sim.Actors;
 using PWC.Asim.Sim.Contracts;
@@ -45,10 +47,17 @@ namespace PWC.Asim.Sim.Utils
             public bool Recycle;
         }
 
+        private class ReportFile
+        {
+            public string Template;
+            public string Output;
+        }
+
         public ulong Iteration { get; private set; }
         private Timer _timer;
         private List<InputOption> _inputActors = new List<InputOption>();
         private List<OutputOption> _outputActors = new List<OutputOption>();
+        private static List<ReportFile> _reportFiles = new List<ReportFile>();
         private StreamWriter _watchWriter;
         private readonly Dictionary<string, string> _controllers = new Dictionary<string, string>();
 
@@ -75,6 +84,11 @@ namespace PWC.Asim.Sim.Utils
         public void AddOutput(string filename, string[] variables = null, uint period = 1)
         {
             _outputActors.Add(new OutputOption() { Filename = filename, Vars = variables, Period = period });
+        }
+
+        public void AddReport(string template, string output)
+        {
+            _reportFiles.Add(new ReportFile() {Template = template, Output = output});
         }
 
         #endregion Options
@@ -104,6 +118,7 @@ namespace PWC.Asim.Sim.Utils
             _timer = new Timer(5000);
             _timer.Elapsed += new ElapsedEventHandler(OnTimedEvent);
             _timer.Enabled = true;
+            TimeSpan innerLoopTime;
             try
             {
                 var start = DateTime.Now;
@@ -113,9 +128,10 @@ namespace PWC.Asim.Sim.Utils
                     actors.ForEach(a => a.Run(i));
                 }
                 var end = DateTime.Now;
+                innerLoopTime = end - start;
                 Console.WriteLine("100%");
                 actors.ForEach(a => a.Finish());
-                Console.WriteLine(string.Format("inner loop took {0}s", (end - start).TotalSeconds));
+                Console.WriteLine(string.Format("inner loop took {0}s", innerLoopTime.TotalSeconds));
             }
             catch(SimulationException e)
             {
@@ -129,6 +145,56 @@ namespace PWC.Asim.Sim.Utils
             {
                 _timer.Enabled = false;
                 FinishWatchActions();
+            }
+
+            WriteReports(innerLoopTime);
+        }
+
+        private void WriteReports(TimeSpan time)
+        {
+            var tokens = new Dictionary<string, string>() { { "ASIM_ELAPSEDSECONDS", time.TotalSeconds.ToString() } };
+            const string tokenMatch = "%(.*?)%";
+            foreach (var report in _reportFiles)
+            {
+                try
+                {
+                    Console.WriteLine("Reading template {0}", report.Template);
+                    var template = File.ReadAllText(report.Template);
+                    MatchCollection matches = Regex.Matches(template, tokenMatch);
+                    foreach (Match match in matches)
+                    {
+                        var tok = template.Substring(match.Index + 1, match.Length - 2);
+                        if (!tokens.ContainsKey(tok))
+                        {
+                            // first try from shared vars
+                            var shareVar = SharedContainer.GetOrDefault(tok);
+                            if (shareVar != null)
+                            {
+                                tokens[tok] = shareVar.Val.ToString();
+                            }
+                            else
+                            {
+                                // then try environment
+                                var env = Environment.GetEnvironmentVariable(tok);
+                                if (env != null)
+                                {
+                                    tokens[tok] = env;
+                                }
+                                else
+                                {
+                                    // finally, put the token back in
+                                    tokens[tok] = "%" + tok + "%";
+                                }
+                            }
+                        }
+                    }
+                    var output = Regex.Replace(template, tokenMatch, m => tokens[m.Groups[1].Value]);
+                    File.WriteAllText(report.Output, output);
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine("An error ocurred when creating output {0}", report.Output);
+                }
             }
         }
 

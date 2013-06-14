@@ -40,7 +40,8 @@ namespace PWC.Asim.Sim
             StartTime,
             Watch,
             Algorithm,
-            GeneratorStats
+            GeneratorStats,
+            Report
         }
 
         static void Main(string[] args)
@@ -155,6 +156,10 @@ namespace PWC.Asim.Sim
 
                         case Arguments.GeneratorStats:
                             _simulator.GuessGeneratorState = true;
+                            break;
+
+                        case Arguments.Report:
+                            _simulator.AddReport(arglist.Dequeue(), arglist.Dequeue());
                             break;
                     }
                 }
