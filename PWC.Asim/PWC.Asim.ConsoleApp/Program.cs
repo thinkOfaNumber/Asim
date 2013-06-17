@@ -20,10 +20,10 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using PWC.Asim.Sim.Exceptions;
-using PWC.Asim.Sim.Utils;
+using PWC.Asim.Core.Exceptions;
+using PWC.Asim.Core.Utils;
 
-namespace PWC.Asim.Sim
+namespace PWC.Asim.ConsoleApp
 {
     class Program
     {
@@ -118,7 +118,7 @@ namespace PWC.Asim.Sim
                             {
                                 Directory.SetCurrentDirectory(path);
                             }
-                            catch(Exception e)
+                            catch (Exception e)
                             {
                                 Error("Couldn't open directory '" + path + "'. " + e.Message);
                             }
@@ -179,9 +179,9 @@ namespace PWC.Asim.Sim
             {
                 Error(e.Message);
             }
-            catch(Exception e)
+            catch (Exception e)
             {
-                Error("Error running simulation: " +  e.Message);
+                Error("Error running simulation: " + e.Message);
             }
             AnyKey();
             Environment.Exit(Convert.ToInt32(ExitCode.Success));

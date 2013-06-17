@@ -17,10 +17,10 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using PWC.Asim.Sim.Contracts;
-using PWC.Asim.Sim.Utils;
+using PWC.Asim.Core.Contracts;
+using PWC.Asim.Core.Utils;
 
-namespace PWC.Asim.Sim.Actors
+namespace PWC.Asim.Core.Actors
 {
     /// <summary>
     /// The Load class manages changes to station load due to the maximum load

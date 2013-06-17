@@ -17,30 +17,29 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using PWC.Asim.Core.Contracts;
 
-namespace PWC.Asim.Sim.Contracts
+namespace PWC.Asim.Core.Actors
 {
-    public interface ISheddableLoad
+    public class TestActor : IActor
     {
-        /// <summary>
-        /// Total / rated sheddable load
-        /// </summary>
-        double ShedLoadP { get; }
-        /// <summary>
-        /// Online sheddable load
-        /// </summary>
-        double ShedP { get; }
-        /// <summary>
-        /// Offline portion of sheddable load
-        /// </summary>
-        double ShedOffP { get; }
-        /// <summary>
-        /// Proportion of load that can be switched off soon
-        /// </summary>
-        double ShedSpinP { get; }
+        #region Implementation of IActor
 
-        void Run(ulong iteration);
-        void Stop();
-        void Start();
+        public void Run(ulong iteration)
+        {
+            Console.WriteLine("1: hello, world!");
+        }
+
+        public void Init()
+        {
+            Console.WriteLine("1: init.");
+        }
+
+        public void Finish()
+        {
+            Console.WriteLine("1: finish.");
+        }
+
+        #endregion
     }
 }

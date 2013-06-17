@@ -21,9 +21,9 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using PWC.Asim.Sim.Utils;
+using PWC.Asim.Core.Utils;
 
-namespace PWC.Asim.Sim.Contracts
+namespace PWC.Asim.Core.Contracts
 {
     public interface IActor
     {

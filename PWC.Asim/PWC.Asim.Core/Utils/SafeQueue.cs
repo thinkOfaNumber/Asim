@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace PWC.Asim.Sim.Utils
+namespace PWC.Asim.Core.Utils
 {
     public class SafeQueue<T> : Queue<T>
     {

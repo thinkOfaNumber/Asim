@@ -17,10 +17,10 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using PWC.Asim.Sim.Utils;
-using PWC.Asim.Sim.Contracts;
+using PWC.Asim.Core.Utils;
+using PWC.Asim.Core.Contracts;
 
-namespace PWC.Asim.Sim.Actors
+namespace PWC.Asim.Core.Actors
 {
     public enum GenMgrType
     {

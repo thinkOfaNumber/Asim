@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace PWC.Asim.Sim.Utils
+namespace PWC.Asim.Core.Utils
 {
     public class GeneratorStats : GeneratorBase
     {

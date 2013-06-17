@@ -24,13 +24,13 @@ using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Timers;
-using PWC.Asim.Sim.Actors;
-using PWC.Asim.Sim.Contracts;
-using PWC.Asim.Sim.Exceptions;
+using PWC.Asim.Core.Actors;
+using PWC.Asim.Core.Contracts;
+using PWC.Asim.Core.Exceptions;
 
-namespace PWC.Asim.Sim.Utils
+namespace PWC.Asim.Core.Utils
 {
-    class Simulator
+    public class Simulator
     {
         public bool WaitForKeyPress { get; set; }
 

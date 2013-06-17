@@ -18,7 +18,7 @@
 
 using System;
 
-namespace PWC.Asim.Sim.Utils
+namespace PWC.Asim.Core.Utils
 {
     static public class Settings
     {

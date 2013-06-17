@@ -39,7 +39,6 @@ namespace ConsoleTests
     public class TestBase
     {
         public StringBuilder ConsoleOutput { get; set; }
-        private string _tempPath;
         private readonly Queue<string> _tempFiles = new Queue<string>();
 
         public string GetTempFilename
@@ -57,7 +56,7 @@ namespace ConsoleTests
 
         private TextWriter _normalOutput;
         private StringWriter _testingConsole;
-        private const string ConsoleDir = @"..\..\..\PWC.Asim.Sim\bin\Debug\";
+        private const string ConsoleDir = @"..\..\..\PWC.Asim.ConsoleApp\bin\Debug\";
         private const string ConsoleApp = "Asim.exe";
         private const string ExcelApp = @"..\..\..\PWC.Asim.ExcelTools\bin\Debug\AsimExcelTools.exe";
         protected const string TestDir = @"..\..\tmp";

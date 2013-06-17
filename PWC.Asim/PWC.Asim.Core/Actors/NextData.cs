@@ -20,11 +20,11 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using PWC.Asim.Sim.Contracts;
-using PWC.Asim.Sim.Exceptions;
-using PWC.Asim.Sim.Utils;
+using PWC.Asim.Core.Contracts;
+using PWC.Asim.Core.Exceptions;
+using PWC.Asim.Core.Utils;
 
-namespace PWC.Asim.Sim.Actors
+namespace PWC.Asim.Core.Actors
 {
     /// <summary>
     /// Reads from input files with format:

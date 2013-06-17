@@ -17,29 +17,27 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using PWC.Asim.Sim.Contracts;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 
-namespace PWC.Asim.Sim.Actors
+namespace PWC.Asim.Core.Exceptions
 {
-    public class TestActor : IActor
+    public class SimulationException : System.Exception
     {
-        #region Implementation of IActor
-
-        public void Run(ulong iteration)
+        public SimulationException()
         {
-            Console.WriteLine("1: hello, world!");
         }
 
-        public void Init()
+        public SimulationException(string message)
+            : base(message)
         {
-            Console.WriteLine("1: init.");
         }
 
-        public void Finish()
+        public SimulationException(string message,
+            Exception innerException)
+            : base(message, innerException)
         {
-            Console.WriteLine("1: finish.");
         }
-
-        #endregion
     }
 }

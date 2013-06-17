@@ -17,9 +17,9 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using PWC.Asim.Sim.Exceptions;
+using PWC.Asim.Core.Exceptions;
 
-namespace PWC.Asim.Sim.Utils
+namespace PWC.Asim.Core.Utils
 {
     /// <summary>
     /// Generator states.  Values are subject to change.

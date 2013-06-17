@@ -17,27 +17,30 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
-namespace PWC.Asim.Sim.Exceptions
+namespace PWC.Asim.Core.Contracts
 {
-    class SimulationException : System.Exception
+    public interface ISheddableLoad
     {
-        public SimulationException()
-        {
-        }
+        /// <summary>
+        /// Total / rated sheddable load
+        /// </summary>
+        double ShedLoadP { get; }
+        /// <summary>
+        /// Online sheddable load
+        /// </summary>
+        double ShedP { get; }
+        /// <summary>
+        /// Offline portion of sheddable load
+        /// </summary>
+        double ShedOffP { get; }
+        /// <summary>
+        /// Proportion of load that can be switched off soon
+        /// </summary>
+        double ShedSpinP { get; }
 
-        public SimulationException(string message)
-            : base(message)
-        {
-        }
-
-        public SimulationException(string message,
-            Exception innerException)
-            : base(message, innerException)
-        {
-        }
+        void Run(ulong iteration);
+        void Stop();
+        void Start();
     }
 }

@@ -22,10 +22,10 @@ using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
-using PWC.Asim.Sim.Contracts;
-using PWC.Asim.Sim.Utils;
+using PWC.Asim.Core.Contracts;
+using PWC.Asim.Core.Utils;
 
-namespace PWC.Asim.Sim.Actors
+namespace PWC.Asim.Core.Actors
 {
     [Flags]
     enum OutputStats

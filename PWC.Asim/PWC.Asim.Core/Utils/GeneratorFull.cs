@@ -1,6 +1,6 @@
-﻿using PWC.Asim.Sim.Actors;
+﻿using PWC.Asim.Core.Actors;
 
-namespace PWC.Asim.Sim.Utils
+namespace PWC.Asim.Core.Utils
 {
     public class GeneratorFull : GeneratorBase
     {
