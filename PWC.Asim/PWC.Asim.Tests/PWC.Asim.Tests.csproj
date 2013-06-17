@@ -45,12 +45,19 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ConsoleTests.cs" />
+    <Compile Include="CoreTests.cs" />
     <Compile Include="ExcelIntegrationTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TestBase.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\PWC.Asim.Core\PWC.Asim.Core.csproj">
+      <Project>{f871db06-eb95-4326-9db9-7af31eeae5d5}</Project>
+      <Name>PWC.Asim.Core</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

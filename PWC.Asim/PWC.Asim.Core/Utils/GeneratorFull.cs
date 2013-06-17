@@ -93,16 +93,16 @@ namespace PWC.Asim.Core.Utils
         {
             State = GeneratorState.Stopped | GeneratorState.InService | GeneratorState.Unavailable;
             // service takes _serviceOutT hours
-            ulong serviceInterval = 0;
+            ulong serviceTime = 0;
             for (int i = 0; i < Settings.MaxSvcIntervals; i++)
             {
                 if (_serviceCounters[i].ServiceInterval > 0 && RunCnt > _serviceCounters[i].ServiceInterval)
                 {
-                    serviceInterval += _serviceCounters[i].ServiceInterval;
+                    serviceTime += _serviceCounters[i].ServiceOutage;
                     _serviceCounters[i].InService = true;
                 }
             }
-            ExecutionManager.After((ulong)(serviceInterval * Settings.SecondsInAnHour), FinishService);
+            ExecutionManager.After((ulong)(serviceTime * Settings.SecondsInAnHour), FinishService);
         }
 
         private void FinishService()

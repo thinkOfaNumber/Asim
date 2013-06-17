@@ -313,5 +313,28 @@ namespace ConsoleTests
                 array[i] = (T)Convert.ChangeType(r.NextDouble() * (high - low) + low, typeof(T)); //r.NextDouble() * (high - low) + low;
             }
         }
+
+        /// <summary>
+        /// Inserts the given constant fuel consumption into the value dictionary
+        /// </summary>
+        /// <param name="values">dictionary of values for testing</param>
+        /// <param name="fuelConst">fuel consumption L/kWh</param>
+        /// <param name="nGens">number of Generators to insert values for</param>
+        public void InsertFuelConsumption(SortedDictionary<string, double[]> values, double fuelConst, int nGens = 1)
+        {
+            for (int i = 1; i < nGens + 1; i++)
+            {
+                values["Gen" + i + "FuelCons1P"] = new double[] { 0 };
+                values["Gen" + i + "FuelCons1L"] = new double[] { fuelConst };
+                values["Gen" + i + "FuelCons2P"] = new double[] { 1 };
+                values["Gen" + i + "FuelCons2L"] = new double[] { fuelConst };
+                values["Gen" + i + "FuelCons3P"] = new double[] { 0 };
+                values["Gen" + i + "FuelCons3L"] = new double[] { 0 };
+                values["Gen" + i + "FuelCons4P"] = new double[] { 0 };
+                values["Gen" + i + "FuelCons4L"] = new double[] { 0 };
+                values["Gen" + i + "FuelCons5P"] = new double[] { 0 };
+                values["Gen" + i + "FuelCons5L"] = new double[] { 0 };
+            }
+        }
     }
 }

@@ -344,48 +344,6 @@ namespace ConsoleTests
         }
 
         [Test]
-        public void ServiceCounter()
-        {
-            var settingsFile = GetTempFilename;
-            int nServices = 5;
-            int serviceInterval = 120;
-            int serviceOutage = 5;
-            int iterations =
-                // make nServices by running for serviceInterval * nServices+1 hours
-                serviceInterval * (nServices + 1) * 60 * 60
-                // plus every shut down will take x hours
-                + nServices * serviceOutage * 60 * 60;
-            var outFile = GetTempFilename;
-
-            var values = new SortedDictionary<string, double[]>();
-            InsertFuelConsumption(values, 0.33);
-            values["Gen1MaxP"] = new double[] { 100 };
-            values["Gen1Service1T"] = new double[] { serviceInterval };
-            values["Gen1Service1OutT"] = new double[] { serviceOutage };
-            values["GenConfig1"] = new double[] { 1 };
-            values["GenAvailSet"] = new double[] { 1 };
-            values["GenBlackCfg"] = new double[] { 1 };
-            values["LoadP"] = new double[] { 50 };
-
-            StringBuilder fuelsettings = BuildCsvFor(values.Keys.ToList(), values.Values.ToArray());
-            File.WriteAllText(settingsFile, fuelsettings.ToString());
-
-            // Act
-            int retValue = StartConsoleApplication(
-                string.Format("--iterations {0} --input {1} --output {2} {0} Gen1RunCnt Gen1ServiceCnt",
-                    iterations, settingsFile, outFile));
-
-            // Assert
-            // completed successfully
-            Assert.AreEqual(0, retValue);
-            var fileArray = CsvFileToArray(outFile);
-
-            var runCnt = Convert.ToDouble(fileArray[2][1]);
-            var serviceCnt = Convert.ToInt32(fileArray[2][2]);
-            Assert.AreEqual(nServices, serviceCnt);
-        }
-
-        [Test]
         public void SheddableLoad()
         {
             var settingsFile1 = GetTempFilename;
@@ -682,29 +640,6 @@ namespace ConsoleTests
                 Assert.IsTrue(DoublesAreEqual(genCfgSetP[1805], 220));
                 Assert.IsTrue(DoublesAreEqual(genCfgSetP[2405], 210));
                 Assert.IsTrue(DoublesAreEqual(genCfgSetP[3005], 200));
-            }
-        }
-
-        /// <summary>
-        /// Inserts the given constant fuel consumption into the value dictionary
-        /// </summary>
-        /// <param name="values">dictionary of values for testing</param>
-        /// <param name="fuelConst">fuel consumption L/kWh</param>
-        /// <param name="nGens">number of Generators to insert values for</param>
-        private void InsertFuelConsumption(SortedDictionary<string, double[]> values, double fuelConst, int nGens = 1)
-        {
-            for (int i = 1; i < nGens + 1; i++)
-            {
-                values["Gen" + i + "FuelCons1P"] = new double[] { 0 };
-                values["Gen" + i + "FuelCons1L"] = new double[] { fuelConst };
-                values["Gen" + i + "FuelCons2P"] = new double[] { 1 };
-                values["Gen" + i + "FuelCons2L"] = new double[] { fuelConst };
-                values["Gen" + i + "FuelCons3P"] = new double[] { 0 };
-                values["Gen" + i + "FuelCons3L"] = new double[] { 0 };
-                values["Gen" + i + "FuelCons4P"] = new double[] { 0 };
-                values["Gen" + i + "FuelCons4L"] = new double[] { 0 };
-                values["Gen" + i + "FuelCons5P"] = new double[] { 0 };
-                values["Gen" + i + "FuelCons5L"] = new double[] { 0 };
             }
         }
     }
