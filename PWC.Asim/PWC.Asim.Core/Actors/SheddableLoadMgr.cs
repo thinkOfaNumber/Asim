@@ -24,20 +24,31 @@ namespace PWC.Asim.Core.Actors
 {
     class SheddableLoadMgr : IActor
     {
+        private readonly SharedContainer _sharedVars = SharedContainer.Instance;
         // Sum of switchable loads
-        private readonly Shared _shedLoadP = SharedContainer.GetOrNew("ShedLoadP");
+        private readonly Shared _shedLoadP;
         // Online Sheddable load
-        private readonly Shared _shedP = SharedContainer.GetOrNew("ShedP");
+        private readonly Shared _shedP;
         // Offline load
-        private readonly Shared _shedOffP = SharedContainer.GetOrNew("ShedOffP");
+        private readonly Shared _shedOffP;
 
-        private readonly Shared _statBlack = SharedContainer.GetOrNew("StatBlack");
-        private readonly Shared _genP = SharedContainer.GetOrNew("GenP");
-        private readonly Shared _genMaxP = SharedContainer.GetOrNew("GenMaxP");
+        private readonly Shared _statBlack;
+        private readonly Shared _genP;
+        private readonly Shared _genMaxP;
         private readonly ISheddableLoad[] Load = new ISheddableLoad[Settings.MAX_GENS];
         private readonly ExecutionManager _executionManager = new ExecutionManager();
         private static bool debug = true;
         
+        public SheddableLoadMgr()
+        {
+            _shedLoadP = _sharedVars.GetOrNew("ShedLoadP");
+            _shedP = _sharedVars.GetOrNew("ShedP");
+            _shedOffP = _sharedVars.GetOrNew("ShedOffP");
+            _statBlack = _sharedVars.GetOrNew("StatBlack");
+            _genP = _sharedVars.GetOrNew("GenP");
+            _genMaxP = _sharedVars.GetOrNew("GenMaxP");
+        }
+
         public void Run(ulong iteration)
         {
             _executionManager.RunActions(iteration);
@@ -110,6 +121,8 @@ namespace PWC.Asim.Core.Actors
             get { return _shedSpinP.Val; }
         }
 
+        private static readonly SharedContainer SharedVars = SharedContainer.Instance;
+
         // Maximum Off Time
         private readonly Shared _shedLoadMaxT;
         // Size of Load to switch on/off
@@ -124,9 +137,9 @@ namespace PWC.Asim.Core.Actors
         private readonly Shared _shedLoadT;
         
         // Maximum Off Time
-        private static readonly Shared ShedLoadMaxT = SharedContainer.GetOrNew("ShedLoadMaxT");
+        private static readonly Shared ShedLoadMaxT;
         // Load shed latency
-        private static readonly Shared ShedLoadT = SharedContainer.GetOrNew("ShedLoadT");
+        private static readonly Shared ShedLoadT;
 
         private ulong _actualOffTime;
         private ulong _actualOnTime;
@@ -147,17 +160,23 @@ namespace PWC.Asim.Core.Actors
             get { return _maxCycleTime == 0 || _actualOnTime > _maxCycleTime; }
         }
 
+        static StaticLoad()
+        {
+            ShedLoadMaxT = SharedVars.GetOrNew("ShedLoadMaxT");
+            ShedLoadT = SharedVars.GetOrNew("ShedLoadT");
+        }
+
         public StaticLoad(int id, ExecutionManager executionManager)
         {
             int n = id + 1;
             _online = false;
 
-            _shedLoadMaxT = SharedContainer.GetOrNew("Shed" + n + "LoadMaxT");
-            _shedLoadP = SharedContainer.GetOrNew("Shed" + n + "LoadP");
-            _shedLoadT = SharedContainer.GetOrNew("Shed" + n + "LoadT");
-            _shedP = SharedContainer.GetOrNew("Shed" + n + "P");
-            _shedOffP = SharedContainer.GetOrNew("Shed" + n + "OffP");
-            _shedSpinP = SharedContainer.GetOrNew("Shed" + n + "SpinP");
+            _shedLoadMaxT = SharedVars.GetOrNew("Shed" + n + "LoadMaxT");
+            _shedLoadP = SharedVars.GetOrNew("Shed" + n + "LoadP");
+            _shedLoadT = SharedVars.GetOrNew("Shed" + n + "LoadT");
+            _shedP = SharedVars.GetOrNew("Shed" + n + "P");
+            _shedOffP = SharedVars.GetOrNew("Shed" + n + "OffP");
+            _shedSpinP = SharedVars.GetOrNew("Shed" + n + "SpinP");
 
             _executionManager = executionManager;
         }

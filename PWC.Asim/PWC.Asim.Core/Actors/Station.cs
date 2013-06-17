@@ -24,33 +24,59 @@ namespace PWC.Asim.Core.Actors
 {
     class Station : IActor
     {
-        private readonly Shared _statP = SharedContainer.GetOrNew("StatP");
-        private readonly Shared _statBlackCnt = SharedContainer.GetOrNew("StatBlackCnt");
-        private readonly Shared _statSpinP = SharedContainer.GetOrNew("StatSpinP");
-        private readonly Shared _statSpinSetP = SharedContainer.GetOrNew("StatSpinSetP");
-        private readonly Shared _statMaintainSpin = SharedContainer.GetOrNew("StatMaintainSpin");
-        private readonly Shared _loadCapAl = SharedContainer.GetOrNew("LoadCapAl");
-        private readonly Shared _loadCapMargin = SharedContainer.GetOrNew("LoadCapMargin");
-        private readonly Shared _loadMaxP = SharedContainer.GetOrNew("LoadMaxP");
-        private readonly Shared _loadP = SharedContainer.GetOrNew("LoadSetP");
-        private readonly Shared _pvP = SharedContainer.GetOrNew("PvP");
-        private readonly Shared _pvCvgPct = SharedContainer.GetOrNew("PvCvgPct");
-        private readonly Shared _genCfgSetP = SharedContainer.GetOrNew("GenCfgSetP");
-        private readonly Shared _genCfgSetK = SharedContainer.GetOrNew("GenCfgSetK");
-        private readonly Shared _genP = SharedContainer.GetOrNew("GenP");
-        private readonly Shared _genSetP = SharedContainer.GetOrNew("GenSetP");
-        private readonly Shared _genOnlineCfg = SharedContainer.GetOrNew("GenOnlineCfg");
-        private readonly Shared _genSpinP = SharedContainer.GetOrNew("GenSpinP");
-        private readonly Shared _genCapP = SharedContainer.GetOrNew("GenCapP");
-        private readonly Shared _shedP = SharedContainer.GetOrNew("ShedP");
-        private readonly Shared _shedOffP = SharedContainer.GetOrNew("ShedOffP");
+        private readonly SharedContainer _sharedVars = SharedContainer.Instance;
+        private readonly Shared _statP;
+        private readonly Shared _statBlackCnt;
+        private readonly Shared _statSpinP;
+        private readonly Shared _statSpinSetP;
+        private readonly Shared _statMaintainSpin;
+        private readonly Shared _loadCapAl;
+        private readonly Shared _loadCapMargin;
+        private readonly Shared _loadMaxP;
+        private readonly Shared _loadP;
+        private readonly Shared _pvP;
+        private readonly Shared _pvCvgPct;
+        private readonly Shared _genCfgSetP;
+        private readonly Shared _genCfgSetK;
+        private readonly Shared _genP;
+        private readonly Shared _genSetP;
+        private readonly Shared _genOnlineCfg;
+        private readonly Shared _genSpinP;
+        private readonly Shared _genCapP;
+        private readonly Shared _shedP;
+        private readonly Shared _shedOffP;
         private static bool _lastStatBlack;
-        private readonly Shared _statBlack = SharedContainer.GetOrNew("StatBlack");
+        private readonly Shared _statBlack;
         private double _genCoverP;
 
         public static bool BlackStartInit { get; private set; }
         public static bool IsBlack { get; private set; }
         public static double GenSetP { get; private set; }
+
+        public Station()
+        {
+            _statP = _sharedVars.GetOrNew("StatP");
+            _statBlackCnt = _sharedVars.GetOrNew("StatBlackCnt");
+            _statSpinP = _sharedVars.GetOrNew("StatSpinP");
+            _statSpinSetP = _sharedVars.GetOrNew("StatSpinSetP");
+            _statMaintainSpin = _sharedVars.GetOrNew("StatMaintainSpin");
+            _loadCapAl = _sharedVars.GetOrNew("LoadCapAl");
+            _loadCapMargin = _sharedVars.GetOrNew("LoadCapMargin");
+            _loadMaxP = _sharedVars.GetOrNew("LoadMaxP");
+            _loadP = _sharedVars.GetOrNew("LoadSetP");
+            _pvP = _sharedVars.GetOrNew("PvP");
+            _pvCvgPct = _sharedVars.GetOrNew("PvCvgPct");
+            _genCfgSetP = _sharedVars.GetOrNew("GenCfgSetP");
+            _genCfgSetK = _sharedVars.GetOrNew("GenCfgSetK");
+            _genP = _sharedVars.GetOrNew("GenP");
+            _genSetP = _sharedVars.GetOrNew("GenSetP");
+            _genOnlineCfg = _sharedVars.GetOrNew("GenOnlineCfg");
+            _genSpinP = _sharedVars.GetOrNew("GenSpinP");
+            _genCapP = _sharedVars.GetOrNew("GenCapP");
+            _shedP = _sharedVars.GetOrNew("ShedP");
+            _shedOffP = _sharedVars.GetOrNew("ShedOffP");
+            _statBlack = _sharedVars.GetOrNew("StatBlack");
+        }
 
         #region Implementation of IActor
 

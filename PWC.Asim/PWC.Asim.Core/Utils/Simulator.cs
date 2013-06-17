@@ -57,9 +57,10 @@ namespace PWC.Asim.Core.Utils
         private Timer _timer;
         private List<InputOption> _inputActors = new List<InputOption>();
         private List<OutputOption> _outputActors = new List<OutputOption>();
-        private static List<ReportFile> _reportFiles = new List<ReportFile>();
+        private List<ReportFile> _reportFiles = new List<ReportFile>();
         private StreamWriter _watchWriter;
         private readonly Dictionary<string, string> _controllers = new Dictionary<string, string>();
+        private readonly SharedContainer _sharedVars = SharedContainer.Instance;
 
         private object _solarController;
 
@@ -148,6 +149,7 @@ namespace PWC.Asim.Core.Utils
             }
 
             WriteReports(innerLoopTime);
+            actors.Clear();
         }
 
         private void WriteReports(TimeSpan time)
@@ -167,7 +169,7 @@ namespace PWC.Asim.Core.Utils
                         if (!tokens.ContainsKey(tok))
                         {
                             // first try from shared vars
-                            var shareVar = SharedContainer.GetOrDefault(tok);
+                            var shareVar = _sharedVars.GetOrDefault(tok);
                             if (shareVar != null)
                             {
                                 tokens[tok] = shareVar.Val.ToString();
@@ -245,10 +247,10 @@ namespace PWC.Asim.Core.Utils
                 return;
 
             _watchWriter = new StreamWriter(Watchfile);
-            var varlist = SharedContainer.MatchGlobs(Watchvars);
+            var varlist = _sharedVars.MatchGlobs(Watchvars);
             foreach (var varname in varlist)
             {
-                var sv = SharedContainer.GetOrDefault(varname);
+                var sv = _sharedVars.GetOrDefault(varname);
                 if (sv == null) continue;
                 sv.OnValueChanged += (s, e) => _watchWriter.WriteLine(
                     (StartTime.HasValue ? StartTime.Value : Settings.Epoch).AddSeconds(Iteration).ToString("yyyy-MM-dd HH:mm:ss")

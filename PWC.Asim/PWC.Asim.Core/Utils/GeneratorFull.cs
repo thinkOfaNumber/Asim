@@ -96,13 +96,12 @@ namespace PWC.Asim.Core.Utils
             ulong serviceTime = 0;
             for (int i = 0; i < Settings.MaxSvcIntervals; i++)
             {
-                if (_serviceCounters[i].ServiceInterval > 0 && RunCnt > _serviceCounters[i].ServiceInterval)
+                if (_serviceCounters[i].InService)
                 {
                     serviceTime += _serviceCounters[i].ServiceOutage;
-                    _serviceCounters[i].InService = true;
                 }
             }
-            ExecutionManager.After((ulong)(serviceTime * Settings.SecondsInAnHour), FinishService);
+            ExecutionManager.After((ulong)(serviceTime), FinishService);
         }
 
         private void FinishService()
@@ -110,7 +109,6 @@ namespace PWC.Asim.Core.Utils
             StartCnt = 0;
             StopCnt = 0;
             _serviceCnt.Val++;
-            RunCnt = 0;
             State = GeneratorState.Stopped;
             for (int i = 0; i < Settings.MaxSvcIntervals; i++)
             {

@@ -25,8 +25,43 @@ using NUnit.Framework;
 
 namespace ConsoleTests
 {
+    [TestFixture]
     public class ConsoleTests : TestBase
     {
+        [TestFixtureSetUp]
+        public void RedirectConsole()
+        {
+            // Initialize string builder to replace console, so we can check console output
+            ConsoleOutput = new StringBuilder();
+            _testingConsole = new StringWriter(ConsoleOutput);
+
+            // swap normal output console with testing console - to reuse 
+            // it later
+            _normalOutput = System.Console.Out;
+            System.Console.SetOut(_testingConsole);
+        }
+
+        [TestFixtureTearDown]
+        public void ReturnConsole()
+        {
+            // set normal output stream to the console
+            System.Console.SetOut(_normalOutput);
+        }
+
+        [SetUp]
+        public void SetUp()
+        {
+            // clear string builder
+            ConsoleOutput.Clear();
+        }
+
+        [TearDown]
+        public void TearDown()
+        {
+            // Verbose output in console
+            _normalOutput.Write(ConsoleOutput.ToString());
+        }
+
         [Test]
         public void RunWithNoArguments()
         {

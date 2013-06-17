@@ -77,42 +77,50 @@ namespace PWC.Asim.Core.Utils
         }
     }
 
-    public class SharedContainer
+    public sealed class SharedContainer
     {
-        private static readonly SortedDictionary<string, Shared> SharedValues = new SortedDictionary<string, Shared>();
+        // singleton
+        private static readonly SharedContainer instance = new SharedContainer();
+        private SharedContainer() { }
+        public static SharedContainer Instance
+        {
+            get
+            {
+                return instance;
+            }
+        }
 
-        public static Shared GetOrNew(string name)
+        private readonly SortedDictionary<string, Shared> _sharedValues = new SortedDictionary<string, Shared>();
+
+        public Shared GetOrNew(string name)
         {
             Shared s;
-            if (!SharedValues.TryGetValue(name, out s))
+            if (!_sharedValues.TryGetValue(name, out s))
             {
                 s = new Shared {Name = name};
-                SharedValues[name] = s;
+                _sharedValues[name] = s;
             }
             return s;
         }
 
-        public static Shared GetOrDefault(string name)
+        public Shared GetOrDefault(string name)
         {
             Shared s;
-            if (!SharedValues.TryGetValue(name, out s))
-            {
-                s = null;
-            }
+            _sharedValues.TryGetValue(name, out s);
             return s;
         }
 
-        public static Shared GetExisting(string name)
+        public Shared GetExisting(string name)
         {
-            return SharedValues[name];
+            return _sharedValues[name];
         }
 
-        public static IList<string> GetAllNames()
+        public IList<string> GetAllNames()
         {
-            return new List<string>(SharedValues.Keys);
+            return new List<string>(_sharedValues.Keys);
         }
 
-        public static List<string> MatchGlobs(string[] globs)
+        public List<string> MatchGlobs(string[] globs)
         {
             Regex regex;
             var varList = new List<string>();
@@ -120,9 +128,17 @@ namespace PWC.Asim.Core.Utils
             foreach (string glob in globs)
             {
                 regex = new Regex("^" + glob.Replace("*", ".*").Replace(@"\?", ".") + "$", RegexOptions.IgnoreCase | RegexOptions.Singleline);
-                varList.AddRange(SharedValues.Keys.Where(var => regex.IsMatch(var)));
+                varList.AddRange(_sharedValues.Keys.Where(var => regex.IsMatch(var)));
             }
             return varList;
+        }
+
+        /// <summary>
+        /// Clear all contents from Shared Value dictionary.
+        /// </summary>
+        public void Clear()
+        {
+            _sharedValues.Clear();
         }
     }
 }

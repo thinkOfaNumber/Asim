@@ -24,28 +24,45 @@ namespace PWC.Asim.Core.Actors
 {
     class Solar : IActor
     {
-        private readonly Shared _pvP = SharedContainer.GetOrNew("PvP");
-        private readonly Shared _pvAvailP = SharedContainer.GetOrNew("PvAvailP");
-        private readonly Shared _pvSetP = SharedContainer.GetOrNew("PvSetP");
-        private readonly Shared _pvSpillP = SharedContainer.GetOrNew("PvSpillP");
-        private readonly Shared _pvE = SharedContainer.GetOrNew("PvE");
-        private readonly Shared _pvAvailE = SharedContainer.GetOrNew("PvAvailE");
-        private readonly Shared _pvSpillE = SharedContainer.GetOrNew("PvSpillE");
-        private readonly Shared _pvSetMaxDownP = SharedContainer.GetOrNew("PvSetMaxDownP");
-        private readonly Shared _pvSetMaxUpP = SharedContainer.GetOrNew("PvSetMaxUpP");
-        private readonly Shared _pvMaxLimP = SharedContainer.GetOrNew("PvMaxLimP");
+        private readonly SharedContainer _sharedVars = SharedContainer.Instance;
+        private readonly Shared _pvP;
+        private readonly Shared _pvAvailP;
+        private readonly Shared _pvSetP;
+        private readonly Shared _pvSpillP;
+        private readonly Shared _pvE;
+        private readonly Shared _pvAvailE;
+        private readonly Shared _pvSpillE;
+        private readonly Shared _pvSetMaxDownP;
+        private readonly Shared _pvSetMaxUpP;
+        private readonly Shared _pvMaxLimP;
 
-        private readonly Shared _loadP = SharedContainer.GetOrNew("LoadSetP");
-        private readonly Shared _statSpinSetP = SharedContainer.GetOrNew("StatSpinSetP");
-        private readonly Shared _statBlack = SharedContainer.GetOrNew("StatBlack");
-        private readonly Shared _genP = SharedContainer.GetOrNew("GenP");
-        private readonly Shared _genIdealP = SharedContainer.GetOrNew("GenIdealP");
+        private readonly Shared _loadP;
+        private readonly Shared _statSpinSetP;
+        private readonly Shared _statBlack;
+        private readonly Shared _genP;
+        private readonly Shared _genIdealP;
 
         readonly Delegates.SolarController _solarController;
 
         public Solar(Delegate solarController)
         {
             _solarController = (Delegates.SolarController)solarController;
+            _pvP = _sharedVars.GetOrNew("PvP");
+            _pvAvailP = _sharedVars.GetOrNew("PvAvailP");
+            _pvSetP = _sharedVars.GetOrNew("PvSetP");
+            _pvSpillP = _sharedVars.GetOrNew("PvSpillP");
+            _pvE = _sharedVars.GetOrNew("PvE");
+            _pvAvailE = _sharedVars.GetOrNew("PvAvailE");
+            _pvSpillE = _sharedVars.GetOrNew("PvSpillE");
+            _pvSetMaxDownP = _sharedVars.GetOrNew("PvSetMaxDownP");
+            _pvSetMaxUpP = _sharedVars.GetOrNew("PvSetMaxUpP");
+            _pvMaxLimP = _sharedVars.GetOrNew("PvMaxLimP");
+
+            _loadP = _sharedVars.GetOrNew("LoadSetP");
+            _statSpinSetP = _sharedVars.GetOrNew("StatSpinSetP");
+            _statBlack = _sharedVars.GetOrNew("StatBlack");
+            _genP = _sharedVars.GetOrNew("GenP");
+            _genIdealP = _sharedVars.GetOrNew("GenIdealP");
         }
 
         #region Implementation of IActor

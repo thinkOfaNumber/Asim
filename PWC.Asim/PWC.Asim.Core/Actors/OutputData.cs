@@ -70,6 +70,7 @@ namespace PWC.Asim.Core.Actors
         private readonly DateFormat _outputFormat;
         private readonly DateTime _simStartTime;
         private ulong _iteration;
+        private readonly SharedContainer _sharedVars = SharedContainer.Instance;
 
         public OutputData(string filename, string[] vars, uint outputEvery = 1, DateTime? simStartTime = null, DateFormat outputFormat = DateFormat.Other)
         {
@@ -115,7 +116,7 @@ namespace PWC.Asim.Core.Actors
                 var match = regex.Match(varGlob);
                 var statistics = match.Groups[3].Success ? match.Groups[3].ToString() : "All";
 
-                varStats.AddRange(SharedContainer.MatchGlobs(new[] {match.Groups[1].ToString()})
+                varStats.AddRange(_sharedVars.MatchGlobs(new[] { match.Groups[1].ToString() })
                                                  .Select(variable => new[]
                                                      {
                                                          variable, // the variable name
@@ -129,7 +130,7 @@ namespace PWC.Asim.Core.Actors
             for (int i = 0; i < _nvars; i++)
             {
                 var variableName = varStats[i][0];
-                _outVars[i].Act = SharedContainer.GetOrNew(variableName);
+                _outVars[i].Act = _sharedVars.GetOrNew(variableName);
                 if (_outputEvery == 1)
                     _outVars[i].Stats = OutputStats.Act;
                 else if (variableName.EndsWith("Cnt") || variableName.EndsWith("E"))

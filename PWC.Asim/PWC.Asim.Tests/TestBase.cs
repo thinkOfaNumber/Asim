@@ -54,8 +54,8 @@ namespace ConsoleTests
             }
         }
 
-        private TextWriter _normalOutput;
-        private StringWriter _testingConsole;
+        protected TextWriter _normalOutput = System.Console.Out;
+        protected StringWriter _testingConsole;
         private const string ConsoleDir = @"..\..\..\PWC.Asim.ConsoleApp\bin\Debug\";
         private const string ConsoleApp = "Asim.exe";
         private const string ExcelApp = @"..\..\..\PWC.Asim.ExcelTools\bin\Debug\AsimExcelTools.exe";
@@ -77,22 +77,11 @@ namespace ConsoleTests
 
             // set current folder
             Environment.CurrentDirectory = dirName;
-
-            // Initialize string builder to replace console
-            ConsoleOutput = new StringBuilder();
-            _testingConsole = new StringWriter(ConsoleOutput);
-
-            // swap normal output console with testing console - to reuse 
-            // it later
-            _normalOutput = System.Console.Out;
-            System.Console.SetOut(_testingConsole);
         }
 
         [TestFixtureTearDown]
         public void TestFixtureTearDown()
         {
-            // set normal output stream to the console
-            System.Console.SetOut(_normalOutput);
             while (_tempFiles.Any())
             {
                 string f = _tempFiles.Dequeue();
@@ -105,20 +94,6 @@ namespace ConsoleTests
                     _tempFiles.Enqueue(f);
                 }
             }
-        }
-
-        [SetUp]
-        public void SetUp()
-        {
-            // clear string builder
-            ConsoleOutput.Remove(0, ConsoleOutput.Length);
-        }
-
-        [TearDown]
-        public void TearDown()
-        {
-            // Verbose output in console
-            _normalOutput.Write(ConsoleOutput.ToString());
         }
 
         /// <summary>

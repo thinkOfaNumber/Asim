@@ -29,10 +29,19 @@ namespace PWC.Asim.Core.Actors
     /// </summary>
     class Load : IActor
     {
-        private readonly Shared _loadMaxLimP = SharedContainer.GetOrNew("LoadMaxLimP");
-        private readonly Shared _loadP = SharedContainer.GetOrNew("LoadP");
-        private readonly Shared _loadSetP = SharedContainer.GetOrNew("LoadSetP");
-        private readonly Shared _shedOffP = SharedContainer.GetOrNew("ShedOffP");
+        private readonly SharedContainer _sharedVars = SharedContainer.Instance;
+        private readonly Shared _loadMaxLimP;
+        private readonly Shared _loadP;
+        private readonly Shared _loadSetP;
+        private readonly Shared _shedOffP;
+
+        public Load()
+        {
+            _loadMaxLimP = _sharedVars.GetOrNew("LoadMaxLimP");
+            _loadP = _sharedVars.GetOrNew("LoadP");
+            _loadSetP = _sharedVars.GetOrNew("LoadSetP");
+            _shedOffP = _sharedVars.GetOrNew("ShedOffP");
+        }
 
         public void Init()
         {

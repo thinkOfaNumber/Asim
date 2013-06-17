@@ -37,23 +37,25 @@ namespace PWC.Asim.Core.Actors
 
     public class GenMgr : IActor
     {
+        private readonly SharedContainer _sharedVars = SharedContainer.Instance;
         private static readonly GeneratorBase[] Gen = new GeneratorBase[Settings.MAX_GENS];
 
-        private readonly Shared _genDesiredCfg = SharedContainer.GetOrNew("GenSetCfg");
         private ushort GenSetCfg
         {
             get { return (ushort)_genDesiredCfg.Val; }
             set { _genDesiredCfg.Val = value; }
         }
-        private readonly Shared _genMinRunT = SharedContainer.GetOrNew("GenMinRunT");
-        private readonly Shared _genP = SharedContainer.GetOrNew("GenP");
-        private readonly Shared _genLowP = SharedContainer.GetOrNew("GenLowP");
-        private readonly Shared _genCfgSetP = SharedContainer.GetOrNew("GenCfgSetP");
-        private readonly Shared _genSetP = SharedContainer.GetOrNew("GenSetP");
-        private readonly Shared _statHystP = SharedContainer.GetOrNew("StatHystP");
-        private readonly Shared _genAvailCfg = SharedContainer.GetOrNew("GenAvailCfg");
-        private readonly Shared _genBlackCfg = SharedContainer.GetOrNew("GenBlackCfg");
-        private readonly Shared _genMinRunTPa = SharedContainer.GetOrNew("GenMinRunTPa");
+
+        private readonly Shared _genDesiredCfg;
+        private readonly Shared _genMinRunT;
+        private readonly Shared _genP;
+        private readonly Shared _genLowP;
+        private readonly Shared _genCfgSetP;
+        private readonly Shared _genSetP;
+        private readonly Shared _statHystP;
+        private readonly Shared _genAvailCfg;
+        private readonly Shared _genBlackCfg;
+        private readonly Shared _genMinRunTPa;
 
         private ulong _iteration;
         private readonly Shared[] _configurations = new Shared[Settings.MAX_CFG];
@@ -63,6 +65,16 @@ namespace PWC.Asim.Core.Actors
         public GenMgr(GenMgrType type)
         {
             _simulationType = type;
+            _genDesiredCfg = _sharedVars.GetOrNew("GenSetCfg");
+            _genMinRunT = _sharedVars.GetOrNew("GenMinRunT");
+            _genP = _sharedVars.GetOrNew("GenP");
+            _genLowP = _sharedVars.GetOrNew("GenLowP");
+            _genCfgSetP = _sharedVars.GetOrNew("GenCfgSetP");
+            _genSetP = _sharedVars.GetOrNew("GenSetP");
+            _statHystP = _sharedVars.GetOrNew("StatHystP");
+            _genAvailCfg = _sharedVars.GetOrNew("GenAvailCfg");
+            _genBlackCfg = _sharedVars.GetOrNew("GenBlackCfg");
+            _genMinRunTPa = _sharedVars.GetOrNew("GenMinRunTPa");
         }
 
         #region Implementation of IActor
@@ -108,7 +120,7 @@ namespace PWC.Asim.Core.Actors
             for (int i = 0; i < Settings.MAX_CFG; i++)
             {
                 string cstr = "GenConfig" + (i+1);
-                _configurations[i] = SharedContainer.GetOrNew(cstr);
+                _configurations[i] = _sharedVars.GetOrNew(cstr);
                 _configurations[i].Val = 0;
             }
         }

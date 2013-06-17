@@ -66,6 +66,7 @@ namespace PWC.Asim.Core.Actors
         private DateFormat? _dateFormat;
         private readonly DateTime _simStartTime;
         private readonly ulong _simOffset;
+        private readonly SharedContainer _sharedVars = SharedContainer.Instance;
 
         public NextData(string filename, DateTime? simStartTime = null, bool recycle = false)
         {
@@ -147,12 +148,12 @@ namespace PWC.Asim.Core.Actors
                 if (headers[i][0] == '>')
                 {
                     _values[i].DoScale = true;
-                    _values[i].Update = SharedContainer.GetOrNew(headers[i].Substring(1));
+                    _values[i].Update = _sharedVars.GetOrNew(headers[i].Substring(1));
                     _values[i].Update.ScaleFunction = v => v;
                 }
                 else
                 {
-                    _values[i].Update = SharedContainer.GetOrNew(headers[i]);
+                    _values[i].Update = _sharedVars.GetOrNew(headers[i]);
                     _values[i].Update.Val = 0;
                 }
             }

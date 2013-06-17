@@ -51,20 +51,21 @@ namespace PWC.Asim.Core.Utils
 
     internal class ServiceCounter
     {
+        private readonly SharedContainer _sharedVars = SharedContainer.Instance;
         public ServiceCounter(int iGenNo, int iSvcNo)
         {
-            _serviceT = SharedContainer.GetOrNew("Gen" + iGenNo + "Service" + iSvcNo + "T");
-            _serviceOutT = SharedContainer.GetOrNew("Gen" + iGenNo + "Service" + iSvcNo + "OutT");
+            _serviceT = _sharedVars.GetOrNew("Gen" + iGenNo + "Service" + iSvcNo + "T");
+            _serviceOutT = _sharedVars.GetOrNew("Gen" + iGenNo + "Service" + iSvcNo + "OutT");
         }
 
         public ulong ServiceInterval
         {
-            get { return (ulong)_serviceT.Val; }
+            get { return (ulong)_serviceT.Val * Settings.SecondsInAnHour; }
         }
 
         public ulong ServiceOutage
         {
-            get { return (ulong)_serviceOutT.Val; }
+            get { return (ulong)_serviceOutT.Val * Settings.SecondsInAnHour; }
         }
 
         public bool InService { get; set; }
@@ -154,6 +155,7 @@ namespace PWC.Asim.Core.Utils
             private set { _e.Val = value; }
         }
 
+        protected static readonly SharedContainer SharedVars = SharedContainer.Instance;
         private readonly Shared _maxP;
         protected readonly Shared _p;
         private readonly Shared _minRunTPa;
@@ -164,15 +166,15 @@ namespace PWC.Asim.Core.Utils
         internal readonly ServiceCounter[] _serviceCounters = new ServiceCounter[Settings.MaxSvcIntervals];
         private readonly Shared[] _fuelCurveP = new Shared[Settings.FuelCurvePoints];
         private readonly Shared[] _fuelCurveL = new Shared[Settings.FuelCurvePoints];
-        private static readonly Shared _onlineCfg = SharedContainer.GetOrNew("GenOnlineCfg");
-        private static readonly Shared _genIdealP = SharedContainer.GetOrNew("GenIdealP");
-        private static readonly Shared _genMaxP = SharedContainer.GetOrNew("GenMaxP");
-        private static readonly Shared _genP = SharedContainer.GetOrNew("GenP");
-        private static readonly Shared _genOverload = SharedContainer.GetOrNew("GenOverload");
-        private static readonly Shared _genSpinP = SharedContainer.GetOrNew("GenSpinP");
-        private static readonly Shared _genCapP = SharedContainer.GetOrNew("GenCapP");
-        private static readonly Shared _genAvailSet = SharedContainer.GetOrNew("GenAvailSet");
-        private static readonly Shared _genAvailCfg = SharedContainer.GetOrNew("GenAvailCfg");
+        private static readonly Shared _onlineCfg;
+        private static readonly Shared _genIdealP;
+        private static readonly Shared _genMaxP;
+        private static readonly Shared _genP;
+        private static readonly Shared _genOverload;
+        private static readonly Shared _genSpinP;
+        private static readonly Shared _genCapP;
+        private static readonly Shared _genAvailSet;
+        private static readonly Shared _genAvailCfg;
 
         // counters
         private readonly Shared _startCnt;
@@ -198,23 +200,23 @@ namespace PWC.Asim.Core.Utils
             State = GeneratorState.Stopped;
 
             int n = id + 1;
-            _p = SharedContainer.GetOrNew("Gen" + n + "P");
-            _startCnt = SharedContainer.GetOrNew("Gen" + n + "StartCnt");
-            _stopCnt = SharedContainer.GetOrNew("Gen" + n + "StopCnt");
-            _loadFact = SharedContainer.GetOrNew("Gen" + n + "LoadFact");
-            _runCnt = SharedContainer.GetOrNew("Gen" + n + "RunCnt");
-            _e = SharedContainer.GetOrNew("Gen" + n + "E");
-            _fuelCnt = SharedContainer.GetOrNew("Gen" + n + "FuelCnt");
-            _maxP = SharedContainer.GetOrNew("Gen" + n + "MaxP");
-            _minRunTPa = SharedContainer.GetOrNew("Gen" + n + "MinRunTPa");
-            _idealPctP = SharedContainer.GetOrNew("Gen" + n + "IdealPctP");
-            _idealP = SharedContainer.GetOrNew("Gen" + n + "IdealP");
-            _serviceCnt = SharedContainer.GetOrNew("Gen" + n + "ServiceCnt");
+            _p = SharedVars.GetOrNew("Gen" + n + "P");
+            _startCnt = SharedVars.GetOrNew("Gen" + n + "StartCnt");
+            _stopCnt = SharedVars.GetOrNew("Gen" + n + "StopCnt");
+            _loadFact = SharedVars.GetOrNew("Gen" + n + "LoadFact");
+            _runCnt = SharedVars.GetOrNew("Gen" + n + "RunCnt");
+            _e = SharedVars.GetOrNew("Gen" + n + "E");
+            _fuelCnt = SharedVars.GetOrNew("Gen" + n + "FuelCnt");
+            _maxP = SharedVars.GetOrNew("Gen" + n + "MaxP");
+            _minRunTPa = SharedVars.GetOrNew("Gen" + n + "MinRunTPa");
+            _idealPctP = SharedVars.GetOrNew("Gen" + n + "IdealPctP");
+            _idealP = SharedVars.GetOrNew("Gen" + n + "IdealP");
+            _serviceCnt = SharedVars.GetOrNew("Gen" + n + "ServiceCnt");
             for (int i = 0; i < Settings.FuelCurvePoints; i++)
             {
                 // Gen1Cons1P, Gen1Cons1L; Gen1Cons2P, Gen1Cons2L; ...
-                _fuelCurveP[i] = SharedContainer.GetOrNew("Gen" + n + "FuelCons" + (i + 1) + "P");
-                _fuelCurveL[i] = SharedContainer.GetOrNew("Gen" + n + "FuelCons" + (i + 1) + "L");
+                _fuelCurveP[i] = SharedVars.GetOrNew("Gen" + n + "FuelCons" + (i + 1) + "P");
+                _fuelCurveL[i] = SharedVars.GetOrNew("Gen" + n + "FuelCons" + (i + 1) + "L");
             }
             for (int i = 0; i < Settings.MaxSvcIntervals; i++)
             {
@@ -225,6 +227,15 @@ namespace PWC.Asim.Core.Utils
 
         static GeneratorBase()
         {
+            _onlineCfg = SharedVars.GetOrNew("GenOnlineCfg");
+            _genIdealP = SharedVars.GetOrNew("GenIdealP");
+            _genMaxP = SharedVars.GetOrNew("GenMaxP");
+            _genP = SharedVars.GetOrNew("GenP");
+            _genOverload = SharedVars.GetOrNew("GenOverload");
+            _genSpinP = SharedVars.GetOrNew("GenSpinP");
+            _genCapP = SharedVars.GetOrNew("GenCapP");
+            _genAvailSet = SharedVars.GetOrNew("GenAvailSet");
+            _genAvailCfg = SharedVars.GetOrNew("GenAvailCfg");
             _onlineCfg.Val = 0;
             _genIdealP.Val = 0;
             _genP.Val = 0;
@@ -308,14 +319,21 @@ namespace PWC.Asim.Core.Utils
                 FuelCnt += FuelConsumptionSecond();
                 IdealP = MaxP * IdealPctP / 100;
                 _spinP = Math.Max(MaxP - P, 0);
+            }
+            
+            if (IsRunningOffline() || IsOnline())
+            {
+                ulong runSeconds = (ulong)(RunCnt * Settings.SecondsInAnHour);
+                bool needsService = false;
                 for (int i = 0; i < Settings.MaxSvcIntervals; i++)
                 {
-                    if (_serviceCounters[i].ServiceInterval > 0 && RunCnt > _serviceCounters[i].ServiceInterval)
+                    if (_serviceCounters[i].ServiceInterval > 0 && runSeconds > 0 && (runSeconds % _serviceCounters[i].ServiceInterval) == 0)
                     {
-                        Service();
-                        break;
+                        _serviceCounters[i].InService = needsService = true;
                     }
                 }
+                if (needsService)
+                    Service();
             }
         }
 
