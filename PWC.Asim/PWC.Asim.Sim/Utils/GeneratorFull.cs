@@ -93,7 +93,16 @@ namespace PWC.Asim.Sim.Utils
         {
             State = GeneratorState.Stopped | GeneratorState.InService | GeneratorState.Unavailable;
             // service takes _serviceOutT hours
-            ExecutionManager.After((ulong)(_serviceOutT.Val * Settings.SecondsInAnHour), FinishService);
+            ulong serviceInterval = 0;
+            for (int i = 0; i < Settings.MaxSvcIntervals; i++)
+            {
+                if (_serviceCounters[i].ServiceInterval > 0 && RunCnt > _serviceCounters[i].ServiceInterval)
+                {
+                    serviceInterval += _serviceCounters[i].ServiceInterval;
+                    _serviceCounters[i].InService = true;
+                }
+            }
+            ExecutionManager.After((ulong)(serviceInterval * Settings.SecondsInAnHour), FinishService);
         }
 
         private void FinishService()
@@ -103,6 +112,10 @@ namespace PWC.Asim.Sim.Utils
             _serviceCnt.Val++;
             RunCnt = 0;
             State = GeneratorState.Stopped;
+            for (int i = 0; i < Settings.MaxSvcIntervals; i++)
+            {
+                _serviceCounters[i].InService = false;
+            }
             _busy = false;
         }
 

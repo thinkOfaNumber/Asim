@@ -360,8 +360,8 @@ namespace ConsoleTests
             var values = new SortedDictionary<string, double[]>();
             InsertFuelConsumption(values, 0.33);
             values["Gen1MaxP"] = new double[] { 100 };
-            values["Gen1ServiceT"] = new double[] { serviceInterval };
-            values["Gen1ServiceOutT"] = new double[] { serviceOutage };
+            values["Gen1Service1T"] = new double[] { serviceInterval };
+            values["Gen1Service1OutT"] = new double[] { serviceOutage };
             values["GenConfig1"] = new double[] { 1 };
             values["GenAvailSet"] = new double[] { 1 };
             values["GenBlackCfg"] = new double[] { 1 };
