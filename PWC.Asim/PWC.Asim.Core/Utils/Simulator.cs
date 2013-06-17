@@ -149,7 +149,6 @@ namespace PWC.Asim.Core.Utils
             }
 
             WriteReports(innerLoopTime);
-            actors.Clear();
         }
 
         private void WriteReports(TimeSpan time)

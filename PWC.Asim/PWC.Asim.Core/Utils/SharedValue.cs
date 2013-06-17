@@ -132,13 +132,5 @@ namespace PWC.Asim.Core.Utils
             }
             return varList;
         }
-
-        /// <summary>
-        /// Clear all contents from Shared Value dictionary.
-        /// </summary>
-        public void Clear()
-        {
-            _sharedValues.Clear();
-        }
     }
 }
