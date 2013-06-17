@@ -17,7 +17,9 @@ mkdir "%BUILDDIR%\Excel Addin"
 mkdir %BUILDDIR%\DropTests
 
 rem bin
-xcopy PWC.Asim.Sim\bin\Release\Asim.exe %BUILDDIR%\bin
+rem /targetplatform:"v4,C:\Program Files\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.0"
+echo using ILMerge to build Asim.exe...
+"%ILMERGE%" /target:winexe /targetplatform:"v4,%ProgramFiles(x86)%\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.0" /out:%BUILDDIR%\bin\Asim.exe PWC.Asim.ConsoleApp\bin\Release\Asim.exe PWC.Asim.Core\bin\Release\PWC.Asim.Core.dll
 xcopy PWC.Asim.ExcelTools\bin\Release\AsimExcelTools.exe %BUILDDIR%\bin
 xcopy Algorithms\PWC.Asim.Algorithms.PvNone\bin\Release\PWC.SLMS.Algorithms.PvNone.dll %BUILDDIR%\bin
 xcopy Algorithms\PWC.Asim.Algorithms.PvSimple\bin\Release\PWC.SLMS.Algorithms.PvSimple.dll %BUILDDIR%\bin
@@ -42,7 +44,7 @@ xcopy ..\DropTests\run-tests.sh %BUILDDIR%\DropTests\
 
 rem Source
 mkdir %BUILDDIR%\src
-robocopy . %BUILDDIR%\src *.cs /S /PURGE /XF AssemblyInfo.cs /NFL /NDL /XD %BUILDDIR%
+robocopy . %BUILDDIR%\src *.cs *.csproj *.sln /S /PURGE /NFL /NDL /XD %BUILDDIR%
 
 set ZIPFILE=Asim-%mydate%_%mytime%.zip
 "%ZIP%" a -r "%ZIPFILE%" %BUILDDIR%
