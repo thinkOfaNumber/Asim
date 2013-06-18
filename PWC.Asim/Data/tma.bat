@@ -1,22 +1,28 @@
 @echo off
 rem this is a test of the batch executor to spawn the tma graphing tool
+setlocal enableextensions enabledelayedexpansion
 
 set FILES=
+echo starting tma with %* > tma.log
 call :splitFiles %ASIM_OUTPUTFILES%
-call %1 %FILES%
-@goto :EOF
+set "FILESBS=%FILES:\=/%"
+echo call %1 %FILESBS% >> tma.log
+call %1 %FILESBS%
+endlocal
+GOTO:EOF
 
 :splitFiles
 set tosplit=%*
 for /F "tokens=1,* delims=," %%A in ("%tosplit%") DO (
 	rem echo parsing %%A
-	call :FullPath "%%A"
-	set FILES=%FILES% -get "%FULLPATH%"
+	call :FullPath "%%A" FP
+	echo received path !FP! >> tma.log
+	set FILES=!FILES! -get "!FP!"
 	IF [%%B] == [] exit /b
 	call :splitFiles %%B
 )
-exit /b
+GOTO:EOF
 
 :FullPath
-set fullpath=%~dpnx1
-exit /b
+set "%~2=%~dpnx1"
+GOTO:EOF
