@@ -39,13 +39,15 @@ namespace PWC.Asim.ExcelTools.Logic
             if (cmd.Any())
             {
                 FileInfo location = new FileInfo(cmd[0]);
-                StringBuilder args = new StringBuilder(Helper.Quote);
+                StringBuilder args = new StringBuilder();
                 cmd.Where((s, i) => i > 0).ToList().ForEach(c =>
                     {
-                        args.Append(c);
+                        var option = c.Trim(new[] {'"'});
+                        args.Append(Helper.Quote);
+                        args.Append(option);
                         args.Append(Helper.Quote + " ");
                     });
-                success = Run(onOutputData, null, location, string.Join(Helper.Sdelim, args.ToString()));
+                success = Run(onOutputData, null, location, string.Join(Helper.Sdelim, args));
             }
             return success;
         }

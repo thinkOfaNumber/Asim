@@ -43,6 +43,7 @@ namespace ConsoleTests
         [Test]
         public void SingleServiceCounter()
         {
+            // Arrange
             var settingsFile = GetTempFilename;
             int nServices = 5;
             int serviceInterval = 8; // hours
@@ -82,6 +83,7 @@ namespace ConsoleTests
         [Test]
         public void MultipleServiceCounters()
         {
+            // Arrange
             var settingsFile = GetTempFilename;
             int nServices1 = 3;
             int serviceInterval1 = 8; // hours
