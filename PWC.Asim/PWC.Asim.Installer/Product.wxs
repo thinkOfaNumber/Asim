@@ -1,32 +1,62 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
-	<Product Id="*" Name="Asim" Language="1033" Version="1.0.0.0" Manufacturer="Radical Systems" UpgradeCode="63e5a38f-8d91-46c9-924c-9f49dec85f48">
+	<Product Id="C01688B7-B7EC-43AE-8230-B79460E92EE1" Name="Asim" Language="1033" Version="1.0.0.0" Manufacturer="Radical Systems"
+           UpgradeCode="F8BEFBA3-8DA8-4165-A420-F01EB22561E5">
 		<Package InstallerVersion="200" Compressed="yes" InstallScope="perMachine" />
 
 		<MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." />
 		<MediaTemplate />
 
-		<Feature Id="ProductFeature" Title="PWC.Asim.Installer" Level="1">
-			<ComponentGroupRef Id="ProductComponents" />
+		<Feature Id="CompleteProduct" Title="PWC.Asim.Installer" Level="1">
+      <ComponentRef Id='AsimExecutable' />
+      <ComponentRef Id='CoreLib' />
+      <ComponentRef Id='ExcelExecutable' />
+      <ComponentRef Id='PdfDocs' />
+      <ComponentRef Id='ProgramMenuDir' />
 		</Feature>
-	</Product>
 
-	<Fragment>
 		<Directory Id="TARGETDIR" Name="SourceDir">
 			<Directory Id="ProgramFilesFolder">
         <Directory Id='PWC' Name='PWC'>
-				  <Directory Id="INSTALLFOLDER" Name="Asim" />
+          <Directory Id="INSTALLFOLDER" Name="Asim">
+            <Directory Id="BinDir" Name="bin">
+              <Component Id="AsimExecutable" Guid="11E4343E-F6F9-459D-B818-650729003F25">
+                <File Id="AsimEXE" Name="Asim.exe" Source="..\PWC.Asim.ConsoleApp\bin\Release\Asim.exe" KeyPath="yes"></File>
+              </Component>
+              
+              <Component Id="CoreLib" Guid="94CD9E8D-402F-4D50-8465-3408FA677AB2">
+                <File Id="CoreDLL" Name="PWC.Asim.Core.dll" Source="..\PWC.Asim.Core\bin\Release\PWC.Asim.Core.dll" KeyPath="yes"></File>
+              </Component>
+
+              <Component Id="ExcelExecutable" Guid="54128474-16E7-4130-A9D6-E34FA3327F9C">
+                <File Id="ExcelEXE" Name="AsimExcelTools.exe" Source="..\PWC.Asim.ExcelTools\bin\Release\AsimExcelTools.exe" KeyPath="yes"></File>
+              </Component>
+              
+            </Directory>
+
+            <Directory Id="DocsDir" Name="Docs">
+              <Component Id="PdfDocs" Guid="31D80BB9-76A9-47BB-AE4F-82F08F6CD723">
+                <File Id="UserManualPDF" Name="Model User Manual.pdf" Source="..\..\..\..\Documentation\Model User Manual.pdf" KeyPath="yes">
+                  <Shortcut Id='startmenuManual' Directory='ProgramMenuDir' Name='User Manual' Advertise='yes' />
+                </File>
+              </Component>
+            </Directory>
+            
+          </Directory>
         </Directory>
 			</Directory>
-		</Directory>
-	</Fragment>
 
-	<Fragment>
-		<ComponentGroup Id="ProductComponents" Directory="INSTALLFOLDER">
-			<!-- TODO: Remove the comments around this Component element and the ComponentRef below in order to add resources to this installer. -->
-			<!-- <Component Id="ProductComponent"> -->
-				<!-- TODO: Insert files, registry keys, and other resources here. -->
-			<!-- </Component> -->
-		</ComponentGroup>
-	</Fragment>
+      <Directory Id="ProgramMenuFolder" Name="Programs">
+        <Directory Id="ProgramMenuDir" Name="Asim">
+          <Component Id="ProgramMenuDir" Guid="583CCF4B-282E-4744-9E8E-C0AEEB514AC7">
+            <RemoveFolder Id='ProgramMenuDir' On='uninstall' />
+            <RegistryValue Root='HKCU' Key='Software\[Manufacturer]\[ProductName]' Type='string' Value='' KeyPath='yes' />
+          </Component>
+        </Directory>
+      </Directory>
+
+      <Directory Id="DesktopFolder" Name="Desktop" />
+		</Directory>
+
+  </Product>
 </Wix>
