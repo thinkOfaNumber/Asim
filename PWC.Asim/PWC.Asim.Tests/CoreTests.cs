@@ -22,6 +22,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using NUnit.Framework;
+using PWC.Asim.Core.Contracts;
 using PWC.Asim.Core.Utils;
 
 namespace ConsoleTests
@@ -124,6 +125,39 @@ namespace ConsoleTests
             var serviceCnt = Convert.ToInt32(fileArray[2][2]);
             // in 24 hours there should be 3 8h services and 8 3h services, minus one overlapping
             Assert.AreEqual(10, serviceCnt);
+        }
+
+        [Test]
+        public void LoadRateOfChange()
+        {
+            // Arrange
+            var sharedVars = SharedContainer.Instance;
+            var loadP = sharedVars.GetOrNew("LoadP");
+            var loadSetP = sharedVars.GetOrNew("LoadSetP");
+            var loadMaxUpP = sharedVars.GetOrNew("LoadMaxUpP");
+            var loadMaxDownP = sharedVars.GetOrNew("LoadMaxDownP");
+
+            loadMaxUpP.Val = 5;
+            loadMaxDownP.Val = 10;
+            var loadPinputs = new List<double>() { 0, 5, 10, 15, 100, 500, 100, 32, 5 };
+            var loadPexpect = new List<double>() { 0, 5, 10, 15, 20,  25,  30,  32, 22 };
+            var limitedLoad = new List<double>();
+
+            IActor loadMgr = new PWC.Asim.Core.Actors.Load();
+
+            // Act
+            loadMgr.Init();
+            for (int it = 0; it < loadPinputs.Count; it++)
+            {
+                loadP.Val = loadPinputs[it];
+                loadMgr.Run((ulong)it);
+                limitedLoad.Add(loadSetP.Val);
+            }
+            loadMgr.Finish();
+
+            // Assert
+            int matchingValues = limitedLoad.Where((v, i) => v.Equals(loadPexpect[i])).Count();
+            Assert.AreEqual(loadPexpect.Count, matchingValues);
         }
     }
 }

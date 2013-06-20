@@ -219,6 +219,8 @@ namespace PWC.Asim.Core.Actors
                 bestCfg = GenSetCfg;
             // only switch to a lower configuration if it is below the hysteresis of the current configuration
             else if (_genCfgSetP.Val < foundP - _statHystP.Val)
+                // todo: there is an issue with this if there is a drop of two configurations, we'll still apply
+                // hysteresis to the lower one, when it only needs to be applied to the middle one.
                 bestCfg = (ushort)_configurations[found].Val;
             // don't switch to a smaller configuration as Hysteresis wasn't satisfied
             else

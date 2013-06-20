@@ -27,13 +27,18 @@ namespace PWC.Asim.Core.Actors
     /// limit (LoadMaxLimP) and sheddable load online.  The simulator load
     /// is LoadSetP.
     /// </summary>
-    class Load : IActor
+    public class Load : IActor
     {
         private readonly SharedContainer _sharedVars = SharedContainer.Instance;
         private readonly Shared _loadMaxLimP;
         private readonly Shared _loadP;
         private readonly Shared _loadSetP;
         private readonly Shared _shedOffP;
+        private readonly Shared _loadMaxUpP;
+        private readonly Shared _loadMaxDownP;
+        private double _oldLoadP;
+        private double _deltaLoadP;
+        private double _simLoadP;
 
         public Load()
         {
@@ -41,22 +46,37 @@ namespace PWC.Asim.Core.Actors
             _loadP = _sharedVars.GetOrNew("LoadP");
             _loadSetP = _sharedVars.GetOrNew("LoadSetP");
             _shedOffP = _sharedVars.GetOrNew("ShedOffP");
+            _loadMaxUpP = _sharedVars.GetOrNew("LoadMaxUpP");
+            _loadMaxDownP = _sharedVars.GetOrNew("LoadMaxDownP");
         }
 
         public void Init()
         {
-            
         }
 
         public void Run(ulong iteration)
         {
             // limit load based on LoadMaxLimP
-            double realLoadP = _loadMaxLimP.Val > 0 ? Math.Min(_loadP.Val, _loadMaxLimP.Val) : _loadP.Val;
+            _simLoadP = _loadMaxLimP.Val > 0 ? Math.Min(_loadP.Val, _loadMaxLimP.Val) : _loadP.Val;
+
+            // limit load rate of change
+            _deltaLoadP = _simLoadP - _oldLoadP;
+            if (_loadMaxUpP.Val > 0 && _deltaLoadP > _loadMaxUpP.Val)
+            {
+                _deltaLoadP = _loadMaxUpP.Val;
+            }
+            if (_loadMaxDownP.Val > 0 && -_deltaLoadP > _loadMaxDownP.Val)
+            {
+                _deltaLoadP = -_loadMaxDownP.Val;
+            }
+            _simLoadP = _oldLoadP = _oldLoadP + _deltaLoadP;
 
             // simulate sheddable load switching off by substracting offline sheddable load component
-            realLoadP -= _shedOffP.Val;
+            _simLoadP -= _shedOffP.Val;
 
-            _loadSetP.Val = realLoadP;
+            _simLoadP = Math.Max(0, _simLoadP);
+
+            _loadSetP.Val = _simLoadP;
         }
 
         public void Finish()
