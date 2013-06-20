@@ -3,13 +3,15 @@
 	<Product Id="C01688B7-B7EC-43AE-8230-B79460E92EE1" Name="Asim" Language="1033" Version="1.0.0.0" Manufacturer="Radical Systems"
            UpgradeCode="F8BEFBA3-8DA8-4165-A420-F01EB22561E5">
 		<Package Id='*' InstallerVersion="100" Compressed="yes" InstallScope="perMachine"
-             Comments='Foobar is a registered trademark of Acme Ltd.' Manufacturer='Acme Ltd.'/>
+             Comments='Asim' Manufacturer='Radical Systems'/>
 
 		<MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." />
 		<MediaTemplate />
     
-    <UIRef Id="WixUI_Mondo" />
+    <UIRef Id="WixUI_InstallDir" />
     <UIRef Id="WixUI_ErrorProgressText" />
+    <Property Id="WIXUI_INSTALLDIR" Value="INSTALLFOLDER" />
+    <WixVariable Id="WixUILicenseRtf" Value="..\..\COPYING.rtf" />
 
 		<Feature Id="CompleteProduct" Title="PWC.Asim.Installer" Level="1" Description="The complete package."
              Display="expand" ConfigurableDirectory="INSTALLFOLDER">
@@ -19,7 +21,7 @@
         <ComponentRef Id='ExcelExecutable' />
       </Feature>
 
-      <Feature Id='Documentation' Title='Description' Description='The instruction manual.' Level='1000'>
+      <Feature Id='Documentation' Title='User Manual' Description='The Asim User Manual.' Level='1'>
         <ComponentRef Id='ProgramMenuDir' />
         <ComponentRef Id='PdfDocs' />
       </Feature>
@@ -27,7 +29,7 @@
 
 		<Directory Id="TARGETDIR" Name="SourceDir">
 			<Directory Id="ProgramFilesFolder">
-        <Directory Id='PWC' Name='PWC'>
+        <Directory Id='PWC' Name='Power Water Corporation'>
           <Directory Id="INSTALLFOLDER" Name="Asim">
             <Directory Id="BinDir" Name="bin">
               <Component Id="AsimExecutable" Guid="11E4343E-F6F9-459D-B818-650729003F25">

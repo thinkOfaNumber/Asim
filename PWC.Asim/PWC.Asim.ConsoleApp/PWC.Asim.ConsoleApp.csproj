@@ -92,7 +92,7 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>"$(ProgramFiles)\Microsoft\ILMerge\ILMerge.exe" /target:winexe /targetplatform:"v4,$(ProgramFiles)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.0" /out:$(TargetDir)AsimStatic.exe $(TargetDir)Asim.exe $(TargetDir)PWC.Asim.Core.dll &gt;&gt; build.log
+    <PostBuildEvent>"$(ProgramFiles)\Microsoft\ILMerge\ILMerge.exe" /target:exe /targetplatform:"v4,$(ProgramFiles)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.0" /out:$(TargetDir)AsimStatic.exe $(TargetDir)Asim.exe $(TargetDir)PWC.Asim.Core.dll &gt;&gt; build.log
 </PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
