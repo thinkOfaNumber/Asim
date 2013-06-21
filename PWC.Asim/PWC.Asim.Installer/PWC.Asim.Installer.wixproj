@@ -17,6 +17,8 @@
     <DefineConstants>Debug</DefineConstants>
     <LinkerAdditionalOptions>
     </LinkerAdditionalOptions>
+    <Cultures>
+    </Cultures>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
     <OutputPath>bin\$(Configuration)\</OutputPath>
@@ -30,6 +32,9 @@
       <HintPath>$(WixExtDir)\WixUIExtension.dll</HintPath>
       <Name>WixUIExtension</Name>
     </WixExtension>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Strings1-en-us.wxl" />
   </ItemGroup>
   <Import Project="$(WixTargetsPath)" />
   <!--

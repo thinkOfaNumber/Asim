@@ -1,20 +1,148 @@
 <?xml version="1.0" encoding="UTF-8"?>
+
+<!-- These variables define the Windows Installer product version, product code and upgrade code. They   -->
+<!-- will be used later on in this file.                                                                 -->
+<?define Property_ProductVersion = "1.0.1.1" ?>
+<?define Property_ProductCode = "C01688B7-B7EC-43AE-8230-B79460E92EE1" ?>
+<?define Property_UpgradeCode = "F8BEFBA3-8DA8-4165-A420-F01EB22561E5" ?>
+
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
-	<Product Id="C01688B7-B7EC-43AE-8230-B79460E92EE1" Name="Asim" Language="1033" Version="1.0.0.0" Manufacturer="Radical Systems"
-           UpgradeCode="F8BEFBA3-8DA8-4165-A420-F01EB22561E5">
-		<Package Id='*' InstallerVersion="100" Compressed="yes" InstallScope="perMachine"
-             Comments='Asim' Manufacturer='Radical Systems'/>
+  <Product Id="$(var.Property_ProductCode)"
+           UpgradeCode="$(var.Property_UpgradeCode)"
+           Name="!(loc.Property_ProductName)"
+           Language="!(loc.Property_ProductLanguage)"
+           Version="$(var.Property_ProductVersion)"
+           Manufacturer="!(loc.Property_CompanyName)">
 
-		<MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." />
-		<MediaTemplate />
-    
-    <UIRef Id="WixUI_InstallDir" />
+    <Package Description="!(loc.Package_Description)"
+             Comments="!(loc.Package_Comments)"
+             InstallerVersion="200"
+             Compressed="yes"
+             InstallPrivileges="limited"
+        />
+
+    <UIRef Id="WixUI_Minimal"/>
     <UIRef Id="WixUI_ErrorProgressText" />
-    <Property Id="WIXUI_INSTALLDIR" Value="INSTALLFOLDER" />
     <WixVariable Id="WixUILicenseRtf" Value="..\..\COPYING.rtf" />
+    
+    <!-- This information enables Windows Installer major upgrade functionality so users can seamlessly  -->
+    <!-- install a new version of the product and have the old version automatically uninstall behind    -->
+    <!-- the scenes. See the following topic in the MSDN Library for additional information:             -->
+    <!-- http://msdn.microsoft.com/library/default.asp?url=/library/en-us/msi/setup/major_upgrades.asp   -->
+    <Upgrade Id="$(var.Property_UpgradeCode)">
+      <UpgradeVersion Minimum="$(var.Property_ProductVersion)" OnlyDetect="yes" Property="NEWERVERSIONDETECTED" />
+      <UpgradeVersion Minimum="1.0.0.0" IncludeMinimum="yes" Maximum="$(var.Property_ProductVersion)"
+                      IncludeMaximum="no" Property="OLDERVERSIONBEINGUPGRADED" />
+    </Upgrade>
 
-		<Feature Id="CompleteProduct" Title="PWC.Asim.Installer" Level="1" Description="The complete package."
-             Display="expand" ConfigurableDirectory="INSTALLFOLDER">
+    <!-- This custom action prevents users from installing if a newer version of this product is already -->
+    <!-- installed on the system. This is a part of Windows Installer major upgrade functionality.       -->
+    <CustomAction Id="CA_BlockOlderVersionInstall" Error="!(loc.LaunchCondition_LaterVersion)" />
+
+    <!-- This condition enforces that the ALLUSERS property is not set because this MSI is only ever     -->
+    <!-- intended to be a per-user installation.                                                         -->
+    <Condition Message="!(loc.LaunchCondition_AllUsers)">
+      NOT ALLUSERS
+    </Condition>
+
+    <!-- This is a list of directories that are used by this product as installation locations or custom -->
+    <!-- action file search locations.                                                                   -->
+    <Directory Id="TARGETDIR" Name="SourceDir">
+      <Directory Id="LocalAppDataFolder" Name="AppData">
+        <Directory Id="Microsoft" Name="Microsoft">
+          <Directory Id="AddIns" Name="AddIns">
+          </Directory>
+        </Directory>
+
+        <Directory Id="AppRootDirectory" Name="Asim">
+          <Directory Id="AsimBinDir" Name="bin" />
+          <Directory Id="AsimDocsDir" Name="Docs" />
+          <Directory Id='AsimSamples' Name='Samples' />
+        </Directory>
+      </Directory>
+    </Directory>
+
+    <!-- This is a list of all components installed as a part of this product. A component is the        -->
+    <!-- smallest atomic unit of installation in Windows Installer. Each component must have a unique    -->
+    <!-- GUID. In general, it is recommended that each file be installed by a separate component in      -->
+    <!-- order to avoid reference counting problems and make future servicing of this product easier.    -->
+    <!-- Each component is listed as a child of the DirectoryRef that represents the directory that      -->
+    <!-- the file it contains will install to.                                                           -->
+    <DirectoryRef Id="AsimBinDir">
+      <Component Id="AsimExecutable" Guid="11E4343E-F6F9-459D-B818-650729003F25">
+        <RemoveFolder Id="RemoveAppRootDirectory" On="uninstall" Directory="AppRootDirectory" />
+        <RemoveFolder Id="RemoveAsimBinDir" On="uninstall" />
+        
+        <File Id="AsimEXE" Name="Asim.exe" Source="..\PWC.Asim.ConsoleApp\bin\Release\AsimStatic.exe" />
+        <RegistryValue Root='HKCU' Key='Software\[Manufacturer]\[ProductName]\AsimEXE' Type='string' Value=''
+                       KeyPath='yes' />
+      </Component>
+      <Component Id="ExcelExecutable" Guid="54128474-16E7-4130-A9D6-E34FA3327F9C">
+        <File Id="ExcelEXE" Name="AsimExcelTools.exe" Source="..\PWC.Asim.ExcelTools\bin\Release\AsimExcelTools.exe" />
+        <RegistryValue Root='HKCU' Key='Software\[Manufacturer]\[ProductName]\ExcelEXE' Type='string' Value=''
+                       KeyPath='yes' />
+      </Component>
+    </DirectoryRef>
+
+    <DirectoryRef Id="AsimDocsDir">
+      <Component Id="PdfDocs" Guid="31D80BB9-76A9-47BB-AE4F-82F08F6CD723">
+        <RemoveFolder Id="RemoveAsimDocsDir" On="uninstall" Directory="AsimDocsDir" />
+        <File Id="UserManualPDF" Name="Model User Manual.pdf" Source="..\..\..\..\Documentation\Model User Manual.pdf">
+          <!--<Shortcut Id='startmenuManual' Directory='ProgramMenuDir' Name='Model User Manual.pdf' Advertise='yes' />-->
+        </File>
+        <RegistryValue Root='HKCU' Key='Software\[Manufacturer]\[ProductName]\UserManualPDF' Type='string' Value=''
+                       KeyPath='yes' />
+      </Component>
+      <Component Id='MacroDocs' Guid='51510D6C-CD03-402E-9632-B6E6499F7943'>
+        <File Id="InstallMacroPDF" Name="Excel Addin Installation.pdf" Source="..\..\..\..\Documentation\InstallingMacro\Excel Addin Installation.pdf">
+          <!--<Shortcut Id='startmenuMacro' Directory='ProgramMenuDir' Name='Excel Addin Installation.pdf' Advertise='yes' />-->
+        </File>
+        <RegistryValue Root='HKCU' Key='Software\[Manufacturer]\[ProductName]\InstallMacroPDF' Type='string' Value=''
+                       KeyPath='yes' />
+      </Component>
+    </DirectoryRef>
+
+    <DirectoryRef Id="AsimSamples">
+      <Component Id='Samples' Guid='806D06EB-BB7B-4611-AC99-3ECB508EE92D'>
+        <RemoveFolder Id="RemoveAsimSamples" On="uninstall" Directory="AsimSamples" />
+        <RegistryValue Root='HKCU' Key='Software\[Manufacturer]\[ProductName]\Samples' Type='string' Value=''
+                       KeyPath='yes' />
+        <File Id='ExampleXlsX' Source='..\Data\Example.xlsx' />
+        <File Id='ExampleXls' Source='..\Data\Example.xls' />
+        <File Id='archivebat' Source='..\Data\archive.bat' />
+        <File Id='testbat' Source='..\Data\test.bat' />
+        <File Id='tmabat' Source='..\Data\tma.bat' />
+      </Component>
+    </DirectoryRef>
+
+    <DirectoryRef Id="AddIns">
+      <Component Id="AsimAddin" Guid="6360AC72-F70A-408D-B4CE-91CEC2496F80">
+        <CreateFolder/>
+        <RemoveFolder Id="RemoveMicrosoft" On="uninstall" Directory="Microsoft"/>
+        <RemoveFolder Id="RemoveAddIns" On="uninstall" Directory="AddIns"/>
+        <File Id="AsimAddinXla" Source="..\Data\Asim Addin.xla"/>
+        <RemoveFile Name="Asim Addin.xla" Id="AsimAddinXla" On="uninstall"/>
+        <RegistryValue Root='HKCU' Key='Software\[Manufacturer]\[ProductName]\AsimAddinKeyPath' Type='string' Value=''
+                       KeyPath='yes' />
+      </Component>
+    </DirectoryRef>
+
+    <!--<Directory Id="ProgramMenuFolder" Name="Programs">
+      <Directory Id="ProgramMenuDir" Name="Asim">
+        <Component Id="ProgramMenuDir" Guid="583CCF4B-282E-4744-9E8E-C0AEEB514AC7">
+          <RemoveFolder Id='ProgramMenuDir' On='uninstall' />
+          <RegistryValue Root='HKCU' Key='Software\[Manufacturer]\[ProductName]\ProgramMenuDirKeyPath' Type='string' Value='' KeyPath='yes' />
+        </Component>
+      </Directory>
+    </Directory>-->
+
+    <!-- The media table defines the location that the MSI will look to find source files during         -->
+    <!-- installation or repair scenarios. In this case, the source files are in a cab file that will be -->
+    <!-- embedded directly into the MSI at build time.                                                   -->
+    <Media Id="1" Cabinet="Application.cab" EmbedCab="yes" />
+    
+    <Feature Id="CompleteProduct" Title="PWC.Asim.Installer" Level="1" Description="The complete package."
+             Display="expand" ConfigurableDirectory="TARGETDIR">
 
       <Feature Id="MainProgram" Title="Programs" Description="The main executables." Level="1">
         <ComponentRef Id='AsimExecutable' />
@@ -22,7 +150,7 @@
       </Feature>
 
       <Feature Id='Documentation' Title='User Manual' Description='The Asim User Manual.' Level='1'>
-        <ComponentRef Id='ProgramMenuDir' />
+        <!--<ComponentRef Id='ProgramMenuDir' />-->
         <ComponentRef Id='PdfDocs' />
         <ComponentRef Id='MacroDocs' />
         <ComponentRef Id='Samples' />
@@ -30,70 +158,24 @@
       </Feature>
 		</Feature>
 
-		<Directory Id="TARGETDIR" Name="SourceDir">
-			<Directory Id="ProgramFilesFolder">
-        <Directory Id='PWC' Name='Power Water Corporation'>
-          <Directory Id="INSTALLFOLDER" Name="Asim">
-            <Directory Id="BinDir" Name="bin">
-              <Component Id="AsimExecutable" Guid="11E4343E-F6F9-459D-B818-650729003F25">
-                <File Id="AsimEXE" Name="Asim.exe" Source="..\PWC.Asim.ConsoleApp\bin\Release\AsimStatic.exe" KeyPath="yes"></File>
-              </Component>
 
-              <Component Id="ExcelExecutable" Guid="54128474-16E7-4130-A9D6-E34FA3327F9C">
-                <File Id="ExcelEXE" Name="AsimExcelTools.exe" Source="..\PWC.Asim.ExcelTools\bin\Release\AsimExcelTools.exe" KeyPath="yes"></File>
-              </Component>
-              
-            </Directory>
+    <!-- The InstallExecuteSequence table describes the order that actions will be executed during       -->
+    <!-- installation, repair and uninstall of this product.                                             -->
+    <InstallExecuteSequence>
+      <Custom Action="CA_BlockOlderVersionInstall" After="FindRelatedProducts">
+        <![CDATA[NEWERVERSIONDETECTED]]>
+      </Custom>
+      <RemoveExistingProducts After="InstallFinalize" />
+      <LaunchConditions After="AppSearch"/>
+    </InstallExecuteSequence>
+      
+    <!-- These properties define links that will appear in the Add/Remove Programs control panel when    -->
+    <!-- this product is installed on the system.                                                        -->
+    <!--<Property Id="ARPHELPLINK" Value="!(loc.Property_ArpHelpLink)" />
+    <Property Id="ARPURLINFOABOUT" Value="!(loc.Property_ArpUrlInfoAbout)" />-->
 
-            <Directory Id="DocsDir" Name="Docs">
-              <Component Id="PdfDocs" Guid="31D80BB9-76A9-47BB-AE4F-82F08F6CD723">
-                <File Id="UserManualPDF" Name="Model User Manual.pdf" Source="..\..\..\..\Documentation\Model User Manual.pdf" KeyPath="yes">
-                  <Shortcut Id='startmenuManual' Directory='ProgramMenuDir' Name='Model User Manual.pdf' Advertise='yes' />
-                </File>
-              </Component>
-              <Component Id='MacroDocs' Guid='51510D6C-CD03-402E-9632-B6E6499F7943'>
-                <File Id="InstallMacroPDF" Name="Excel Addin Installation.pdf" Source="..\..\..\..\Documentation\InstallingMacro\Excel Addin Installation.pdf">
-                  <Shortcut Id='startmenuMacro' Directory='ProgramMenuDir' Name='Excel Addin Installation.pdf' Advertise='yes' />
-                </File>
-              </Component>
-            </Directory>
-
-            <Directory Id='Samples' Name='Samples'>
-              <Component Id='Samples' Guid='806D06EB-BB7B-4611-AC99-3ECB508EE92D'>
-                <File Id='ExampleXlsX' Source='..\Data\Example.xlsx' KeyPath='yes'/>
-                <File Id='ExampleXls' Source='..\Data\Example.xls' />
-                <File Id='archivebat' Source='..\Data\archive.bat' />
-                <File Id='testbat' Source='..\Data\test.bat' />
-                <File Id='tmabat' Source='..\Data\tma.bat' />
-              </Component>
-            </Directory>
-          </Directory>
-        </Directory>
-			</Directory>
-
-      <Directory Id="ProgramMenuFolder" Name="Programs">
-        <Directory Id="ProgramMenuDir" Name="Asim">
-          <Component Id="ProgramMenuDir" Guid="583CCF4B-282E-4744-9E8E-C0AEEB514AC7">
-            <RemoveFolder Id='ProgramMenuDir' On='uninstall' />
-            <RegistryValue Root='HKCU' Key='Software\[Manufacturer]\[ProductName]\ProgramMenuDirKeyPath' Type='string' Value='' KeyPath='yes' />
-          </Component>
-        </Directory>
-      </Directory>
-
-      <Directory Id="AppDataFolder" Name="AppData">
-        <Directory Id="Microsoft" Name="Microsoft">
-          <Directory Id="AddIns" Name="AddIns">
-            <Component Id="AsimAddin" Guid="6360AC72-F70A-408D-B4CE-91CEC2496F80">
-              <File Id="AsimAddinXla" Source="..\Data\Asim Addin.xla"/>
-              <RemoveFolder Id="Microsoft" On="uninstall" Directory="Microsoft"/>
-              <RemoveFolder Id="AddIns" On="uninstall" Directory="AddIns"/>
-              <RemoveFile Name="Asim Addin.xla" Id="AsimAddinXla" On="uninstall"/>
-              <RegistryValue Root='HKCU' Key='Software\[Manufacturer]\[ProductName]\AsimAddinKeyPath' Type='string' Value='' KeyPath='yes' />
-            </Component>
-          </Directory>
-        </Directory>
-      </Directory>
-		</Directory>
-
+    <!-- This property defines the ALLUSERS property and sets it to blank, which indicates that this     -->
+    <!-- product will be  installed per-user instead of per-machine.                                     -->
+    <Property Id="ALLUSERS" Secure="yes"/>
   </Product>
 </Wix>
