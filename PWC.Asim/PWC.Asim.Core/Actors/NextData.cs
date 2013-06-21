@@ -145,7 +145,11 @@ namespace PWC.Asim.Core.Actors
 
             for (int i = 0; i < _columnCount; i++)
             {
-                if (headers[i][0] == '>')
+                if (string.IsNullOrWhiteSpace(headers[i]))
+                {
+                    throw new FormatException(_filename + ": Header row column " + (i+1) + " is empty.");
+                }
+                else if (headers[i][0] == '>')
                 {
                     _values[i].DoScale = true;
                     _values[i].Update = _sharedVars.GetOrNew(headers[i].Substring(1));

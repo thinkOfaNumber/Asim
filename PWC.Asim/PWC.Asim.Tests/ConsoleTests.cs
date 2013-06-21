@@ -627,6 +627,31 @@ namespace ConsoleTests
             Assert.AreEqual(headerRow.Count, 0);
         }
 
+        [Test]
+        public void EmptyInputColumn()
+        {
+            var input = GetTempFilename;
+            var outFile = GetTempFilename;
+            int iterations = 10000;
+
+            StringBuilder settings = new StringBuilder("t,LoadP,Gen1P,");
+            settings.Append(Environment.NewLine);
+            settings.Append("1,2,3,");
+            File.WriteAllText(input, settings.ToString());
+
+            // Act
+            int retValue = StartConsoleApplication(
+                string.Format("--iterations {0} --input {1} --output {2} LoadP",
+                    iterations, input, outFile));
+
+            // Assert
+            // completed with error
+            Assert.AreEqual(1, retValue);
+
+            // Check errors
+            Assert.IsTrue(ConsoleOutput.ToString().Contains("is empty"));
+        }
+
         protected void MaintainSpinTest(bool maintainSpin)
         {
             // Arrange
