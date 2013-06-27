@@ -227,7 +227,7 @@ namespace PWC.Asim.Core.Utils
                     "The solar controller could not load the specified control method. Please\n" +
                         "ensure your DLL has a class called 'SolarController' with an instance method\n" +
                         "'Control' with the following signature:\n" +
-                        "double Control (double lastSetP, double genP, double genIdealP, double loadP);";
+                        "double Control (double lastSetP, double genP, double genSpinP, bool pvBelowGenSpinP, double genIdealP, double loadP);";
                     throw new SimulationException(error, e);
                 }
             }

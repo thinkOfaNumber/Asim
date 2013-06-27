@@ -35,12 +35,14 @@ namespace PWC.Asim.Core.Actors
         private readonly Shared _pvSetMaxDownP;
         private readonly Shared _pvSetMaxUpP;
         private readonly Shared _pvMaxLimP;
+        private readonly Shared _pvBelowGenSpinP;
 
         private readonly Shared _loadP;
         private readonly Shared _statSpinSetP;
         private readonly Shared _statBlack;
         private readonly Shared _genP;
         private readonly Shared _genIdealP;
+        private readonly Shared _genSpinP;
 
         readonly Delegates.SolarController _solarController;
 
@@ -57,12 +59,14 @@ namespace PWC.Asim.Core.Actors
             _pvSetMaxDownP = _sharedVars.GetOrNew("PvSetMaxDownP");
             _pvSetMaxUpP = _sharedVars.GetOrNew("PvSetMaxUpP");
             _pvMaxLimP = _sharedVars.GetOrNew("PvMaxLimP");
+            _pvBelowGenSpinP = _sharedVars.GetOrNew("PvBelowGenSpinP");
 
             _loadP = _sharedVars.GetOrNew("LoadSetP");
             _statSpinSetP = _sharedVars.GetOrNew("StatSpinSetP");
             _statBlack = _sharedVars.GetOrNew("StatBlack");
             _genP = _sharedVars.GetOrNew("GenP");
             _genIdealP = _sharedVars.GetOrNew("GenIdealP");
+            _genSpinP = _sharedVars.GetOrNew("GenSpinP");
         }
 
         #region Implementation of IActor
@@ -73,7 +77,9 @@ namespace PWC.Asim.Core.Actors
                 _pvAvailP.Val = Math.Min(_pvAvailP.Val, _pvMaxLimP.Val);
 
             // calculate desired setpoint
-            double setP = _solarController(_pvAvailP.Val, _pvSetP.Val, _genP.Val, _genIdealP.Val, _loadP.Val, _statSpinSetP.Val);
+            double setP = _solarController(_pvAvailP.Val, _pvSetP.Val,
+                _genP.Val, _genSpinP.Val, _pvBelowGenSpinP.Val >= 1,
+                _genIdealP.Val, _loadP.Val, _statSpinSetP.Val);
 
             // calculate delta and ramp limits
             double deltaSetP = setP - _pvP.Val;
@@ -118,11 +124,16 @@ namespace PWC.Asim.Core.Actors
 
         #endregion
 
-        public static double DefaultSolarController(double pvAvailP, double lastSetP, double genP, double genIdealP, double loadP, double statSpinSetP)
+        public static double DefaultSolarController(double pvAvailP, double lastSetP,
+            double genP, double genSpinP, bool pvBelowGenSpinP,
+            double genIdealP, double loadP, double statSpinSetP)
         {
             // calculate desired setpoint.  Note this won't share with other
             // energy providers.
             double setP = Math.Max(0, loadP - genIdealP);
+            // limit PV to GenSpinP if required
+            if (pvBelowGenSpinP)
+                setP = Math.Min(setP, genSpinP);
             // limit setpoint to total station load
             return Math.Min(setP, loadP);
         }

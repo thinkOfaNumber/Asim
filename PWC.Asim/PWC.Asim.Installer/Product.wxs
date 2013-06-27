@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<!--
+See http://wix.tramontana.co.hu/tutorial and
+ http://blogs.msdn.com/b/astebner/archive/2007/11/18/6385121.aspx
+ for more details on these settings.
+-->
 <!-- These variables define the Windows Installer product version, product code and upgrade code. They   -->
 <!-- will be used later on in this file.                                                                 -->
 <?define Property_ProductVersion = "1.0.1.1" ?>

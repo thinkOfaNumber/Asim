@@ -22,7 +22,9 @@ namespace PWC.Asim.Algorithms.PvNone
 {
     public class SolarController
     {
-        public double Control(double pvAvailP, double lastSetP, double genP, double genIdealP, double loadP, double statSpinSetP)
+        public double Control(double pvAvailP, double lastSetP,
+            double genP, double genSpinP, bool pvBelowGenSpinP,
+            double genIdealP, double loadP, double statSpinSetP)
         {
             // calculate desired setpoint
             return pvAvailP;
