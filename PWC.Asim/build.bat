@@ -1,4 +1,5 @@
 @echo off
+setlocal enableextensions enabledelayedexpansion
 set ZIP=C:\Program Files\7-Zip\7z.exe
 set BUILDDIR=Asim
 SET ILMERGE=%ProgramFiles(x86)%\Microsoft\ILMerge\ILMerge.exe
@@ -8,7 +9,16 @@ For /f "tokens=2-4 delims=/ " %%a in ('date /t') do (set mydate=%%c-%%b-%%a)
 For /f "tokens=1-2 delims=/:" %%a in ("%TIME%") do (set mytime=%%a%%b)
 set mytime=%mytime: =0%
 
-echo make sure you bild the release version manually first!
+rem Dos can't test file dates on two files in different directories...
+SET RELEASEDLL=PWC.Asim.Core\bin\Release\PWC.Asim.Core.dll
+SET DEBUGDLL=PWC.Asim.Core\bin\Debug\PWC.Asim.Core.dll
+echo Please build the RELEASE configuration before building this package.
+<nul set /p ="The Release build date is "
+for %%a in (%RELEASEDLL%) do echo %%~ta
+<nul set /p ="The Debug   build date is "
+for %%a in (%DEBUGDLL%) do echo %%~ta
+pause
+
 rmdir /s /q Asim
 mkdir %BUILDDIR%
 mkdir %BUILDDIR%\bin
