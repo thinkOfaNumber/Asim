@@ -32,9 +32,11 @@ namespace PWC.Asim.Core.Contracts
         /// <param name="genIdealP">Ideal generator output for online generators.</param>
         /// <param name="loadP">Actual system load.</param>
         /// <param name="statSpinSetP">Station spinning reserve setpoint parameter.</param>
+        /// <param name="switchDownP">Value in kW at which the generator manager would (may) switch down, ie
+        ///  next lower configuration - hysteresis</param>
         /// <returns>The new setpoint to feed to the ramp limit</returns>
         public delegate double SolarController(double pvAvailP, double lastSetP,
             double genP, double genSpinP, bool pvBelowGenSpinP,
-            double genIdealP, double loadP, double statSpinSetP);
+            double genIdealP, double loadP, double statSpinSetP, double switchDownP);
     }
 }

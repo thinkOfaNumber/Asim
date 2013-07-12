@@ -36,13 +36,17 @@ namespace PWC.Asim.Core.Actors
         private readonly Shared _pvSetMaxUpP;
         private readonly Shared _pvMaxLimP;
         private readonly Shared _pvBelowGenSpinP;
+        private readonly Shared _pvSetLimitSpinPct;
+        private readonly Shared _pvSetLimitSpinpPaPct;
 
         private readonly Shared _loadP;
         private readonly Shared _statSpinSetP;
         private readonly Shared _statBlack;
+        private readonly Shared _statHystP;
         private readonly Shared _genP;
         private readonly Shared _genIdealP;
         private readonly Shared _genSpinP;
+        private readonly Shared _genLowP;
 
         readonly Delegates.SolarController _solarController;
 
@@ -60,13 +64,17 @@ namespace PWC.Asim.Core.Actors
             _pvSetMaxUpP = _sharedVars.GetOrNew("PvSetMaxUpP");
             _pvMaxLimP = _sharedVars.GetOrNew("PvMaxLimP");
             _pvBelowGenSpinP = _sharedVars.GetOrNew("PvBelowGenSpinP");
+            _pvSetLimitSpinPct = _sharedVars.GetOrNew("PvSetLimitSpinPctPa");
+            _pvSetLimitSpinpPaPct = _sharedVars.GetOrNew("PvSetLimitSpinpPaPctPa");
 
             _loadP = _sharedVars.GetOrNew("LoadSetP");
             _statSpinSetP = _sharedVars.GetOrNew("StatSpinSetP");
             _statBlack = _sharedVars.GetOrNew("StatBlack");
+            _statHystP = _sharedVars.GetOrNew("StatHystP");
             _genP = _sharedVars.GetOrNew("GenP");
             _genIdealP = _sharedVars.GetOrNew("GenIdealP");
             _genSpinP = _sharedVars.GetOrNew("GenSpinP");
+            _genLowP = _sharedVars.GetOrNew("GenLowP");
         }
 
         #region Implementation of IActor
@@ -79,7 +87,18 @@ namespace PWC.Asim.Core.Actors
             // calculate desired setpoint
             double setP = _solarController(_pvAvailP.Val, _pvSetP.Val,
                 _genP.Val, _genSpinP.Val, _pvBelowGenSpinP.Val >= 1,
-                _genIdealP.Val, _loadP.Val, _statSpinSetP.Val);
+                _genIdealP.Val, _loadP.Val, _statSpinSetP.Val,
+                Math.Max(0, _genLowP.Val - _statHystP.Val));
+
+            // apply Spinning reserve limits (PWCSLMS-41)
+            if (_pvSetLimitSpinPct.Val > 0 && _pvSetLimitSpinPct.Val <= 100)
+            {
+                setP = Math.Min(setP, _genSpinP.Val*_pvSetLimitSpinPct.Val/100.0D);
+            }
+            if (_pvSetLimitSpinpPaPct.Val > 0 && _pvSetLimitSpinpPaPct.Val <= 100)
+            {
+                setP = Math.Min(setP, _statSpinSetP.Val * _pvSetLimitSpinpPaPct.Val / 100.0D);
+            }
 
             // calculate delta and ramp limits
             double deltaSetP = setP - _pvP.Val;
@@ -126,7 +145,7 @@ namespace PWC.Asim.Core.Actors
 
         public static double DefaultSolarController(double pvAvailP, double lastSetP,
             double genP, double genSpinP, bool pvBelowGenSpinP,
-            double genIdealP, double loadP, double statSpinSetP)
+            double genIdealP, double loadP, double statSpinSetP, double switchDownP)
         {
             // calculate desired setpoint.  Note this won't share with other
             // energy providers.

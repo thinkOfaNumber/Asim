@@ -18,7 +18,7 @@
 
 using System;
 
-namespace PWC.Asim.Algorithms.PvSimple
+namespace PWC.Asim.Algorithms.PvFsc
 {
     public class SolarController
     {
@@ -26,8 +26,8 @@ namespace PWC.Asim.Algorithms.PvSimple
             double genP, double genSpinP, bool pvBelowGenSpinP,
             double genIdealP, double loadP, double statSpinSetP, double switchDownP)
         {
-            // calculate desired setpoint
-            return Math.Max(0, statSpinSetP);
+            return Math.Min(loadP - genIdealP, // minimum loading constraint
+                            loadP - switchDownP); // keep PV s.t. we do NOT configure done
         }
     }
 }

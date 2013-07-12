@@ -24,7 +24,7 @@ namespace PWC.Asim.Algorithms.PvNone
     {
         public double Control(double pvAvailP, double lastSetP,
             double genP, double genSpinP, bool pvBelowGenSpinP,
-            double genIdealP, double loadP, double statSpinSetP)
+            double genIdealP, double loadP, double statSpinSetP, double switchDownP)
         {
             // calculate desired setpoint
             return pvAvailP;

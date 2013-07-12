@@ -3,8 +3,6 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2012
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Algorithms", "Algorithms", "{C31C86E3-D4AE-44CB-9143-D4A8A77FA2D7}"
 EndProject
-Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "PWC.Asim.Deployment", "PWC.Asim.Deployment\PWC.Asim.vdproj", "{107A51C8-82A5-449A-A711-0D79E90895FE}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PWC.Asim.ExcelTools", "PWC.Asim.ExcelTools\PWC.Asim.ExcelTools.csproj", "{3198A90B-6521-4630-8AAD-79E5E3E36D90}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PWC.Asim.Algorithms.PvNone", "Algorithms\PWC.Asim.Algorithms.PvNone\PWC.Asim.Algorithms.PvNone.csproj", "{EDD3AC1D-36ED-44F0-AA18-0B3036E54318}"
@@ -19,6 +17,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PWC.Asim.ConsoleApp", "PWC.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PWC.Asim.Tests", "PWC.Asim.Tests\PWC.Asim.Tests.csproj", "{AFFB328B-9B93-4FB4-ABB8-A1170CEAFA86}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PWC.Asim.Algorithms.PvFsc", "Algorithms\PWC.Asim.Algorithms.PvFsc\PWC.Asim.Algorithms.PvFsc.csproj", "{DCE1CD85-CEA1-4310-9796-8543C5AB42CE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -29,18 +29,6 @@ Global
 		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{107A51C8-82A5-449A-A711-0D79E90895FE}.Debug|Any CPU.ActiveCfg = Debug
-		{107A51C8-82A5-449A-A711-0D79E90895FE}.Debug|Any CPU.Build.0 = Debug
-		{107A51C8-82A5-449A-A711-0D79E90895FE}.Debug|Mixed Platforms.ActiveCfg = Debug
-		{107A51C8-82A5-449A-A711-0D79E90895FE}.Debug|Mixed Platforms.Build.0 = Debug
-		{107A51C8-82A5-449A-A711-0D79E90895FE}.Debug|x86.ActiveCfg = Debug
-		{107A51C8-82A5-449A-A711-0D79E90895FE}.Debug|x86.Build.0 = Debug
-		{107A51C8-82A5-449A-A711-0D79E90895FE}.Release|Any CPU.ActiveCfg = Release
-		{107A51C8-82A5-449A-A711-0D79E90895FE}.Release|Any CPU.Build.0 = Release
-		{107A51C8-82A5-449A-A711-0D79E90895FE}.Release|Mixed Platforms.ActiveCfg = Release
-		{107A51C8-82A5-449A-A711-0D79E90895FE}.Release|Mixed Platforms.Build.0 = Release
-		{107A51C8-82A5-449A-A711-0D79E90895FE}.Release|x86.ActiveCfg = Release
-		{107A51C8-82A5-449A-A711-0D79E90895FE}.Release|x86.Build.0 = Release
 		{3198A90B-6521-4630-8AAD-79E5E3E36D90}.Debug|Any CPU.ActiveCfg = Debug|x86
 		{3198A90B-6521-4630-8AAD-79E5E3E36D90}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
 		{3198A90B-6521-4630-8AAD-79E5E3E36D90}.Debug|Mixed Platforms.Build.0 = Debug|x86
@@ -111,6 +99,16 @@ Global
 		{AFFB328B-9B93-4FB4-ABB8-A1170CEAFA86}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{AFFB328B-9B93-4FB4-ABB8-A1170CEAFA86}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{AFFB328B-9B93-4FB4-ABB8-A1170CEAFA86}.Release|x86.ActiveCfg = Release|Any CPU
+		{DCE1CD85-CEA1-4310-9796-8543C5AB42CE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DCE1CD85-CEA1-4310-9796-8543C5AB42CE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DCE1CD85-CEA1-4310-9796-8543C5AB42CE}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{DCE1CD85-CEA1-4310-9796-8543C5AB42CE}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{DCE1CD85-CEA1-4310-9796-8543C5AB42CE}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{DCE1CD85-CEA1-4310-9796-8543C5AB42CE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DCE1CD85-CEA1-4310-9796-8543C5AB42CE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DCE1CD85-CEA1-4310-9796-8543C5AB42CE}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{DCE1CD85-CEA1-4310-9796-8543C5AB42CE}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{DCE1CD85-CEA1-4310-9796-8543C5AB42CE}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -118,5 +116,6 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{EDD3AC1D-36ED-44F0-AA18-0B3036E54318} = {C31C86E3-D4AE-44CB-9143-D4A8A77FA2D7}
 		{6617A9B5-067C-4473-A69D-06526D323A31} = {C31C86E3-D4AE-44CB-9143-D4A8A77FA2D7}
+		{DCE1CD85-CEA1-4310-9796-8543C5AB42CE} = {C31C86E3-D4AE-44CB-9143-D4A8A77FA2D7}
 	EndGlobalSection
 EndGlobal
