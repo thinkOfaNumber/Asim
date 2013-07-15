@@ -33,6 +33,7 @@ echo using ILMerge to build Asim.exe...
 xcopy PWC.Asim.ExcelTools\bin\Release\AsimExcelTools.exe %BUILDDIR%\bin
 xcopy Algorithms\PWC.Asim.Algorithms.PvNone\bin\Release\PWC.SLMS.Algorithms.PvNone.dll %BUILDDIR%\bin
 xcopy Algorithms\PWC.Asim.Algorithms.PvSimple\bin\Release\PWC.SLMS.Algorithms.PvSimple.dll %BUILDDIR%\bin
+xcopy Algorithms\PWC.Asim.Algorithms.PvFsc\bin\Release\PWC.Asim.Algorithms.PvFsc.dll %BUILDDIR%\bin
 
 rem docs
 xcopy "..\..\..\Documentation\Model User Manual.pdf" %BUILDDIR%\docs
