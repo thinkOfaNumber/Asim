@@ -44,6 +44,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DllTests.cs" />
     <Compile Include="ConsoleTests.cs" />
     <Compile Include="CoreTests.cs" />
     <Compile Include="ExcelIntegrationTests.cs" />
