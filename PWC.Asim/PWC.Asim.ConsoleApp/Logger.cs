@@ -16,29 +16,19 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-namespace PWC.Asim.Core.Contracts
-{
-    public interface ISheddableLoad
-    {
-        /// <summary>
-        /// Total / rated sheddable load
-        /// </summary>
-        double ShedLoadP { get; }
-        /// <summary>
-        /// Online sheddable load
-        /// </summary>
-        double ShedP { get; }
-        /// <summary>
-        /// Offline portion of sheddable load
-        /// </summary>
-        double ShedOffP { get; }
-        /// <summary>
-        /// Proportion of load that can be switched off soon
-        /// </summary>
-        double ShedSpinP { get; }
+using System;
+using PWC.Asim.Core.Contracts;
 
-        void Run(ulong iteration);
-        void Stop();
-        void Start();
+namespace PWC.Asim.ConsoleApp
+{
+    class Logger : ILogger
+    {
+        public bool Debug { get; set; }
+
+        public void WriteLine(string text)
+        {
+            if (Debug)
+                Console.WriteLine(text);
+        }
     }
 }

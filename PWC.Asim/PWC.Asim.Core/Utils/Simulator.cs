@@ -34,6 +34,15 @@ namespace PWC.Asim.Core.Utils
     {
         public bool WaitForKeyPress { get; set; }
 
+        private ILogger _logger;
+
+        public Simulator(ILogger logger = null)
+        {
+            _logger = logger;
+            if (_logger == null)
+                _logger = new NoLogging();
+        }
+
         private class OutputOption
         {
             public string Filename;
@@ -132,7 +141,7 @@ namespace PWC.Asim.Core.Utils
                 innerLoopTime = end - start;
                 Console.WriteLine("100%");
                 actors.ForEach(a => a.Finish());
-                Console.WriteLine(string.Format("inner loop took {0}s", innerLoopTime.TotalSeconds));
+                Console.WriteLine("inner loop took {0}s", innerLoopTime.TotalSeconds);
             }
             catch(SimulationException e)
             {
@@ -201,14 +210,17 @@ namespace PWC.Asim.Core.Utils
 
         private Delegate LoadSolarDelegate()
         {
+            _logger.WriteLine("Load Solar Delegate");
             string dll;
             Delegate toReturn;
             if (Controllers.TryGetValue("SolarController", out dll))
             {
+                _logger.WriteLine("Loading delegate from '" + dll + "'.");
                 Assembly assembly;
                 try
                 {
                     assembly = Assembly.LoadFrom(dll);
+                    _logger.WriteLine("DLL loaded.");
                 }
                 catch (Exception e)
                 {
@@ -220,6 +232,7 @@ namespace PWC.Asim.Core.Utils
                     _solarController = Activator.CreateInstance(controllerType);
                     MethodInfo handler = controllerType.GetMethod("Control", BindingFlags.Public | BindingFlags.Instance);
                     toReturn = Delegate.CreateDelegate(typeof(Delegates.SolarController), _solarController, handler);
+                    _logger.WriteLine("Solar control method instantiated.");
                 }
                 catch (Exception e)
                 {

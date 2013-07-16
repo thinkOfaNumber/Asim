@@ -41,15 +41,16 @@ namespace PWC.Asim.ConsoleApp
             Watch,
             Algorithm,
             GeneratorStats,
-            Report
+            Report,
+            Debug
         }
 
         static void Main(string[] args)
         {
-            // Console.WriteLine("\"" + string.Join("\" \"", args) + "\"");
             ShowCopyrightNotice();
             Console.WriteLine(Version());
-            _simulator = new Simulator();
+            var log = new Logger();
+            _simulator = new Simulator(log);
             ulong iterations = 100000;
             _pause = true;
             // convert the enum to a list of strings to save retyping each option:
@@ -160,6 +161,11 @@ namespace PWC.Asim.ConsoleApp
 
                         case Arguments.Report:
                             _simulator.AddReport(arglist.Dequeue(), arglist.Dequeue());
+                            break;
+
+                        case Arguments.Debug:
+                            Console.WriteLine("Turning on debug logging");
+                            log.Debug = true;
                             break;
                     }
                 }

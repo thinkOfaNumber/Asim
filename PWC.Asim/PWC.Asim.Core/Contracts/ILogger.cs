@@ -18,27 +18,8 @@
 
 namespace PWC.Asim.Core.Contracts
 {
-    public interface ISheddableLoad
+    public interface ILogger
     {
-        /// <summary>
-        /// Total / rated sheddable load
-        /// </summary>
-        double ShedLoadP { get; }
-        /// <summary>
-        /// Online sheddable load
-        /// </summary>
-        double ShedP { get; }
-        /// <summary>
-        /// Offline portion of sheddable load
-        /// </summary>
-        double ShedOffP { get; }
-        /// <summary>
-        /// Proportion of load that can be switched off soon
-        /// </summary>
-        double ShedSpinP { get; }
-
-        void Run(ulong iteration);
-        void Stop();
-        void Start();
+        void WriteLine(string text);
     }
 }
