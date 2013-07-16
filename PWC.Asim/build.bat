@@ -31,8 +31,8 @@ rem /targetplatform:"v4,C:\Program Files\Reference Assemblies\Microsoft\Framewor
 echo using ILMerge to build Asim.exe...
 "%ILMERGE%" /target:exe /ndebug /targetplatform:"v4,%ProgramFiles(x86)%\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.0" /out:%BUILDDIR%\bin\Asim.exe PWC.Asim.ConsoleApp\bin\Release\Asim.exe PWC.Asim.Core\bin\Release\PWC.Asim.Core.dll
 xcopy PWC.Asim.ExcelTools\bin\Release\AsimExcelTools.exe %BUILDDIR%\bin
-xcopy Algorithms\PWC.Asim.Algorithms.PvNone\bin\Release\PWC.SLMS.Algorithms.PvNone.dll %BUILDDIR%\bin
-xcopy Algorithms\PWC.Asim.Algorithms.PvSimple\bin\Release\PWC.SLMS.Algorithms.PvSimple.dll %BUILDDIR%\bin
+xcopy Algorithms\PWC.Asim.Algorithms.PvNone\bin\Release\PWC.Asim.Algorithms.PvNone.dll %BUILDDIR%\bin
+xcopy Algorithms\PWC.Asim.Algorithms.PvSimple\bin\Release\PWC.Asim.Algorithms.PvSimple.dll %BUILDDIR%\bin
 xcopy Algorithms\PWC.Asim.Algorithms.PvFsc\bin\Release\PWC.Asim.Algorithms.PvFsc.dll %BUILDDIR%\bin
 
 rem docs

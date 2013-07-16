@@ -10,7 +10,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Power Water Corporation")]
 [assembly: AssemblyProduct("PWC.Asim.Algorithms.PvSimple")]
-[assembly: AssemblyCopyright("Copyright ©  2013 Power Water Corporation")]
+[assembly: AssemblyCopyright("Copyright © 2012-2013 Power Water Corporation")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
