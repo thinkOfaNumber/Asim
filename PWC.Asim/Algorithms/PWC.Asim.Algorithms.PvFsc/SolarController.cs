@@ -23,8 +23,8 @@ namespace PWC.Asim.Algorithms.PvFsc
     public class SolarController
     {
         public double Control(double pvAvailP, double lastSetP,
-            double genP, double genSpinP, bool pvBelowGenSpinP,
-            double genIdealP, double loadP, double statSpinSetP, double switchDownP)
+            double genP, double genSpinP, double genIdealP,
+            double loadP, double statSpinSetP, double switchDownP)
         {
             return Math.Min(loadP - genIdealP, // minimum loading constraint
                             loadP - switchDownP); // keep PV s.t. we do NOT configure done

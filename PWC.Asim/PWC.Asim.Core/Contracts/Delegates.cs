@@ -28,7 +28,6 @@ namespace PWC.Asim.Core.Contracts
         /// <param name="lastSetP">Last setP as output by this algorith, or 0 at the beginning.</param>
         /// <param name="genP">Actual generator output.</param>
         /// <param name="genSpinP">Actual generator spinning reserve.</param>
-        /// <param name="pvBelowGenSpinP">TRUE if controller should attempt to limit Pv to GenSpinP.</param>
         /// <param name="genIdealP">Ideal generator output for online generators.</param>
         /// <param name="loadP">Actual system load.</param>
         /// <param name="statSpinSetP">Station spinning reserve setpoint parameter.</param>
@@ -36,7 +35,7 @@ namespace PWC.Asim.Core.Contracts
         ///  next lower configuration - hysteresis</param>
         /// <returns>The new setpoint to feed to the ramp limit</returns>
         public delegate double SolarController(double pvAvailP, double lastSetP,
-            double genP, double genSpinP, bool pvBelowGenSpinP,
-            double genIdealP, double loadP, double statSpinSetP, double switchDownP);
+            double genP, double genSpinP, double genIdealP,
+            double loadP, double statSpinSetP, double switchDownP);
     }
 }

@@ -216,6 +216,7 @@ namespace PWC.Asim.Core.Utils
             if (Controllers.TryGetValue("SolarController", out dll))
             {
                 _logger.WriteLine("Loading delegate from '" + dll + "'.");
+                _logger.WriteLine("current directory is '" + Directory.GetCurrentDirectory() + "'.");
                 Assembly assembly;
                 try
                 {
@@ -240,7 +241,8 @@ namespace PWC.Asim.Core.Utils
                     "The solar controller could not load the specified control method. Please\n" +
                         "ensure your DLL has a class called 'SolarController' with an instance method\n" +
                         "'Control' with the following signature:\n" +
-                        "double Control (double lastSetP, double genP, double genSpinP, bool pvBelowGenSpinP, double genIdealP, double loadP);";
+                        "double Control (double pvAvailP, double lastSetP, double genP, double genSpinP,\n" +
+                        "         double genIdealP, double loadP, double statSpinSetP, double switchDownP);";
                     throw new SimulationException(error, e);
                 }
             }

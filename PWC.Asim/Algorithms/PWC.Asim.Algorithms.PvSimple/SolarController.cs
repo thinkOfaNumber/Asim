@@ -23,8 +23,8 @@ namespace PWC.Asim.Algorithms.PvSimple
     public class SolarController
     {
         public double Control(double pvAvailP, double lastSetP,
-            double genP, double genSpinP, bool pvBelowGenSpinP,
-            double genIdealP, double loadP, double statSpinSetP, double switchDownP)
+            double genP, double genSpinP, double genIdealP,
+            double loadP, double statSpinSetP, double switchDownP)
         {
             // calculate desired setpoint
             return Math.Max(0, statSpinSetP);

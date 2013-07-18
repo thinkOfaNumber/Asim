@@ -35,7 +35,6 @@ namespace PWC.Asim.Core.Actors
         private readonly Shared _pvSetMaxDownP;
         private readonly Shared _pvSetMaxUpP;
         private readonly Shared _pvMaxLimP;
-        private readonly Shared _pvBelowGenSpinP;
         private readonly Shared _pvSetLimitSpinPct;
         private readonly Shared _pvSetLimitSpinpPaPct;
 
@@ -63,7 +62,6 @@ namespace PWC.Asim.Core.Actors
             _pvSetMaxDownP = _sharedVars.GetOrNew("PvSetMaxDownP");
             _pvSetMaxUpP = _sharedVars.GetOrNew("PvSetMaxUpP");
             _pvMaxLimP = _sharedVars.GetOrNew("PvMaxLimP");
-            _pvBelowGenSpinP = _sharedVars.GetOrNew("PvBelowGenSpinP");
             _pvSetLimitSpinPct = _sharedVars.GetOrNew("PvSetLimitSpinPctPa");
             _pvSetLimitSpinpPaPct = _sharedVars.GetOrNew("PvSetLimitSpinpPaPctPa");
 
@@ -86,7 +84,7 @@ namespace PWC.Asim.Core.Actors
 
             // calculate desired setpoint
             double setP = _solarController(_pvAvailP.Val, _pvSetP.Val,
-                _genP.Val, _genSpinP.Val, _pvBelowGenSpinP.Val >= 1,
+                _genP.Val, _genSpinP.Val,
                 _genIdealP.Val, _loadP.Val, _statSpinSetP.Val,
                 Math.Max(0, _genLowP.Val - _statHystP.Val));
 
@@ -144,15 +142,13 @@ namespace PWC.Asim.Core.Actors
         #endregion
 
         public static double DefaultSolarController(double pvAvailP, double lastSetP,
-            double genP, double genSpinP, bool pvBelowGenSpinP,
-            double genIdealP, double loadP, double statSpinSetP, double switchDownP)
+            double genP, double genSpinP, double genIdealP,
+            double loadP, double statSpinSetP, double switchDownP)
         {
             // calculate desired setpoint.  Note this won't share with other
             // energy providers.
             double setP = Math.Max(0, loadP - genIdealP);
-            // limit PV to GenSpinP if required
-            if (pvBelowGenSpinP)
-                setP = Math.Min(setP, genSpinP);
+
             // limit setpoint to total station load
             return Math.Min(setP, loadP);
         }

@@ -164,8 +164,10 @@ namespace PWC.Asim.ConsoleApp
                             break;
 
                         case Arguments.Debug:
-                            Console.WriteLine("Turning on debug logging");
                             log.Debug = true;
+                            log.WriteLine("Turning on debug logging");
+                            log.WriteLine("program args are:");
+                            log.WriteLine(string.Join(" ", args));
                             break;
                     }
                 }
