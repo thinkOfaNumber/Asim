@@ -86,7 +86,7 @@ namespace PWC.Asim.Core.Actors
             double setP = _solarController(_pvAvailP.Val, _pvSetP.Val,
                 _genP.Val, _genSpinP.Val,
                 _genIdealP.Val, _loadP.Val, _statSpinSetP.Val,
-                Math.Max(0, _genLowP.Val - _statHystP.Val));
+                Math.Max(0, _genLowP.Val - _statHystP.Val - _statSpinSetP.Val));
 
             // apply Spinning reserve limits (PWCSLMS-41)
             if (_pvSetLimitSpinPct.Val > 0 && _pvSetLimitSpinPct.Val <= 100)

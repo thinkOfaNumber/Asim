@@ -225,7 +225,11 @@ namespace PWC.Asim.Core.Actors
             // don't switch to a smaller configuration as Hysteresis wasn't satisfied
             else
                 bestCfg = GenSetCfg;
-            
+
+            // we didn't choose to switch down for some reason above
+            if (found != -1 && bestCfg != (ushort)_configurations[found].Val)
+                nextLower = found;
+
             lowerP = nextLower == -1 ? 0 : TotalPower((ushort)_configurations[nextLower].Val);
             return bestCfg;
         }
