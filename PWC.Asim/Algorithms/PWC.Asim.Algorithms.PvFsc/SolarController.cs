@@ -26,8 +26,13 @@ namespace PWC.Asim.Algorithms.PvFsc
             double genP, double genSpinP, double genIdealP,
             double loadP, double statSpinSetP, double switchDownP)
         {
-            return Math.Min(loadP - genIdealP, // minimum loading constraint
-                            loadP - switchDownP); // keep PV s.t. we do NOT configure done
+            double setP = loadP - genIdealP; // minimum loading constraint
+            if (switchDownP > 0)
+            {
+                // keep PV s.t. we do NOT configure done
+                setP = Math.Min(setP, loadP - switchDownP);
+            }
+            return setP;
         }
     }
 }

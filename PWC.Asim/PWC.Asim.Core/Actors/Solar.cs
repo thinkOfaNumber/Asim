@@ -46,6 +46,7 @@ namespace PWC.Asim.Core.Actors
         private readonly Shared _genIdealP;
         private readonly Shared _genSpinP;
         private readonly Shared _genLowP;
+        private readonly Shared _genCfgSetP;
 
         readonly Delegates.SolarController _solarController;
 
@@ -73,6 +74,7 @@ namespace PWC.Asim.Core.Actors
             _genIdealP = _sharedVars.GetOrNew("GenIdealP");
             _genSpinP = _sharedVars.GetOrNew("GenSpinP");
             _genLowP = _sharedVars.GetOrNew("GenLowP");
+            _genCfgSetP = _sharedVars.GetOrNew("GenCfgSetP");
         }
 
         #region Implementation of IActor
@@ -86,7 +88,8 @@ namespace PWC.Asim.Core.Actors
             double setP = _solarController(_pvAvailP.Val, _pvSetP.Val,
                 _genP.Val, _genSpinP.Val,
                 _genIdealP.Val, _loadP.Val, _statSpinSetP.Val,
-                Math.Max(0, _genLowP.Val - _statHystP.Val - _statSpinSetP.Val));
+                // magic number 5 is to prevent switching on the "fencline"
+                Math.Max(0, _genLowP.Val - _statHystP.Val - _statSpinSetP.Val + 5.0D));
 
             // apply Spinning reserve limits (PWCSLMS-41)
             if (_pvSetLimitSpinPct.Val > 0 && _pvSetLimitSpinPct.Val <= 100)
