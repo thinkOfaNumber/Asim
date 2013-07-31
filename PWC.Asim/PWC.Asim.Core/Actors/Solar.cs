@@ -36,7 +36,7 @@ namespace PWC.Asim.Core.Actors
         private readonly Shared _pvSetMaxUpP;
         private readonly Shared _pvMaxLimP;
         private readonly Shared _pvSetLimitSpinPct;
-        private readonly Shared _pvSetLimitSpinpPaPct;
+        private readonly Shared _pvSetLimitSpinpPct;
 
         private readonly Shared _loadP;
         private readonly Shared _statSpinSetP;
@@ -46,7 +46,6 @@ namespace PWC.Asim.Core.Actors
         private readonly Shared _genIdealP;
         private readonly Shared _genSpinP;
         private readonly Shared _genLowP;
-        private readonly Shared _genCfgSetP;
 
         readonly Delegates.SolarController _solarController;
 
@@ -63,8 +62,8 @@ namespace PWC.Asim.Core.Actors
             _pvSetMaxDownP = _sharedVars.GetOrNew("PvSetMaxDownP");
             _pvSetMaxUpP = _sharedVars.GetOrNew("PvSetMaxUpP");
             _pvMaxLimP = _sharedVars.GetOrNew("PvMaxLimP");
-            _pvSetLimitSpinPct = _sharedVars.GetOrNew("PvSetLimitSpinPctPa");
-            _pvSetLimitSpinpPaPct = _sharedVars.GetOrNew("PvSetLimitSpinpPaPctPa");
+            _pvSetLimitSpinPct = _sharedVars.GetOrNew("PvSetLimitSpinPct");
+            _pvSetLimitSpinpPct = _sharedVars.GetOrNew("PvSetLimitSpinpPct");
 
             _loadP = _sharedVars.GetOrNew("LoadSetP");
             _statSpinSetP = _sharedVars.GetOrNew("StatSpinSetP");
@@ -74,7 +73,6 @@ namespace PWC.Asim.Core.Actors
             _genIdealP = _sharedVars.GetOrNew("GenIdealP");
             _genSpinP = _sharedVars.GetOrNew("GenSpinP");
             _genLowP = _sharedVars.GetOrNew("GenLowP");
-            _genCfgSetP = _sharedVars.GetOrNew("GenCfgSetP");
         }
 
         #region Implementation of IActor
@@ -96,9 +94,9 @@ namespace PWC.Asim.Core.Actors
             {
                 setP = Math.Min(setP, _genSpinP.Val*_pvSetLimitSpinPct.Val/100.0D);
             }
-            if (_pvSetLimitSpinpPaPct.Val > 0 && _pvSetLimitSpinpPaPct.Val <= 100)
+            if (_pvSetLimitSpinpPct.Val > 0 && _pvSetLimitSpinpPct.Val <= 100)
             {
-                setP = Math.Min(setP, _statSpinSetP.Val * _pvSetLimitSpinpPaPct.Val / 100.0D);
+                setP = Math.Min(setP, _statSpinSetP.Val * _pvSetLimitSpinpPct.Val / 100.0D);
             }
 
             // calculate delta and ramp limits
