@@ -35,6 +35,13 @@ namespace PWC.Asim.Core.Actors
         Calculate
     }
 
+    public struct Configuration
+    {
+        public Shared ConfigSets;
+        public double Power;
+        public bool UpToDate;
+    }
+
     public class GenMgr : IActor
     {
         private readonly SharedContainer _sharedVars = SharedContainer.Instance;
@@ -58,8 +65,9 @@ namespace PWC.Asim.Core.Actors
         private readonly Shared _genMinRunTPa;
 
         private ulong _iteration;
-        private readonly Shared[] _configurations = new Shared[Settings.MAX_CFG];
-        private Double?[] _configurationPower = new Double?[Settings.MAX_CFG];
+        private readonly Configuration[] _configurations = new Configuration[Settings.MAX_CFG];
+        //private readonly Shared[] _configurations = new Shared[Settings.MAX_CFG];
+        //private Double?[] _configurationPower = new Double?[Settings.MAX_CFG];
         private readonly GenMgrType _simulationType;
 
         public GenMgr(GenMgrType type)
@@ -88,7 +96,10 @@ namespace PWC.Asim.Core.Actors
             //
             GeneratorBase.UpdateStates(iteration);
             // force recalculation of configuration power once per cycle
-            _configurationPower = new double?[Settings.MAX_CFG];
+            for (int i = 0; i < Settings.MAX_CFG; i ++)
+            {
+                _configurations[i].UpToDate = false;
+            }
             if (_simulationType == GenMgrType.Simulate)
                 GeneratorManager();
             GeneratorBase.RunAll();
@@ -116,12 +127,12 @@ namespace PWC.Asim.Core.Actors
                 }
             }
 
-            // test existance of variables we read from
+            // setup variables we read from
             for (int i = 0; i < Settings.MAX_CFG; i++)
             {
                 string cstr = "GenConfig" + (i+1);
-                _configurations[i] = _sharedVars.GetOrNew(cstr);
-                _configurations[i].Val = 0;
+                _configurations[i].ConfigSets = _sharedVars.GetOrNew(cstr);
+                _configurations[i].ConfigSets.Val = 0;
             }
         }
 
@@ -191,29 +202,29 @@ namespace PWC.Asim.Core.Actors
             for (int i = 0; i < Settings.MAX_CFG; i++)
             {
                 // ignore configurations with unavailable sets
-                if (((ushort)_configurations[i].Val & (ushort)_genAvailCfg.Val) != (ushort)_configurations[i].Val)
+                if (((ushort)_configurations[i].ConfigSets.Val & (ushort)_genAvailCfg.Val) != (ushort)_configurations[i].ConfigSets.Val)
                     continue;
-                double thisP = TotalPower((ushort)((ushort)_configurations[i].Val & (ushort)_genAvailCfg.Val));
+                double thisP = TotalPower((ushort)((ushort)_configurations[i].ConfigSets.Val & (ushort)_genAvailCfg.Val));
                 if (thisP >= _genCfgSetP.Val)
                 {
                     found = i;
                     break;
                 }
-                if (nextLower == -1 || thisP > TotalPower((ushort)_configurations[nextLower].Val))
+                if (nextLower == -1 || thisP > TotalPower((ushort)_configurations[nextLower].ConfigSets.Val))
                 {
                     nextLower = i;
                 }
             }
-            double foundP = found == -1 ? 0 : TotalPower((ushort)_configurations[found].Val);
+            double foundP = found == -1 ? 0 : TotalPower((ushort)_configurations[found].ConfigSets.Val);
             // if nothing was found, switch on everything as a fallback
             if (found == -1)
                 bestCfg = (ushort)_genAvailCfg.Val;
             // if no change is required, stay at current config
-            else if (_configurations[found].Val == GenSetCfg)
+            else if (_configurations[found].ConfigSets.Val == GenSetCfg)
                 bestCfg = GenSetCfg;
             // switch to a higher configuration without waiting
             else if (foundP > currCfgPower)
-                bestCfg = (ushort)_configurations[found].Val;
+                bestCfg = (ushort)_configurations[found].ConfigSets.Val;
             // only switch to a lower configurations if min run timer is expired
             else if (_genMinRunT.Val > 0)
                 bestCfg = GenSetCfg;
@@ -221,16 +232,16 @@ namespace PWC.Asim.Core.Actors
             else if (_genCfgSetP.Val < foundP - _statHystP.Val)
                 // todo: there is an issue with this if there is a drop of two configurations, we'll still apply
                 // hysteresis to the lower one, when it only needs to be applied to the middle one.
-                bestCfg = (ushort)_configurations[found].Val;
+                bestCfg = (ushort)_configurations[found].ConfigSets.Val;
             // don't switch to a smaller configuration as Hysteresis wasn't satisfied
             else
                 bestCfg = GenSetCfg;
 
             // we didn't choose to switch down for some reason above
-            if (found != -1 && bestCfg != (ushort)_configurations[found].Val)
+            if (found != -1 && bestCfg != (ushort)_configurations[found].ConfigSets.Val)
                 nextLower = found;
 
-            lowerP = nextLower == -1 ? 0 : TotalPower((ushort)_configurations[nextLower].Val);
+            lowerP = nextLower == -1 ? 0 : TotalPower((ushort)_configurations[nextLower].ConfigSets.Val);
             return bestCfg;
         }
 
@@ -250,20 +261,20 @@ namespace PWC.Asim.Core.Actors
 
         private double TotalPower(ushort cfg)
         {
-            if (_configurationPower[cfg] == null)
+            if (!_configurations[cfg].UpToDate)
             {
-                double power = 0;
+                _configurations[cfg].Power = 0;
                 for (ushort i = 0; i < Settings.MAX_GENS; i++)
                 {
                     ushort genBit = (ushort) (1 << i);
                     if ((genBit & cfg) == genBit)
                     {
-                        power += Gen[i].MaxP;
+                        _configurations[cfg].Power += Gen[i].MaxP;
                     }
                 }
-                _configurationPower[cfg] = power;
+                _configurations[cfg].UpToDate = true;
             }
-            return _configurationPower[cfg].Value;
+            return _configurations[cfg].Power;
         }
 
         private void StartStopGens(ushort cfg)

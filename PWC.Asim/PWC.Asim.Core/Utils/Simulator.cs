@@ -104,22 +104,28 @@ namespace PWC.Asim.Core.Utils
 
         public void Simulate()
         {
-            var actors = new List<IActor>();
+            int nActors = _inputActors.Count + _outputActors.Count + 5; // 5 is number of explicit classes set below
+            int iA = 0;
+            var actors = new IActor[nActors];
 
-            _inputActors.ForEach(s => actors.Add(new NextData(s.Filename, StartTime, s.Recycle)));
+            _inputActors.ForEach(i => actors[iA++] = new NextData(i.Filename, StartTime, i.Recycle));
             // add extra simulation actors here.  Order is important:
-            actors.Add(new Load());
-            actors.Add(new Station());
-            actors.Add(new SheddableLoadMgr());
-            actors.Add(new GenMgr(GuessGeneratorState ? GenMgrType.Calculate : GenMgrType.Simulate));
-            actors.Add(new Solar(LoadSolarDelegate()));
-            _outputActors.ForEach(o => actors.Add(new OutputData(o.Filename, o.Vars, o.Period, StartTime, DateFormat.Other)));
+            actors[iA++] = new Load();
+            actors[iA++] = new Station();
+            actors[iA++] = new SheddableLoadMgr();
+            actors[iA++] = new GenMgr(GuessGeneratorState ? GenMgrType.Calculate : GenMgrType.Simulate);
+            actors[iA++] = new Solar(LoadSolarDelegate());
+            _outputActors.ForEach(o => actors[iA++] = new OutputData(o.Filename, o.Vars, o.Period, StartTime, DateFormat.Other));
 
+            // free
             _inputActors = null;
             _outputActors = null;
 
             Console.WriteLine("Init...");
-            actors.ForEach(a => a.Init());
+            for (iA = 0; iA < nActors; iA++)
+            {
+                actors[iA].Init();
+            }
             Console.WriteLine("Run " + Iterations + " iterations...");
 
             SetWatchActions();
@@ -134,12 +140,18 @@ namespace PWC.Asim.Core.Utils
                 for (ulong i = 0; i < Iterations; i++)
                 {
                     Iteration = i;
-                    actors.ForEach(a => a.Run(i));
+                    for (iA = 0; iA < nActors; iA++)
+                    {
+                        actors[iA].Run(i);
+                    }
                 }
                 var end = DateTime.Now;
                 innerLoopTime = end - start;
                 Console.WriteLine("100%");
-                actors.ForEach(a => a.Finish());
+                for (iA = 0; iA < nActors; iA++)
+                {
+                    actors[iA].Finish();
+                }
                 Console.WriteLine("inner loop took {0}s", innerLoopTime.TotalSeconds);
             }
             catch(SimulationException e)

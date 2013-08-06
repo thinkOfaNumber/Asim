@@ -1,4 +1,4 @@
-These files constitut the project "Asim".
+These files constitute the project "Asim".
 
 Copyright (C) 2012, 2013  Power Water Corporation
 

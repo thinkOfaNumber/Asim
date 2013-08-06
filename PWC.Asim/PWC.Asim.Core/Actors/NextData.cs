@@ -174,6 +174,7 @@ namespace PWC.Asim.Core.Actors
 
         #endregion
 
+        // private readonly TimeFields _line = new TimeFields();
         /// <summary>
         /// Read up to the next matching line from the input file, and parse the date from it.
         /// The cells are stored in _cells, and the date in _nextT.
@@ -210,9 +211,14 @@ namespace PWC.Asim.Core.Actors
                         StringTime = _cells[0],
                         IterTime = DateToInt64(_cells[0])
                     };
+                //_line.LineNumber = ++_lineNo;
+                //_line.StringTime = _cells[0];
+                //_line.IterTime = DateToInt64(_cells[0]);
             } while (!readUntil(line) || line.IterTime <= _nextT);
             if (line != null )
                 _nextT = line.IterTime;
+            //if (_noMoreData)
+            //    _nextT = _line.IterTime;
         }
 
         /// <summary>
