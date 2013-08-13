@@ -652,6 +652,18 @@ namespace ConsoleTests
             Assert.IsTrue(ConsoleOutput.ToString().Contains("is empty"));
         }
 
+        [Test]
+        public void ConfigDownNoDelay()
+        {
+            
+        }
+
+        [Test]
+        public void ConfigDownWithDelay()
+        {
+
+        }
+
         protected void MaintainSpinTest(bool maintainSpin)
         {
             // Arrange

@@ -63,11 +63,11 @@ namespace PWC.Asim.Core.Actors
         private readonly Shared _genAvailCfg;
         private readonly Shared _genBlackCfg;
         private readonly Shared _genMinRunTPa;
+        private readonly Shared _genSwitchDownDelayT;
+        private ulong _switchDownDelayAct;
 
         private ulong _iteration;
         private readonly Configuration[] _configurations = new Configuration[Settings.MAX_CFG];
-        //private readonly Shared[] _configurations = new Shared[Settings.MAX_CFG];
-        //private Double?[] _configurationPower = new Double?[Settings.MAX_CFG];
         private readonly GenMgrType _simulationType;
 
         public GenMgr(GenMgrType type)
@@ -83,6 +83,7 @@ namespace PWC.Asim.Core.Actors
             _genAvailCfg = _sharedVars.GetOrNew("GenAvailCfg");
             _genBlackCfg = _sharedVars.GetOrNew("GenBlackCfg");
             _genMinRunTPa = _sharedVars.GetOrNew("GenMinRunTPa");
+            _genSwitchDownDelayT = _sharedVars.GetOrNew("GenSwitchDownDelayT");
         }
 
         #region Implementation of IActor
@@ -198,6 +199,7 @@ namespace PWC.Asim.Core.Actors
             int nextLower = -1;
             ushort bestCfg = 0;
             double currCfgPower = TotalPower(GenSetCfg);
+            bool switchDownDelay = false;
 
             for (int i = 0; i < Settings.MAX_CFG; i++)
             {
@@ -216,30 +218,53 @@ namespace PWC.Asim.Core.Actors
                 }
             }
             double foundP = found == -1 ? 0 : TotalPower((ushort)_configurations[found].ConfigSets.Val);
+
             // if nothing was found, switch on everything as a fallback
             if (found == -1)
                 bestCfg = (ushort)_genAvailCfg.Val;
+
             // if no change is required, stay at current config
             else if (_configurations[found].ConfigSets.Val == GenSetCfg)
                 bestCfg = GenSetCfg;
+
             // switch to a higher configuration without waiting
             else if (foundP > currCfgPower)
                 bestCfg = (ushort)_configurations[found].ConfigSets.Val;
+
             // only switch to a lower configurations if min run timer is expired
             else if (_genMinRunT.Val > 0)
                 bestCfg = GenSetCfg;
+
             // only switch to a lower configuration if it is below the hysteresis of the current configuration
+            // todo: there is an issue with this if there is a drop of two configurations, we'll still apply
+            // hysteresis to the lower one, when it only needs to be applied to the middle one.
             else if (_genCfgSetP.Val < foundP - _statHystP.Val)
-                // todo: there is an issue with this if there is a drop of two configurations, we'll still apply
-                // hysteresis to the lower one, when it only needs to be applied to the middle one.
                 bestCfg = (ushort)_configurations[found].ConfigSets.Val;
+
             // don't switch to a smaller configuration as Hysteresis wasn't satisfied
             else
                 bestCfg = GenSetCfg;
 
+            // switch down delay parameter has to be done after the decision to switch-down has been made
+            if (_configurations[found].Power < currCfgPower)
+            {
+                if (_switchDownDelayAct > 0)
+                {
+                    _switchDownDelayAct--;
+                    // roll back the change
+                    bestCfg = GenSetCfg;
+                }
+            }
+            else
+            {
+                _switchDownDelayAct = (ulong)_genSwitchDownDelayT.Val;
+            }
+
             // we didn't choose to switch down for some reason above
-            if (found != -1 && bestCfg != (ushort)_configurations[found].ConfigSets.Val)
+            if (found != -1 && bestCfg != (ushort) _configurations[found].ConfigSets.Val)
+            {
                 nextLower = found;
+            }
 
             lowerP = nextLower == -1 ? 0 : TotalPower((ushort)_configurations[nextLower].ConfigSets.Val);
             return bestCfg;
