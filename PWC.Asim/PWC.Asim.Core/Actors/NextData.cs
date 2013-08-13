@@ -73,7 +73,8 @@ namespace PWC.Asim.Core.Actors
             _filename = filename;
             _recycle = recycle;
             _file = new FileStream(_filename, FileMode.Open, FileAccess.Read);
-            _stream = new StreamReader(_file);
+            var buf = new BufferedStream(_file);
+            _stream = new StreamReader(buf);
             _simStartTime = simStartTime.HasValue ? simStartTime.Value : Settings.Epoch;
             _simOffset = Convert.ToUInt64((_simStartTime - Settings.Epoch).TotalSeconds);
         }
@@ -112,7 +113,7 @@ namespace PWC.Asim.Core.Actors
                     }
                 }
 
-                ReadTo(x=>true); // read next line
+                ReadTo(); // read next line
             }
             catch (SimulationException)
             {
@@ -164,7 +165,7 @@ namespace PWC.Asim.Core.Actors
 
             // get first data row
             _nextT = -1;
-            ReadTo(t => t.IterTime >= 0);
+            ReadTo(true);
         }
 
         public void Finish()
@@ -174,23 +175,21 @@ namespace PWC.Asim.Core.Actors
 
         #endregion
 
-        // private readonly TimeFields _line = new TimeFields();
         /// <summary>
         /// Read up to the next matching line from the input file, and parse the date from it.
         /// The cells are stored in _cells, and the date in _nextT.
         /// </summary>
-        /// <param name="readUntil">A predicate expression to match against a TimeFields object
-        /// representing the date from the current line.</param>
-        private void ReadTo(Predicate<TimeFields> readUntil)
+        /// <param name="readToIterationStart">A boolean where TRUE will read up all data until the
+        /// iteratoin start time, and FALSE will just read one line.</param>
+        private void ReadTo(bool readToIterationStart = false)
         {
-            TimeFields line = null;
+            long iterTime = 0;
             do
             {
                 var nextline = _stream.ReadLine();
                 if (nextline == null && _recycle)
                 {
                     _file.Seek(0, SeekOrigin.Begin);
-                    _stream = new StreamReader(_file);
                     _stream.ReadLine(); // ignore header row
                     nextline = _stream.ReadLine();
 
@@ -205,20 +204,11 @@ namespace PWC.Asim.Core.Actors
 
                 _cells = nextline.Split(',');
 
-                line = new TimeFields
-                    {
-                        LineNumber = ++_lineNo,
-                        StringTime = _cells[0],
-                        IterTime = DateToInt64(_cells[0])
-                    };
-                //_line.LineNumber = ++_lineNo;
-                //_line.StringTime = _cells[0];
-                //_line.IterTime = DateToInt64(_cells[0]);
-            } while (!readUntil(line) || line.IterTime <= _nextT);
-            if (line != null )
-                _nextT = line.IterTime;
-            //if (_noMoreData)
-            //    _nextT = _line.IterTime;
+                iterTime = DateToInt64(_cells[0]);
+                _noMoreData = false;
+            } while ((readToIterationStart && iterTime < 0) || iterTime <= _nextT);
+            if (!_noMoreData)
+                _nextT = iterTime;
         }
 
         /// <summary>
@@ -272,12 +262,5 @@ namespace PWC.Asim.Core.Actors
             }
             return DateFormat.Other;
         }
-    }
-
-    public class TimeFields
-    {
-        public string StringTime { get; set; }
-        public long IterTime { get; set; }
-        public ulong LineNumber { get; set; }
     }
 }

@@ -19,6 +19,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -59,7 +60,8 @@ namespace PWC.Asim.Core.Actors
 
     public class OutputData : IActor
     {
-        private readonly System.IO.StreamWriter _file;
+        private readonly FileStream _file;
+        private readonly StreamWriter _stream;
         private readonly string _filename;
         private readonly string[] _varGlobs;
         private int _nvars;
@@ -77,7 +79,9 @@ namespace PWC.Asim.Core.Actors
             _filename = filename;
             try
             {
-                _file = new System.IO.StreamWriter(_filename);
+                _file = new FileStream(_filename, FileMode.OpenOrCreate, FileAccess.Write);
+                var buf = new BufferedStream(_file);
+                _stream = new StreamWriter(buf);
             }
             catch(Exception e)
             {
@@ -186,7 +190,7 @@ namespace PWC.Asim.Core.Actors
                 }
             }
 
-            _file.WriteLine(_row);
+            _stream.WriteLine(_row);
         }
 
         public void Finish()
@@ -194,6 +198,14 @@ namespace PWC.Asim.Core.Actors
             if (!_initStats)
             {
                 WriteLine();
+            }
+            try
+            {
+                _stream.Flush();
+                _stream.Close();
+            }
+            catch (ObjectDisposedException)
+            {
             }
             try
             {
@@ -291,7 +303,7 @@ namespace PWC.Asim.Core.Actors
             }
 
             _initStats = true;
-            _file.WriteLine(_row);
+            _stream.WriteLine(_row);
         }
     }
 }
