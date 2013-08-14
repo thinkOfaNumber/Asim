@@ -26,7 +26,8 @@ CONTRIBUTING
 
 Please assign the copyright on all contributions to Power Water Corporation.
 Please provide patches to source code in unified diff format.  Contributions
-can be emailed to the author, Iain Buchanan, iain.buchanan@radicalsystems.com.au
+can be emailed to the author:
+Iain Buchanan, iain DOT buchanan AT radicalsystems DOT com DOT au
 
 
 BUG REPORTS
