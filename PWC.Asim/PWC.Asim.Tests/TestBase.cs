@@ -68,6 +68,10 @@ namespace ConsoleTests
             // Set current folder to testing folder
             string assemblyCodeBase = System.Reflection.Assembly. GetExecutingAssembly().CodeBase;
 
+            // remove URL-prefix if it exists
+            if (assemblyCodeBase.StartsWith("file:///"))
+                assemblyCodeBase = assemblyCodeBase.Substring(8);
+
             // Get directory name
             string dirName = Path.GetDirectoryName(assemblyCodeBase);
 

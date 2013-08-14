@@ -199,7 +199,6 @@ namespace PWC.Asim.Core.Actors
             int nextLower = -1;
             ushort bestCfg = 0;
             double currCfgPower = TotalPower(GenSetCfg);
-            bool switchDownDelay = false;
 
             for (int i = 0; i < Settings.MAX_CFG; i++)
             {
@@ -246,7 +245,7 @@ namespace PWC.Asim.Core.Actors
                 bestCfg = GenSetCfg;
 
             // switch down delay parameter has to be done after the decision to switch-down has been made
-            if (_configurations[found].Power < currCfgPower)
+            if (found != -1 && bestCfg != GenSetCfg && _configurations[found].Power < currCfgPower)
             {
                 if (_switchDownDelayAct > 0)
                 {

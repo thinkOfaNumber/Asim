@@ -159,5 +159,86 @@ namespace ConsoleTests
             int matchingValues = limitedLoad.Where((v, i) => v.Equals(loadPexpect[i])).Count();
             Assert.AreEqual(loadPexpect.Count, matchingValues);
         }
+
+        [Test]
+        public void ConfigDownNoDelay()
+        {
+            ConfigDownDelay(0);
+        }
+
+        [Test]
+        public void ConfigDownWithDelay()
+        {
+            ConfigDownDelay(6*60);
+        }
+
+        private void ConfigDownDelay(long delayTime)
+        {
+            // Arrange
+            var settingsFile1 = GetTempFilename;
+            var settingsFile2 = GetTempFilename;
+            var outFile = GetTempFilename;
+            const int period = 5 * 60;
+
+            var values = new SortedDictionary<string, double[]>();
+            InsertFuelConsumption(values, 0.33, 4);
+            values["Gen1MaxP"] = new double[] { 500 };
+            values["Gen2MaxP"] = new double[] { 500 };
+            values["GenAvailSet"] = new double[] { 0xFF };
+            values["GenConfig1"] = new double[] { 1 };
+            values["GenConfig2"] = new double[] { 2 };
+            values["GenConfig3"] = new double[] { 3 };
+            values["StatSpinSetP"] = new double[] { 50 };
+            values["GenMinRunT"] = new double[] { 600 };
+            values["GenSwitchDownDelayT"] = new double[] { delayTime };
+            var loadProfile = new double[] { 600, 600, 600, 400, 499 };
+            int iterations = (loadProfile.Count() + 1) * period;
+
+            StringBuilder settings = BuildCsvFor(values.Keys.ToList(), values.Values.ToArray());
+            File.WriteAllText(settingsFile1, settings.ToString());
+            settings = BuildCsvFor("LoadP", loadProfile, period);
+            File.WriteAllText(settingsFile2, settings.ToString());
+
+            // Act
+            var sim = new Simulator();
+            sim.AddInput(settingsFile1);
+            sim.AddInput(settingsFile2);
+            sim.AddOutput(outFile, new[] { "GenOnlineCfg", "LoadP" });
+            sim.Iterations = (ulong)iterations;
+            sim.Simulate();
+
+            // Assert
+            var fileArray = CsvFileToArray(outFile);
+
+            var genOnlineCfg = fileArray.Select(col => col[1]).Where((s, i) => i > 0).Select(Convert.ToDouble).ToList();
+
+            // at 0, nothing is online
+            Assert.AreEqual(0, genOnlineCfg[0]);
+
+            // at 1min + 1s, both generators on
+            Assert.AreEqual(3, genOnlineCfg[61]);
+
+            // just before 15min, both generators on
+            Assert.AreEqual(3, genOnlineCfg[15 * 60 - 1]);
+
+            if (delayTime > period)
+            {
+                // at 15min-20min, both generators on
+                Assert.AreEqual(3, genOnlineCfg[15 * 60]);
+                Assert.AreEqual(3, genOnlineCfg[16 * 60]);
+                Assert.AreEqual(3, genOnlineCfg[17 * 60]);
+                Assert.AreEqual(3, genOnlineCfg[18 * 60]);
+                Assert.AreEqual(3, genOnlineCfg[19 * 60]);
+                Assert.AreEqual(3, genOnlineCfg[20 * 60]);
+            }
+            else
+            {
+                // at 15min, only one generator on
+                Assert.AreEqual(1, genOnlineCfg[15 * 60]);
+            }
+
+            // at 20min +1min (warmup), both generators on again
+            Assert.AreEqual(3, genOnlineCfg[21 * 60]);
+        }
     }
 }
