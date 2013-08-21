@@ -31,6 +31,10 @@ namespace PWC.Asim.Core.Actors
         private readonly Shared _shedP;
         // Offline load
         private readonly Shared _shedOffP;
+        // Percent of online rated load to switch off at (eg 99)
+        private readonly Shared _shedOffPct;
+        // Percent of online rated load to switch on at (eg 92)
+        private readonly Shared _shedOnPct;
 
         private readonly Shared _statBlack;
         private readonly Shared _genP;
@@ -47,6 +51,8 @@ namespace PWC.Asim.Core.Actors
             _statBlack = _sharedVars.GetOrNew("StatBlack");
             _genP = _sharedVars.GetOrNew("GenP");
             _genMaxP = _sharedVars.GetOrNew("GenMaxP");
+            _shedOffPct = _sharedVars.GetOrNew("ShedOffPct");
+            _shedOnPct = _sharedVars.GetOrNew("ShedOnPct");
         }
 
         public void Run(ulong iteration)
@@ -55,8 +61,8 @@ namespace PWC.Asim.Core.Actors
 
             // todo: fix magic numbers - stop with 2% of max load and start when more than 8%
             double pctMaxLoad = GetLoadFactor();
-            bool stop = pctMaxLoad > 99.0D;
-            bool start = _statBlack.Val == 0 && pctMaxLoad < 92.0D;
+            bool stop = pctMaxLoad > _shedOffPct.Val;
+            bool start = _statBlack.Val == 0 && pctMaxLoad < _shedOnPct.Val;
 
             _shedLoadP.Val = 0;
             _shedP.Val = 0;
@@ -90,7 +96,7 @@ namespace PWC.Asim.Core.Actors
 
         /// <summary>
         /// The sheddable load manager makes decisions based on the load
-        /// factor if all sheddabl load was turned on.
+        /// factor if all sheddable load was turned on.
         /// </summary>
         /// <returns></returns>
         public double GetLoadFactor()
@@ -148,7 +154,7 @@ namespace PWC.Asim.Core.Actors
         private ulong _maxCycleTime;
         private ulong _it;
 
-        private ExecutionManager _executionManager;
+        private readonly ExecutionManager _executionManager;
 
         private bool MaxOffTimeExpired
         {

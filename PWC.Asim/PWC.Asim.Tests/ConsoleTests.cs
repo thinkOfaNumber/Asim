@@ -398,6 +398,8 @@ namespace ConsoleTests
             values["ShedLoadMaxT"] = new double[] { maxOffTime };
             values["ShedLoadT"] = new double[] { offLatency };
             values["Shed1LoadP"] = new double[] { 40 };
+            values["ShedOffPct"] = new double[] { 99 };
+            values["ShedOnPct"] = new double[] { 92 };
             var loadProfile = new double[] { 50, 100, 200, 300, 496, 496, 496, 496, 400 };
             int iterations = (loadProfile.Count() + 1) * period;
 
@@ -668,6 +670,8 @@ namespace ConsoleTests
             values["GenConfig1"] = new double[] { 1 };
             values["StatMaintainSpin"] = new double[] { maintainSpin ? 1 : 0 };
             values["StatSpinSetP"] = new double[] { 50 };
+            values["ShedOffPct"] = new double[] { 99 };
+            values["ShedOnPct"] = new double[] { 92 };
             values["LoadP"] = new double[] { 200 };
             var shedPprofile = new double[] { 0, 10, 20, 30, 40, 50 };
             int iterations = (shedPprofile.Count() + 1) * period;
