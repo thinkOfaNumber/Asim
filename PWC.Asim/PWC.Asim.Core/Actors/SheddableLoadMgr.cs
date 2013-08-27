@@ -22,7 +22,7 @@ using PWC.Asim.Core.Utils;
 
 namespace PWC.Asim.Core.Actors
 {
-    class SheddableLoadMgr : IActor
+    public class SheddableLoadMgr : IActor
     {
         private readonly SharedContainer _sharedVars = SharedContainer.Instance;
         // Sum of switchable loads available to be shed
@@ -60,7 +60,7 @@ namespace PWC.Asim.Core.Actors
             _statBlack = _sharedVars.GetOrNew("StatBlack");
             _genP = _sharedVars.GetOrNew("GenP");
             _genMaxP = _sharedVars.GetOrNew("GenMaxP");
-            _shedIdealPct = _sharedVars.GetOrNew("ShedOffPct");
+            _shedIdealPct = _sharedVars.GetOrNew("ShedIdealPct");
             _shedE = _sharedVars.GetOrNew("ShedE");
             _shedLoadT = _sharedVars.GetOrNew("ShedLoadT");
             _shedSpinP = _sharedVars.GetOrNew("ShedSpinP");
@@ -76,9 +76,9 @@ namespace PWC.Asim.Core.Actors
                 latency = 0;
             if (latency > MaxLatency)
                 latency = MaxLatency;
-            _delayIt = _nowIt + latency;
-            if (_delayIt > MaxLatency)
-                _delayIt = 0;
+            _delayIt = _nowIt - latency;
+            if (_delayIt < 0)
+                _delayIt += MaxLatency + 1;
         }
 
         void _statBlack_OnValueChanged(object sender, SharedEventArgs e)
@@ -101,7 +101,10 @@ namespace PWC.Asim.Core.Actors
                 _actLoad = _genP.Val + _shedOffP.Val;
 
                 // calculate load to shed but put it in the latency array
-                _shedLatencyLoad[_nowIt] = _actLoad - _shedIdealPct.Val * (_actLoad / _genMaxP.Val);
+                _shedLatencyLoad[_nowIt] = Math.Max(0, _genP.Val - _shedIdealPct.Val * _genMaxP.Val / 100);
+
+                // Limit to available sheddable load
+                _shedLatencyLoad[_nowIt] = Math.Min(_shedLoadP.Val, _shedLatencyLoad[_nowIt]);
 
                 // apply latent load to actual offline shed load
                 _shedOffP.Val = _shedLatencyLoad[_delayIt];

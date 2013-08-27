@@ -240,5 +240,56 @@ namespace ConsoleTests
             // at 20min +1min (warmup), both generators on again
             Assert.AreEqual(3, genOnlineCfg[21 * 60]);
         }
+
+        [Test]
+        public void SheddableLoadLatency()
+        {
+            // Arrange
+            const int iterations = 1000;
+            var shedMangaer = new PWC.Asim.Core.Actors.SheddableLoadMgr();
+
+            var shedPprofile = new double[iterations];
+            var sharedVars = SharedContainer.Instance;
+            sharedVars.GetOrNew("StatBlack").Val = 0;
+            // shed latency - 20s
+            var s = sharedVars.GetOrNew("ShedLoadT");
+            s.Val = 20;
+            // max online generator output - 1000kW
+            sharedVars.GetOrNew("GenMaxP").Val = 1000;
+            // ideal spot to load the generators
+            sharedVars.GetOrNew("ShedIdealPct").Val = 50;
+            // total sheddable load available
+            sharedVars.GetOrNew("ShedLoadP").Val = 500;
+
+            // act generator output
+            var genP = sharedVars.GetOrNew("GenP");
+            // offline sheddable load
+            var shedOffP = sharedVars.GetOrNew("ShedOffP");
+            // online sheddable load
+            var shedP = sharedVars.GetOrNew("ShedP");
+            // energy not produced 
+            var shedE = sharedVars.GetOrNew("ShedE");
+
+
+            // Act
+            for (ulong i = 0; i < iterations; i++)
+            {
+                genP.Val = i;
+                shedMangaer.Run(i);
+                shedPprofile[i] = shedOffP.Val;
+            }
+
+            // Assert
+            // for the first 500 + latency seconds, no load shed as LF < 50
+            for (int i = 0; i < 520; i++)
+            {
+                Assert.IsTrue(DoublesAreEqual(shedPprofile[i], 0));
+            }
+
+            for (int i = 520; i < 1000; i++)
+            {
+                Assert.IsTrue(DoublesAreEqual(shedPprofile[i], i-520));
+            }
+        }
     }
 }
