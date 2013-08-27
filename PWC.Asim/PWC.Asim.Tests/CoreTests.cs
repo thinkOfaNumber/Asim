@@ -49,7 +49,7 @@ namespace ConsoleTests
             int nServices = 5;
             int serviceInterval = 8; // hours
             int serviceOutage = 2; // hours
-            int iterations = (nServices*serviceInterval + nServices*serviceOutage + 1)*60*60;
+            int iterations = (nServices * serviceInterval + nServices * serviceOutage + 1) * 60 * 60;
             var outFile = GetTempFilename;
 
             var values = new SortedDictionary<string, double[]>();
@@ -92,8 +92,8 @@ namespace ConsoleTests
             int nServices2 = 8;
             int serviceInterval2 = 3; // hours
             int serviceOutage2 = 1; // hours
-            int runTime = serviceInterval1*serviceInterval2;
-            int iterations = (runTime + serviceOutage1*runTime/serviceInterval1 + serviceOutage2*runTime/serviceInterval2 + 1) * 60 * 60;
+            int runTime = serviceInterval1 * serviceInterval2;
+            int iterations = (runTime + serviceOutage1 * runTime / serviceInterval1 + serviceOutage2 * runTime / serviceInterval2 + 1) * 60 * 60;
             var outFile = GetTempFilename;
 
             var values = new SortedDictionary<string, double[]>();
@@ -140,7 +140,7 @@ namespace ConsoleTests
             loadMaxUpP.Val = 5;
             loadMaxDownP.Val = 10;
             var loadPinputs = new List<double>() { 0, 5, 10, 15, 100, 500, 100, 32, 5 };
-            var loadPexpect = new List<double>() { 0, 5, 10, 15, 20,  25,  30,  32, 22 };
+            var loadPexpect = new List<double>() { 0, 5, 10, 15, 20, 25, 30, 32, 22 };
             var limitedLoad = new List<double>();
 
             IActor loadMgr = new PWC.Asim.Core.Actors.Load();
@@ -169,7 +169,7 @@ namespace ConsoleTests
         [Test]
         public void ConfigDownWithDelay()
         {
-            ConfigDownDelay(6*60);
+            ConfigDownDelay(6 * 60);
         }
 
         private void ConfigDownDelay(long delayTime)
@@ -239,6 +239,131 @@ namespace ConsoleTests
 
             // at 20min +1min (warmup), both generators on again
             Assert.AreEqual(3, genOnlineCfg[21 * 60]);
+        }
+
+        [Test]
+        public void SheddableLoadLatency()
+        {
+            // Arrange
+            const int iterations = 1000;
+            var shedMangaer = new PWC.Asim.Core.Actors.SheddableLoadMgr();
+            var sharedVars = SharedContainer.Instance;
+
+            var shedPprofile = new double[iterations];
+            sharedVars.GetOrNew("StatBlack").Val = 0;
+            // shed latency - 20s
+            var s = sharedVars.GetOrNew("ShedLoadT");
+            s.Val = 20;
+            // max online generator output - 1000kW
+            sharedVars.GetOrNew("GenMaxP").Val = 1000;
+            // ideal spot to load the generators
+            sharedVars.GetOrNew("ShedIdealPct").Val = 50;
+            // total sheddable load available
+            sharedVars.GetOrNew("ShedLoadP").Val = 500;
+
+            // act generator output
+            var genP = sharedVars.GetOrNew("GenP");
+            // offline sheddable load
+            var shedOffP = sharedVars.GetOrNew("ShedOffP");
+            // online sheddable load
+            var shedP = sharedVars.GetOrNew("ShedP");
+            // energy not produced 
+            var shedE = sharedVars.GetOrNew("ShedE");
+
+
+            // Act
+            for (ulong i = 0; i < iterations; i++)
+            {
+                genP.Val = i;
+                shedMangaer.Run(i);
+                shedPprofile[i] = shedOffP.Val;
+            }
+
+            // Assert
+            // for the first 500 + latency seconds, no load shed as LF < 50
+            for (int i = 0; i < 521; i++)
+            {
+                Assert.IsTrue(DoublesAreEqual(shedPprofile[i], 0));
+            }
+
+            for (int i = 521; i < 1000; i++)
+            {
+                Assert.IsTrue(DoublesAreEqual(shedPprofile[i], i - 521));
+            }
+        }
+
+        [Test]
+        public void SheddableLoad()
+        {
+            var settingsFile1 = GetTempFilename;
+            var settingsFile2 = GetTempFilename;
+            var outFile = GetTempFilename;
+            int maxOffTime = 20 * 60;
+            int offLatency = 120;
+            int period = 10 * 60;
+
+            var values = new SortedDictionary<string, double[]>();
+            InsertFuelConsumption(values, 0.33);
+            values["StatSpinSetP"] = new double[] { 50 };
+            values["Gen1MaxP"] = new double[] { 500 };
+            values["GenConfig1"] = new double[] { 1 };
+            values["GenAvailSet"] = new double[] { 1 };
+            values["GenBlackCfg"] = new double[] { 1 };
+            values["ShedLoadMaxT"] = new double[] { maxOffTime };
+            values["ShedLoadT"] = new double[] { offLatency };
+            values["ShedLoadP"] = new double[] { 40 };
+            values["ShedIdealPct"] = new double[] { 99 };
+            var loadProfile = new double[] { 50, 100, 200, 300, 496, 496, 496, 496, 400 };
+            int iterations = (loadProfile.Count() + 1) * period;
+
+            StringBuilder settings = BuildCsvFor(values.Keys.ToList(), values.Values.ToArray());
+            File.WriteAllText(settingsFile1, settings.ToString());
+            settings = BuildCsvFor("LoadP", loadProfile, period);
+            File.WriteAllText(settingsFile2, settings.ToString());
+
+
+            var sim = new Simulator();
+            sim.AddInput(settingsFile1);
+            sim.AddInput(settingsFile2);
+            sim.AddOutput(outFile, new[] { "Gen1P", "ShedLoadP", "GenSpinP", "ShedP", "Gen1LoadFact" });
+            sim.Iterations = (ulong)iterations;
+
+            // Act
+            sim.Simulate();
+
+            // Assert
+            var fileArray = CsvFileToArray(outFile);
+            var gen1P = fileArray.Select(col => col[1]).Where((s, i) => i > 0).Select(Convert.ToDouble).ToList();
+            var shedLoadP = fileArray.Select(col => col[2]).Where((s, i) => i > 0).Select(Convert.ToDouble).ToList();
+            var geSpinP = fileArray.Select(col => col[3]).Where((s, i) => i > 0).Select(Convert.ToDouble).ToList();
+            var shedP = fileArray.Select(col => col[4]).Where((s, i) => i > 0).Select(Convert.ToDouble).ToList();
+            var loadFact = fileArray.Select(col => col[5]).Where((s, i) => i > 0).Select(Convert.ToDouble).ToList();
+
+            // at 61s: load 50 - shedLoad 40 = 10
+            Assert.IsTrue(DoublesAreEqual(10, gen1P.ElementAt(61)));
+            // at 65s: load 50 (shedLoad on)
+            Assert.IsTrue(DoublesAreEqual(50, gen1P.ElementAt(65)));
+            // at 10m: load 100
+            Assert.IsTrue(DoublesAreEqual(100, gen1P.ElementAt(10 * 60)));
+            // at 20m: load 200
+            Assert.IsTrue(DoublesAreEqual(200, gen1P.ElementAt(20 * 60)));
+            // at 30m: load 300
+            Assert.IsTrue(DoublesAreEqual(300, gen1P.ElementAt(30 * 60)));
+            // at 40m: load 496
+            Assert.IsTrue(DoublesAreEqual(496, gen1P.ElementAt(40 * 60)));
+
+            // Load Factor > 99% so the sheddable load
+            // should proportionally shut off
+            // at 40m+latency: load 99% = 495 (+1)
+            Assert.IsTrue(DoublesAreEqual(496, gen1P.ElementAt(40 * 60 + offLatency + 5)));
+
+            // at 50m: load 99% = 495 (+1)
+            Assert.IsTrue(DoublesAreEqual(496, gen1P.ElementAt(50 * 60 + offLatency + 5)));
+            // at 60m: load 99% = 495 (+1)
+            Assert.IsTrue(DoublesAreEqual(496, gen1P.ElementAt(60 * 60 + offLatency + 5)));
+
+            // at 70m: load 400
+            Assert.IsTrue(DoublesAreEqual(400, gen1P.ElementAt(80 * 60)));
         }
     }
 }

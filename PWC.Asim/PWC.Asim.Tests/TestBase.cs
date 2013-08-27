@@ -23,6 +23,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using NUnit.Framework;
+using PWC.Asim.Core.Utils;
 
 namespace ConsoleTests
 {
@@ -313,6 +314,29 @@ namespace ConsoleTests
                 values["Gen" + i + "FuelCons4L"] = new double[] { 0 };
                 values["Gen" + i + "FuelCons5P"] = new double[] { 0 };
                 values["Gen" + i + "FuelCons5L"] = new double[] { 0 };
+            }
+        }
+
+        /// <summary>
+        /// Inserts the given constant fuel consumption into the Shared value class
+        /// </summary>
+        /// <param name="instance">SheddableLoadMgr instance of values for testing</param>
+        /// <param name="fuelConst">fuel consumption L/kWh</param>
+        /// <param name="nGens">number of Generators to insert values for</param>
+        public void InsertFuelConsumption(SharedContainer instance, double fuelConst, int nGens = 1)
+        {
+            for (int i = 1; i < nGens + 1; i++)
+            {
+                instance.GetOrNew("Gen" + i + "FuelCons1P").Val = 0;
+                instance.GetOrNew("Gen" + i + "FuelCons1L").Val =  fuelConst;
+                instance.GetOrNew("Gen" + i + "FuelCons2P").Val =  1;
+                instance.GetOrNew("Gen" + i + "FuelCons2L").Val =  fuelConst;
+                instance.GetOrNew("Gen" + i + "FuelCons3P").Val =  0;
+                instance.GetOrNew("Gen" + i + "FuelCons3L").Val =  0;
+                instance.GetOrNew("Gen" + i + "FuelCons4P").Val =  0;
+                instance.GetOrNew("Gen" + i + "FuelCons4L").Val =  0;
+                instance.GetOrNew("Gen" + i + "FuelCons5P").Val =  0;
+                instance.GetOrNew("Gen" + i + "FuelCons5L").Val =  0;
             }
         }
     }

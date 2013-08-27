@@ -22,22 +22,35 @@ using PWC.Asim.Core.Utils;
 
 namespace PWC.Asim.Core.Actors
 {
-    class SheddableLoadMgr : IActor
+    public class SheddableLoadMgr : IActor
     {
         private readonly SharedContainer _sharedVars = SharedContainer.Instance;
-        // Sum of switchable loads
+        // Sum of switchable loads available to be shed
         private readonly Shared _shedLoadP;
         // Online Sheddable load
         private readonly Shared _shedP;
         // Offline load
         private readonly Shared _shedOffP;
+        // Percent of online rated load to switch off at (eg 99)
+        private readonly Shared _shedIdealPct;
+        // energy counter for offline sheddable load
+        private readonly Shared _shedE;
+
+        // amount this load can shed quickly
+        private readonly Shared _shedSpinP;
+        // Load shed latency
+        private readonly Shared _shedLoadT;
 
         private readonly Shared _statBlack;
         private readonly Shared _genP;
         private readonly Shared _genMaxP;
-        private readonly ISheddableLoad[] Load = new ISheddableLoad[Settings.MAX_GENS];
         private readonly ExecutionManager _executionManager = new ExecutionManager();
-        private static bool debug = true;
+
+        private const int MaxLatency = 5 * Settings.SecondsInAMinute;
+        private readonly double[] _shedLatencyLoad = new double[MaxLatency + 1];
+        private int _delayIt = 0;
+        private int _nowIt = 0;
+        private double _actLoad;
         
         public SheddableLoadMgr()
         {
@@ -47,41 +60,79 @@ namespace PWC.Asim.Core.Actors
             _statBlack = _sharedVars.GetOrNew("StatBlack");
             _genP = _sharedVars.GetOrNew("GenP");
             _genMaxP = _sharedVars.GetOrNew("GenMaxP");
+            _shedIdealPct = _sharedVars.GetOrNew("ShedIdealPct");
+            _shedE = _sharedVars.GetOrNew("ShedE");
+            _shedLoadT = _sharedVars.GetOrNew("ShedLoadT");
+            _shedSpinP = _sharedVars.GetOrNew("ShedSpinP");
+
+            _shedLoadT.OnValueChanged += _shedLoadT_OnValueChanged;
+            _statBlack.OnValueChanged += _statBlack_OnValueChanged;
+        }
+
+        void _shedLoadT_OnValueChanged(object sender, SharedEventArgs e)
+        {
+            int latency = Convert.ToInt32(e.NewValue);
+            if (latency < 0)
+                latency = 0;
+            if (latency > MaxLatency)
+                latency = MaxLatency;
+            _delayIt = _nowIt - latency;
+            if (_delayIt < 0)
+                _delayIt += MaxLatency + 1;
+        }
+
+        void _statBlack_OnValueChanged(object sender, SharedEventArgs e)
+        {
+            if (e.NewValue < 0)
+                return;
+
+            // after a blackout, forget all the load latency values
+            for (int i = 0; i < MaxLatency; i++)
+                _shedLatencyLoad[i] = 0;
         }
 
         public void Run(ulong iteration)
         {
             _executionManager.RunActions(iteration);
 
-            // todo: fix magic numbers - stop with 2% of max load and start when more than 8%
-            double pctMaxLoad = GetLoadFactor();
-            bool stop = pctMaxLoad > 99.0D;
-            bool start = _statBlack.Val == 0 && pctMaxLoad < 92.0D;
-
-            _shedLoadP.Val = 0;
-            _shedP.Val = 0;
-            _shedOffP.Val = 0;
-            for (int i = 0; i < Settings.MAX_GENS; i++)
+            if (_statBlack.Val < 1)
             {
-                if (Load[i] == null)
-                    continue;
+                // actual load if all shed load is on
+                _actLoad = _genP.Val + _shedOffP.Val;
 
-                if (stop)
-                    Load[i].Stop();
-                if (start)
-                    Load[i].Start();
+                // calculate load to shed but put it in the latency array
+                // -1.0D to overcome oscillation due to controller sampling
+                _shedLatencyLoad[_nowIt] = Math.Max(0, _genP.Val - _shedIdealPct.Val * _genMaxP.Val / 100D - 1D);
 
-                Load[i].Run(iteration);
-                _shedP.Val += Load[i].ShedP;
-                _shedOffP.Val += Load[i].ShedOffP;
-                _shedLoadP.Val += Load[i].ShedLoadP;
+                // Limit to available sheddable load
+                _shedLatencyLoad[_nowIt] = Math.Min(_shedLoadP.Val, _shedLatencyLoad[_nowIt]);
+
+                // apply latent load to actual offline shed load
+                _shedOffP.Val = _shedLatencyLoad[_delayIt];
+
+                // remaining online sheddable load
+                _shedSpinP.Val = _shedP.Val = _shedLoadP.Val - _shedOffP.Val;
+
+                // energy that should be online
+                _shedE.Val += _shedP.Val * Settings.PerHourToSec;
             }
+            else
+            {
+                _actLoad = 0;
+                _shedLatencyLoad[_nowIt] = 0;
+                _shedOffP.Val = _shedLoadP.Val;
+                _shedP.Val = 0;
+                _shedSpinP.Val = 0;
+            }
+
+            if (++_delayIt > MaxLatency)
+                _delayIt = 0;
+            if (++_nowIt > MaxLatency)
+                _nowIt = 0;
         }
 
         public void Init()
         {
-            // create sheddable load (only one for now)
-            Load[0] = new StaticLoad(0, _executionManager);
         }
 
         public void Finish()
@@ -90,135 +141,12 @@ namespace PWC.Asim.Core.Actors
 
         /// <summary>
         /// The sheddable load manager makes decisions based on the load
-        /// factor if all sheddabl load was turned on.
+        /// factor if all sheddable load was turned on.
         /// </summary>
         /// <returns></returns>
-        public double GetLoadFactor()
+        private double GetLoadFactor()
         {
             return _genMaxP.Val <= 0 ? 0 : (_genP.Val + _shedOffP.Val) / _genMaxP.Val * 100;
-        }
-    }
-
-    class StaticLoad : ISheddableLoad
-    {
-        public double ShedLoadP
-        {
-            get { return _shedLoadP.Val; }
-        }
-
-        public double ShedP
-        {
-            get { return _shedP.Val; }
-        }
-
-        public double ShedOffP
-        {
-            get { return _shedOffP.Val; }
-        }
-
-        public double ShedSpinP
-        {
-            get { return _shedSpinP.Val; }
-        }
-
-        private static readonly SharedContainer SharedVars = SharedContainer.Instance;
-
-        // Maximum Off Time
-        private readonly Shared _shedLoadMaxT;
-        // Size of Load to switch on/off
-        private readonly Shared _shedLoadP;
-        // online amount of this load
-        private readonly Shared _shedP;
-        // offline amount of this load
-        private readonly Shared _shedOffP;
-        // amount this load can shed quickly
-        private readonly Shared _shedSpinP;
-        // Load shed latency
-        private readonly Shared _shedLoadT;
-        
-        // Maximum Off Time
-        private static readonly Shared ShedLoadMaxT;
-        // Load shed latency
-        private static readonly Shared ShedLoadT;
-
-        private ulong _actualOffTime;
-        private ulong _actualOnTime;
-        private bool _online;
-        private bool _busy;
-        private ulong _maxCycleTime;
-        private ulong _it;
-
-        private ExecutionManager _executionManager;
-
-        private bool MaxOffTimeExpired
-        {
-            get { return _maxCycleTime != 0 && _actualOffTime > _maxCycleTime; }
-        }
-
-        private bool MinOnTimeSatisfied
-        {
-            get { return _maxCycleTime == 0 || _actualOnTime > _maxCycleTime; }
-        }
-
-        static StaticLoad()
-        {
-            ShedLoadMaxT = SharedVars.GetOrNew("ShedLoadMaxT");
-            ShedLoadT = SharedVars.GetOrNew("ShedLoadT");
-        }
-
-        public StaticLoad(int id, ExecutionManager executionManager)
-        {
-            int n = id + 1;
-            _online = false;
-
-            _shedLoadMaxT = SharedVars.GetOrNew("Shed" + n + "LoadMaxT");
-            _shedLoadP = SharedVars.GetOrNew("Shed" + n + "LoadP");
-            _shedLoadT = SharedVars.GetOrNew("Shed" + n + "LoadT");
-            _shedP = SharedVars.GetOrNew("Shed" + n + "P");
-            _shedOffP = SharedVars.GetOrNew("Shed" + n + "OffP");
-            _shedSpinP = SharedVars.GetOrNew("Shed" + n + "SpinP");
-
-            _executionManager = executionManager;
-        }
-
-
-        public void Run(ulong iteration)
-        {
-            _it = iteration;
-            _maxCycleTime = (ulong)Math.Max(_shedLoadMaxT.Val, ShedLoadMaxT.Val);
-
-            if (MaxOffTimeExpired)
-                Start();
-
-            if (_online)
-            {
-                _actualOffTime = 0;
-                _actualOnTime ++;
-                _shedP.Val = _shedLoadP.Val;
-                _shedOffP.Val = 0;
-            }
-            else
-            {
-                _actualOffTime++;
-                _actualOnTime = 0;
-                _shedP.Val = 0;
-                _shedOffP.Val = _shedLoadP.Val;
-            }
-        }
-
-        public void Start()
-        {
-            _online = true;
-        }
-
-        public void Stop()
-        {
-            if (_busy || !MinOnTimeSatisfied)
-                return;
-
-            _busy = true;
-            ulong latency = Convert.ToUInt64(Math.Max(_shedLoadT.Val, ShedLoadT.Val));
-            _executionManager.After(latency, () => { _online = false; _busy = false; });
         }
     }
 }
