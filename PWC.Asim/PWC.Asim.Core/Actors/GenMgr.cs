@@ -338,16 +338,7 @@ namespace PWC.Asim.Core.Actors
             {
                 if (Gen[i].IsOnline())
                 {
-                    double setP = Gen[i].MaxP / onlineCap * _genSetP.Val;
-                    if (setP > Gen[i].MaxP || setP < 0)
-                    {
-                        Gen[i].CriticalStop();
-                        Gen[i].P = 0;
-                    }
-                    else
-                    {
-                        Gen[i].P = setP;
-                    }
+                    Gen[i].P = Gen[i].MaxP / onlineCap * _genSetP.Val;
                 }
                 else
                 {

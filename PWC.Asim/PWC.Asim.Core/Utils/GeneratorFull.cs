@@ -5,6 +5,9 @@ namespace PWC.Asim.Core.Utils
     public class GeneratorFull : GeneratorBase
     {
         private bool _busy;
+        private ulong _overloadCnt;
+        private ulong _underloadCnt;
+        private bool _trip;
 
         public GeneratorFull(int id)
             : base(id)
@@ -16,6 +19,43 @@ namespace PWC.Asim.Core.Utils
             if (Station.BlackStartInit && IsAvailable())
             {
                 Reset();
+            }
+
+            _trip = false;
+            if (GenP > MaxP)
+            {
+                _overloadCnt++;
+                _underloadCnt = 0;
+            }
+            if (GenP < 0)
+            {
+                _underloadCnt++;
+                _overloadCnt = 0;
+            }
+            else
+                _overloadCnt = _underloadCnt = 0;
+
+            // overload timer
+            if (_genOverloadPctP.Val > 0.0D // is overload trip time enabled?
+                && _overloadCnt > _genOverloadT.Val)
+                _trip = true;
+            // max overload value - trip immediately
+            if (GenP > (MaxP + MaxP * _genOverloadPctP.Val) / 100.0D)
+                _trip = true;
+
+            // underload timer
+            if (_genUnderloadPctP.Val > 0.0D // is underload trip time enabled?
+                && _underloadCnt > _genUnderloadT.Val)
+                _trip = true;
+            // max underload value - trip immediately
+            if (GenP < (-MaxP * _genUnderloadPctP.Val / 100.0D))
+                _trip = true;
+            
+            if (_trip)
+            {
+                CriticalStop();
+                Reset();
+                GenP = 0;
             }
             base.Run();
         }
@@ -61,12 +101,11 @@ namespace PWC.Asim.Core.Utils
             }
         }
 
-        public override void CriticalStop()
+        protected override void CriticalStop()
         {
-            if (_busy)
-                return;
             TransitionToStop();
             OnlineCfg &= (ushort)~_idBit;
+            Reset();
         }
 
         protected override void Service()
