@@ -325,7 +325,7 @@ namespace PWC.Asim.Core.Utils
                 E += P * Settings.PerHourToSec;
                 LoadFact = P / MaxP;
                 FuelCnt += FuelConsumptionSecond();
-                IdealP = MaxP * IdealPctP / 100;
+                IdealP = MaxP * IdealPctP * Settings.Percent;
                 _spinP = Math.Max(MaxP - P, 0);
             }
             

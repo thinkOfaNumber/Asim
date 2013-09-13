@@ -37,7 +37,6 @@ namespace PWC.Asim.Core.Actors
 
     public struct Configuration
     {
-        public Shared ConfigSets;
         public double Power;
         public bool UpToDate;
     }
@@ -67,6 +66,7 @@ namespace PWC.Asim.Core.Actors
         private ulong _switchDownDelayAct;
 
         private ulong _iteration;
+        private Shared[] _configSets = new Shared[Settings.MAX_CFG];
         private readonly Configuration[] _configurations = new Configuration[Settings.MAX_CFG];
         private readonly GenMgrType _simulationType;
 
@@ -132,8 +132,8 @@ namespace PWC.Asim.Core.Actors
             for (int i = 0; i < Settings.MAX_CFG; i++)
             {
                 string cstr = "GenConfig" + (i+1);
-                _configurations[i].ConfigSets = _sharedVars.GetOrNew(cstr);
-                _configurations[i].ConfigSets.Val = 0;
+                _configSets[i] = _sharedVars.GetOrNew(cstr);
+                _configSets[i].Val = 0;
             }
         }
 
@@ -200,35 +200,39 @@ namespace PWC.Asim.Core.Actors
             ushort bestCfg = 0;
             double currCfgPower = TotalPower(GenSetCfg);
 
+            //if (_iteration == 60)
+            //    Debugger.Break();
+
             for (int i = 0; i < Settings.MAX_CFG; i++)
             {
                 // ignore configurations with unavailable sets
-                if (((ushort)_configurations[i].ConfigSets.Val & (ushort)_genAvailCfg.Val) != (ushort)_configurations[i].ConfigSets.Val)
+                if (((ushort)_configSets[i].Val & (ushort)_genAvailCfg.Val) != (ushort)_configSets[i].Val)
                     continue;
-                double thisP = TotalPower((ushort)((ushort)_configurations[i].ConfigSets.Val & (ushort)_genAvailCfg.Val));
+                double thisP = TotalPower((ushort)_configSets[i].Val);
                 if (thisP >= _genCfgSetP.Val)
                 {
                     found = i;
                     break;
                 }
-                if (nextLower == -1 || thisP > TotalPower((ushort)_configurations[nextLower].ConfigSets.Val))
+                if (nextLower == -1 || thisP > _genCfgSetP.Val)
                 {
                     nextLower = i;
                 }
             }
-            double foundP = found == -1 ? 0 : TotalPower((ushort)_configurations[found].ConfigSets.Val);
+            ushort foundCfg = found == -1 ? (ushort)0 : (ushort)_configSets[found].Val;
+            double foundP = found == -1 ? 0 : TotalPower(foundCfg);
 
             // if nothing was found, switch on everything as a fallback
             if (found == -1)
                 bestCfg = (ushort)_genAvailCfg.Val;
 
             // if no change is required, stay at current config
-            else if (_configurations[found].ConfigSets.Val == GenSetCfg)
+            else if (foundCfg == GenSetCfg)
                 bestCfg = GenSetCfg;
 
             // switch to a higher configuration without waiting
             else if (foundP > currCfgPower)
-                bestCfg = (ushort)_configurations[found].ConfigSets.Val;
+                bestCfg = foundCfg;
 
             // only switch to a lower configurations if min run timer is expired
             else if (_genMinRunT.Val > 0)
@@ -238,14 +242,14 @@ namespace PWC.Asim.Core.Actors
             // todo: there is an issue with this if there is a drop of two configurations, we'll still apply
             // hysteresis to the lower one, when it only needs to be applied to the middle one.
             else if (_genCfgSetP.Val < foundP - _statHystP.Val)
-                bestCfg = (ushort)_configurations[found].ConfigSets.Val;
+                bestCfg = foundCfg;
 
             // don't switch to a smaller configuration as Hysteresis wasn't satisfied
             else
                 bestCfg = GenSetCfg;
 
             // switch down delay parameter has to be done after the decision to switch-down has been made
-            if (found != -1 && bestCfg != GenSetCfg && _configurations[found].Power < currCfgPower)
+            if (found != -1 && bestCfg != GenSetCfg && foundP < currCfgPower)
             {
                 if (_switchDownDelayAct > 0)
                 {
@@ -260,12 +264,12 @@ namespace PWC.Asim.Core.Actors
             }
 
             // we didn't choose to switch down for some reason above
-            if (found != -1 && bestCfg != (ushort) _configurations[found].ConfigSets.Val)
+            if (found != -1 && bestCfg != foundCfg)
             {
                 nextLower = found;
             }
 
-            lowerP = nextLower == -1 ? 0 : TotalPower((ushort)_configurations[nextLower].ConfigSets.Val);
+            lowerP = nextLower == -1 ? 0 : TotalPower((ushort)_configSets[nextLower].Val);
             return bestCfg;
         }
 

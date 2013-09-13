@@ -365,5 +365,90 @@ namespace ConsoleTests
             // at 70m: load 400
             Assert.IsTrue(DoublesAreEqual(400, gen1P.ElementAt(80 * 60)));
         }
+
+        [Test]
+        // tests overload trips at 100 % when overload factor unset
+        public void OverloadUnset()
+        {
+            // Arrange
+            var settingsFile1 = GetTempFilename;
+            var settingsFile2 = GetTempFilename;
+            var outFile = GetTempFilename;
+
+            int period = 10 * 60;
+            var values = new SortedDictionary<string, double[]>();
+            InsertFuelConsumption(values, 0.33, 8);
+            values["Gen2MaxP"] = new double[] { 1000 };
+            values["GenConfig1"] = new double[] { 0x2 };
+            values["GenAvailSet"] = new double[] { 0xFF };
+            var loadProfile = new double[] { 900, 1000, 1001 };
+            int iterations = (loadProfile.Count() + 1) * period;
+
+            StringBuilder settings = BuildCsvFor(values.Keys.ToList(), values.Values.ToArray());
+            File.WriteAllText(settingsFile1, settings.ToString());
+            settings = BuildCsvFor("LoadP", loadProfile, period);
+            File.WriteAllText(settingsFile2, settings.ToString());
+
+            var sim = new Simulator();
+            sim.AddInput(settingsFile1);
+            sim.AddInput(settingsFile2);
+            sim.AddOutput(outFile, new[] { "Gen2P", "GenOnlineCfg" });
+            sim.Iterations = (ulong)iterations;
+
+            // Act
+            sim.Simulate();
+
+            // Assert
+            var fileArray = CsvFileToArray(outFile);
+            var gen2P = fileArray.Select(col => col[1]).Where((s, i) => i > 0).Select(Convert.ToDouble).ToList();
+            var genOnlineCfg = fileArray.Select(col => col[2]).Where((s, i) => i > 0).Select(Convert.ToDouble).ToList();
+
+            // at 61s, ok:
+            Assert.IsTrue(DoublesAreEqual(900, gen2P.ElementAt(61)));
+            Assert.IsTrue(DoublesAreEqual(2, genOnlineCfg.ElementAt(61)));
+
+            // at 600s: ok
+            Assert.IsTrue(DoublesAreEqual(900, gen2P.ElementAt(600)));
+            Assert.IsTrue(DoublesAreEqual(2, genOnlineCfg.ElementAt(600)));
+
+            // at 1200s: tripped
+            Assert.IsTrue(DoublesAreEqual(0, gen2P.ElementAt(1200)));
+            Assert.IsTrue(DoublesAreEqual(0, genOnlineCfg.ElementAt(600)));
+        }
+
+        [Test]
+        // tests overload doesn't trip until at x % for y seconds when overload factor set
+        public void OverloadSetTime()
+        {
+
+        }
+
+        [Test]
+        // tests overload trips over x % when overload factor set
+        public void OverloadSetOver()
+        {
+
+        }
+
+        [Test]
+        // tests underload trips at 0 % when underload factor unset
+        public void UnderloadUnset()
+        {
+
+        }
+
+        [Test]
+        // tests underload doesn't trip until at 0-x % for y seconds when underload factor set
+        public void UnderloadSetTime()
+        {
+
+        }
+
+        [Test]
+        // tests underload trips under 0-x % when underload factor set
+        public void UnderloadSetUnder()
+        {
+
+        }
     }
 }

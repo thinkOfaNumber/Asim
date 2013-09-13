@@ -30,9 +30,20 @@ namespace PWC.Asim.Core.Utils
         public const int SecondsInAnHour  = 60 * SecondsInAMinute;
         public const int SecondsInADay    = 24 * SecondsInAnHour;
         public const int SecondsInAYear   = 365 * SecondsInADay;
+        /// <summary>
+        /// The Unix Epoch
+        /// </summary>
         public static readonly DateTime Epoch = new DateTime(1970, 1, 1, 0, 0, 0, 0);
-        public const int GenStartStopDelay = 60; // seconds to wait between starting and going online
+        /// <summary>
+        /// Seconds to wait between starting and going online
+        /// </summary>
+        public const int GenStartStopDelay = 60;
         public const int MaxSvcIntervals = 6;
+        /// <summary>
+        /// Equivalent to (1 / 100) for faster percent calculation.  Multiply by this
+        /// instead of dividing by 100.
+        /// </summary>
+        public const double Percent = 1.0D/100.0D;
     }
 
     public enum DateFormat

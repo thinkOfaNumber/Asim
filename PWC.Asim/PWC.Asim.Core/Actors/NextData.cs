@@ -170,7 +170,13 @@ namespace PWC.Asim.Core.Actors
 
         public void Finish()
         {
-            
+            try
+            {
+                _stream.Close();
+            }
+            catch (ObjectDisposedException)
+            {
+            }
         }
 
         #endregion
