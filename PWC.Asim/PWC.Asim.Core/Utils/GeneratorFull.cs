@@ -27,7 +27,7 @@ namespace PWC.Asim.Core.Utils
                 _overloadCnt++;
                 _underloadCnt = 0;
             }
-            if (P < 0)
+            else if (P < 0)
             {
                 _underloadCnt++;
                 _overloadCnt = 0;
@@ -39,6 +39,7 @@ namespace PWC.Asim.Core.Utils
             if (_genOverloadPctP.Val > 0.0D // is overload trip time enabled?
                 && _overloadCnt > _genOverloadT.Val)
                 _trip = true;
+
             // max overload value - trip immediately
             if (P > (MaxP + MaxP * _genOverloadPctP.Val * Settings.Percent))
                 _trip = true;
@@ -47,6 +48,7 @@ namespace PWC.Asim.Core.Utils
             if (_genUnderloadPctP.Val > 0.0D // is underload trip time enabled?
                 && _underloadCnt > _genUnderloadT.Val)
                 _trip = true;
+
             // max underload value - trip immediately
             if (P < (-MaxP * _genUnderloadPctP.Val * Settings.Percent))
                 _trip = true;

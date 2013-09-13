@@ -74,8 +74,6 @@ namespace PWC.Asim.Core.Actors
             // simulate sheddable load switching off by substracting offline sheddable load component
             _simLoadP -= _shedOffP.Val;
 
-            _simLoadP = Math.Max(0, _simLoadP);
-
             _loadSetP.Val = _simLoadP;
         }
 
