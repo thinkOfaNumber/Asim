@@ -49,7 +49,7 @@ namespace PWC.Asim.Core.Utils
 
         }
 
-        public override void CriticalStop()
+        protected override void CriticalStop()
         {
 
         }

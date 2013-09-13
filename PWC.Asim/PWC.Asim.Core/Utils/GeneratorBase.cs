@@ -121,7 +121,7 @@ namespace PWC.Asim.Core.Utils
         public static double GenP
         {
             get { return _genP.Val; }
-            private set { _genP.Val = value; }
+            protected set { _genP.Val = value; }
         }
         private static bool Overload
         {
@@ -166,6 +166,10 @@ namespace PWC.Asim.Core.Utils
         internal readonly ServiceCounter[] _serviceCounters = new ServiceCounter[Settings.MaxSvcIntervals];
         private readonly Shared[] _fuelCurveP = new Shared[Settings.FuelCurvePoints];
         private readonly Shared[] _fuelCurveL = new Shared[Settings.FuelCurvePoints];
+        protected readonly Shared _genOverloadT;
+        protected readonly Shared _genOverloadPctP;
+        protected readonly Shared _genUnderloadT;
+        protected readonly Shared _genUnderloadPctP;
         private static readonly Shared _onlineCfg;
         private static readonly Shared _genIdealP;
         private static readonly Shared _genMaxP;
@@ -199,24 +203,28 @@ namespace PWC.Asim.Core.Utils
             _idBit = (ushort)(1 << id);
             State = GeneratorState.Stopped;
 
-            int n = id + 1;
-            _p = SharedVars.GetOrNew("Gen" + n + "P");
-            _startCnt = SharedVars.GetOrNew("Gen" + n + "StartCnt");
-            _stopCnt = SharedVars.GetOrNew("Gen" + n + "StopCnt");
-            _loadFact = SharedVars.GetOrNew("Gen" + n + "LoadFact");
-            _runCnt = SharedVars.GetOrNew("Gen" + n + "RunCnt");
-            _e = SharedVars.GetOrNew("Gen" + n + "E");
-            _fuelCnt = SharedVars.GetOrNew("Gen" + n + "FuelCnt");
-            _maxP = SharedVars.GetOrNew("Gen" + n + "MaxP");
-            _minRunTPa = SharedVars.GetOrNew("Gen" + n + "MinRunTPa");
-            _idealPctP = SharedVars.GetOrNew("Gen" + n + "IdealPctP");
-            _idealP = SharedVars.GetOrNew("Gen" + n + "IdealP");
-            _serviceCnt = SharedVars.GetOrNew("Gen" + n + "ServiceCnt");
+            var genN = "Gen" + (id + 1);
+            _p = SharedVars.GetOrNew(genN + "P");
+            _startCnt = SharedVars.GetOrNew(genN + "StartCnt");
+            _stopCnt = SharedVars.GetOrNew(genN + "StopCnt");
+            _loadFact = SharedVars.GetOrNew(genN + "LoadFact");
+            _runCnt = SharedVars.GetOrNew(genN + "RunCnt");
+            _e = SharedVars.GetOrNew(genN + "E");
+            _fuelCnt = SharedVars.GetOrNew(genN + "FuelCnt");
+            _maxP = SharedVars.GetOrNew(genN + "MaxP");
+            _minRunTPa = SharedVars.GetOrNew(genN + "MinRunTPa");
+            _idealPctP = SharedVars.GetOrNew(genN + "IdealPctP");
+            _idealP = SharedVars.GetOrNew(genN + "IdealP");
+            _serviceCnt = SharedVars.GetOrNew(genN + "ServiceCnt");
+            _genOverloadT = SharedVars.GetOrNew(genN + "OverLoadT");
+            _genOverloadPctP = SharedVars.GetOrNew(genN + "OverloadPctP");
+            _genUnderloadT = SharedVars.GetOrNew(genN + "UnderloadT");
+            _genUnderloadPctP = SharedVars.GetOrNew(genN + "UnderloadPctP");
             for (int i = 0; i < Settings.FuelCurvePoints; i++)
             {
                 // Gen1Cons1P, Gen1Cons1L; Gen1Cons2P, Gen1Cons2L; ...
-                _fuelCurveP[i] = SharedVars.GetOrNew("Gen" + n + "FuelCons" + (i + 1) + "P");
-                _fuelCurveL[i] = SharedVars.GetOrNew("Gen" + n + "FuelCons" + (i + 1) + "L");
+                _fuelCurveP[i] = SharedVars.GetOrNew(genN + "FuelCons" + (i + 1) + "P");
+                _fuelCurveL[i] = SharedVars.GetOrNew(genN + "FuelCons" + (i + 1) + "L");
             }
             for (int i = 0; i < Settings.MaxSvcIntervals; i++)
             {
@@ -297,7 +305,7 @@ namespace PWC.Asim.Core.Utils
 
         public abstract void Stop();
 
-        public abstract void CriticalStop();
+        protected abstract void CriticalStop();
 
         protected abstract void Service();
 
@@ -317,7 +325,7 @@ namespace PWC.Asim.Core.Utils
                 E += P * Settings.PerHourToSec;
                 LoadFact = P / MaxP;
                 FuelCnt += FuelConsumptionSecond();
-                IdealP = MaxP * IdealPctP / 100;
+                IdealP = MaxP * IdealPctP * Settings.Percent;
                 _spinP = Math.Max(MaxP - P, 0);
             }
             

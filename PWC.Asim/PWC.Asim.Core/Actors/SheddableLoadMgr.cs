@@ -102,7 +102,7 @@ namespace PWC.Asim.Core.Actors
 
                 // calculate load to shed but put it in the latency array
                 // -1.0D to overcome oscillation due to controller sampling
-                _shedLatencyLoad[_nowIt] = Math.Max(0, _genP.Val - _shedIdealPct.Val * _genMaxP.Val / 100D - 1D);
+                _shedLatencyLoad[_nowIt] = Math.Max(0, _genP.Val - _shedIdealPct.Val * _genMaxP.Val * Settings.Percent - 1D);
 
                 // Limit to available sheddable load
                 _shedLatencyLoad[_nowIt] = Math.Min(_shedLoadP.Val, _shedLatencyLoad[_nowIt]);
