@@ -67,8 +67,8 @@ namespace ConsoleTests
             sim.AddOutput(outFile, new[] { "Gen1RunCnt", "Gen1ServiceCnt" }, (uint)iterations);
             sim.Iterations = (ulong)iterations;
 
-            StringBuilder fuelsettings = BuildCsvFor(values.Keys.ToList(), values.Values.ToArray());
-            File.WriteAllText(settingsFile, fuelsettings.ToString());
+            StringBuilder simSettings = BuildCsvFor(values.Keys.ToList(), values.Values.ToArray());
+            File.WriteAllText(settingsFile, simSettings.ToString());
 
             // Act
             sim.Simulate();
@@ -113,8 +113,8 @@ namespace ConsoleTests
             sim.AddOutput(outFile, new[] { "Gen1RunCnt", "Gen1ServiceCnt" }, (uint)iterations);
             sim.Iterations = (ulong)iterations;
 
-            StringBuilder fuelsettings = BuildCsvFor(values.Keys.ToList(), values.Values.ToArray());
-            File.WriteAllText(settingsFile, fuelsettings.ToString());
+            StringBuilder simSettings = BuildCsvFor(values.Keys.ToList(), values.Values.ToArray());
+            File.WriteAllText(settingsFile, simSettings.ToString());
 
             // Act
             sim.Simulate();

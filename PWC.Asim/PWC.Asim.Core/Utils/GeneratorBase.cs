@@ -164,7 +164,13 @@ namespace PWC.Asim.Core.Utils
         private readonly Shared _loadFact;
         protected readonly Shared _serviceCnt;
         internal readonly ServiceCounter[] _serviceCounters = new ServiceCounter[Settings.MaxSvcIntervals];
+        /// <summary>
+        ///  FuelCurveP is P/Pnom (Load Factor)
+        /// </summary>
         private readonly Shared[] _fuelCurveP = new Shared[Settings.FuelCurvePoints];
+        /// <summary>
+        /// FuelCurveL is L/Hr
+        /// </summary>
         private readonly Shared[] _fuelCurveL = new Shared[Settings.FuelCurvePoints];
         protected readonly Shared _genOverloadT;
         protected readonly Shared _genOverloadPctP;
@@ -354,7 +360,7 @@ namespace PWC.Asim.Core.Utils
             int i = FindFirstPoint();
 
             // slope
-            double m = (_fuelCurveL[i].Val - _fuelCurveL[i + 1].Val) / (_fuelCurveP[i].Val - _fuelCurveP[i + 1].Val);
+            double m = (_fuelCurveL[i + 1].Val - _fuelCurveL[i].Val) / (_fuelCurveP[i + 1].Val - _fuelCurveP[i].Val);
 
             // use the point slope formula where x1,y1 is the point using [i], and x is the load factor
             // y - y1 = m(x - x1)
@@ -363,10 +369,11 @@ namespace PWC.Asim.Core.Utils
 
             double y = m*(LoadFact - _fuelCurveP[i].Val) + _fuelCurveL[i].Val;
 
-            // now y is the L/kWh, but we want L so multiply by kWh per iteration
-            double consumptionSecond = y*P*Settings.PerHourToSec;
+            // now y is the L/Hr, but we want L/iteration so multiply by Hr per iteration
+            double consumptionSecond = y * Settings.PerHourToSec;
 
-            return consumptionSecond;
+            // lower limit should be 0 since a curve extended backwards may cross the y axis below zero
+            return consumptionSecond < 0 ? 0 : consumptionSecond;
         }
 
         /// <summary>
