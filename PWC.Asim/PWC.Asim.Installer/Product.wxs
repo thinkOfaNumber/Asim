@@ -26,9 +26,14 @@ See http://wix.tramontana.co.hu/tutorial and
              InstallPrivileges="limited"
     />
 
-    <UIRef Id="WixUI_Minimal"/>
+    <UIRef Id="WixUI_Advanced"/>
     <UIRef Id="WixUI_ErrorProgressText" />
     <WixVariable Id="WixUILicenseRtf" Value="..\..\COPYING.rtf" />
+
+    <Property Id="ApplicationFolderName" Value="Asim" />
+    <Property Id="WixAppFolder" Value="WixPerUserFolder" />
+
+    
     
     <!-- This information enables Windows Installer major upgrade functionality so users can seamlessly  -->
     <!-- install a new version of the product and have the old version automatically uninstall behind    -->
@@ -59,7 +64,7 @@ See http://wix.tramontana.co.hu/tutorial and
           </Directory>
         </Directory>
 
-        <Directory Id="AppRootDirectory" Name="Asim">
+        <Directory Id="APPLICATIONFOLDER" Name="Asim">
           <Directory Id="AsimBinDir" Name="bin" />
           <Directory Id="AsimDocsDir" Name="Docs" />
           <Directory Id='AsimSamples' Name='Samples' />
@@ -75,16 +80,36 @@ See http://wix.tramontana.co.hu/tutorial and
     <!-- the file it contains will install to.                                                           -->
     <DirectoryRef Id="AsimBinDir">
       <Component Id="AsimExecutable" Guid="11E4343E-F6F9-459D-B818-650729003F25">
-        <RemoveFolder Id="RemoveAppRootDirectory" On="uninstall" Directory="AppRootDirectory" />
+        <RemoveFolder Id="RemoveAppRootDirectory" On="uninstall" Directory="APPLICATIONFOLDER" />
         <RemoveFolder Id="RemoveAsimBinDir" On="uninstall" />
         
         <File Id="AsimEXE" Name="Asim.exe" Source="..\PWC.Asim.ConsoleApp\bin\Release\AsimStatic.exe" />
         <RegistryValue Root='HKCU' Key='Software\[Manufacturer]\[ProductName]\AsimEXE' Type='string' Value=''
                        KeyPath='yes' />
+        
       </Component>
       <Component Id="ExcelExecutable" Guid="54128474-16E7-4130-A9D6-E34FA3327F9C">
         <File Id="ExcelEXE" Name="AsimExcelTools.exe" Source="..\PWC.Asim.ExcelTools\bin\Release\AsimExcelTools.exe" />
         <RegistryValue Root='HKCU' Key='Software\[Manufacturer]\[ProductName]\ExcelEXE' Type='string' Value=''
+                       KeyPath='yes' />
+      </Component>
+
+      <!-- Additional DLL plugins -->
+      <Component Id='AlgorithmsPvSimple' Guid='4bf1b920-cf31-4089-9ac9-3c8584691552'>
+        <File Id='PvSimple' Name='PWC.Asim.Algorithms.PvSimple.dll' Source='..\Algorithms\PWC.Asim.Algorithms.PvSimple\bin\Release\PWC.Asim.Algorithms.PvSimple.dll' />
+        <RegistryValue Root='HKCU' Key='Software\[Manufacturer]\[ProductName]\PvSimple' Type='string' Value=''
+                       KeyPath='yes' />
+      </Component>
+      
+      <Component Id='AlgorithmsPvNone' Guid='23914A25-CCE4-4655-AC35-3B7C53040D26'>
+        <File Id='PvNone' Name='PWC.Asim.Algorithms.PvNone.dll' Source='..\Algorithms\PWC.Asim.Algorithms.PvNone\bin\Release\PWC.Asim.Algorithms.PvNone.dll' />
+        <RegistryValue Root='HKCU' Key='Software\[Manufacturer]\[ProductName]\PvNone' Type='string' Value=''
+                       KeyPath='yes' />
+      </Component>
+      
+      <Component Id='AlgorithmsPvFsc' Guid='F1C18D68-F041-4A24-B326-28B1A5AC0967'>
+        <File Id='PvFsc' Name='PWC.Asim.Algorithms.PvFsc.dll' Source='..\Algorithms\PWC.Asim.Algorithms.PvFsc\bin\Release\PWC.Asim.Algorithms.PvFsc.dll' />
+        <RegistryValue Root='HKCU' Key='Software\[Manufacturer]\[ProductName]\PvFsc' Type='string' Value=''
                        KeyPath='yes' />
       </Component>
     </DirectoryRef>
@@ -105,6 +130,21 @@ See http://wix.tramontana.co.hu/tutorial and
         <RegistryValue Root='HKCU' Key='Software\[Manufacturer]\[ProductName]\InstallMacroPDF' Type='string' Value=''
                        KeyPath='yes' />
       </Component>
+
+      <Component Id='ReadMe' Guid='3D70C70A-5471-4515-AB87-482C3AE8C00B'>
+        <File Id='ReadMe' Name='Readme.txt' Source='..\..\README.txt'>
+        </File>
+        <RegistryValue Root='HKCU' Key='Software\[Manufacturer]\[ProductName]\ReadMe' Type='string' Value=''
+                       KeyPath='yes' />
+      </Component>
+
+      <Component Id='LicenceCopy' Guid='B5A4D805-A992-44A0-BD1C-AFB75328D889'>
+        <File Id='LicenceCopy' Name='Copying.rtf' Source='..\..\COPYING.rtf'>
+        </File>
+        <RegistryValue Root='HKCU' Key='Software\[Manufacturer]\[ProductName]\Copying' Type='string' Value=''
+                       KeyPath='yes' />
+      </Component>
+      
     </DirectoryRef>
 
     <DirectoryRef Id="AsimSamples">
@@ -146,23 +186,46 @@ See http://wix.tramontana.co.hu/tutorial and
     <!-- embedded directly into the MSI at build time.                                                   -->
     <Media Id="1" Cabinet="Application.cab" EmbedCab="yes" />
     
-    <Feature Id="CompleteProduct" Title="PWC.Asim.Installer" Level="1" Description="The complete package."
+    <Feature Id="CompleteProduct" Title="PWC.Asim.Installer" Level="1" Description="The complete package." Absent="disallow" AllowAdvertise="no"
              Display="expand" ConfigurableDirectory="TARGETDIR">
 
-      <Feature Id="MainProgram" Title="Programs" Description="The main executables." Level="1">
+      <Feature Id="MainProgram" Title="Programs" Description="The main executables." Level="1" Absent="disallow" AllowAdvertise="no">
         <ComponentRef Id='AsimExecutable' />
         <ComponentRef Id='ExcelExecutable' />
       </Feature>
 
-      <Feature Id='Documentation' Title='User Manual' Description='The Asim User Manual.' Level='1'>
+      <Feature Id='Documentation' Title='User Manual' Description='The Asim User Manual.' Level='1' AllowAdvertise="no">
         <!--<ComponentRef Id='ProgramMenuDir' />-->
         <ComponentRef Id='PdfDocs' />
         <ComponentRef Id='MacroDocs' />
+        <ComponentRef Id='ReadMe' />
+        <ComponentRef Id='LicenceCopy' />
         <ComponentRef Id='Samples' />
         <ComponentRef Id='AsimAddin' />
       </Feature>
+
+      <Feature Id='Algorithms' Title='Algorithms' Description='The additional DLLs' Level='1' AllowAdvertise="no">
+        <ComponentRef Id='AlgorithmsPvSimple'/>
+        <ComponentRef Id='AlgorithmsPvNone'/>
+        <ComponentRef Id='AlgorithmsPvFsc'/>
+      </Feature>
+      
 		</Feature>
 
+    <!-- Customising the Exit screen to allow for the readme to be opened. -->
+    <UI>
+      <Publish Dialog="ExitDialog"
+            Control="Finish"
+            Event="DoAction"
+            Value="LaunchFile">
+        WIXUI_EXITDIALOGOPTIONALCHECKBOX = 1 and NOT Installed
+      </Publish>
+    </UI>
+
+    <Property Id='WIXUI_EXITDIALOGOPTIONALCHECKBOXTEXT' Value='View the Readme' />
+
+    <Property Id='WixShellExecTarget' Value='[#ReadMe]' />
+    <CustomAction Id='LaunchFile' BinaryKey='WixCA' DllEntry='WixShellExec' Impersonate='yes' />
 
     <!-- The InstallExecuteSequence table describes the order that actions will be executed during       -->
     <!-- installation, repair and uninstall of this product.                                             -->
