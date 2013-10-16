@@ -83,7 +83,7 @@ namespace PWC.Asim.Core.Actors
         public void Run(ulong iteration)
         {
             // calc
-            double pvCoverage = _pvP.Val * _pvCvgPct.Val / 100D;
+            double pvCoverage = _pvP.Val * _pvCvgPct.Val * Settings.Percent;
             double reserve;
 
             if (_statMaintainSpin.Val > 0)

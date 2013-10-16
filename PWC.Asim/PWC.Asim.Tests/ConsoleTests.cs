@@ -253,6 +253,10 @@ namespace ConsoleTests
             {
                 throw new ArgumentException("loadFactor must be: 0 <= x <= 1");
             }
+            if (p[0] != 0 && l[0] != expectedConsumption)
+            {
+                Console.WriteLine("expected consumption may not balance, since the generator will use fuel when running and offline (LF=0)");
+            }
 
             var values = new SortedDictionary<string, double[]>();
             values["Gen1FuelCons1P"] = new [] { p[0] };
@@ -271,12 +275,12 @@ namespace ConsoleTests
             values["GenBlackCfg"] = new double[] { 1 };
             values["LoadP"] = new double[] { gen1MaxP * loadFactor };
 
-            StringBuilder fuelsettings = BuildCsvFor(values.Keys.ToList(), values.Values.ToArray());
-            File.WriteAllText(settingsFile, fuelsettings.ToString());
+            StringBuilder simSettings = BuildCsvFor(values.Keys.ToList(), values.Values.ToArray());
+            File.WriteAllText(settingsFile, simSettings.ToString());
 
-            // Act
+             // Act
             int retValue = StartConsoleApplication(
-                string.Format("--iterations {0} --input {1} --output {2} {0} Gen1E Gen1FuelCnt",
+                string.Format("--iterations {0} --input {1} --output {2} {0} Gen1E Gen1FuelCnt Gen1RunCnt",
                     iterations, settingsFile, outFile));
 
             // Assert
@@ -289,8 +293,9 @@ namespace ConsoleTests
 
             var totalE = Convert.ToDouble(fileArray[2][1]);
             var totalFuel = Convert.ToDouble(fileArray[2][2]);
-            
-            Assert.IsTrue(DoublesAreEqual(totalFuel, totalE * expectedConsumption));
+            var runCnt = Convert.ToDouble(fileArray[2][3]);
+
+            Assert.IsTrue(DoublesAreEqual(totalFuel, runCnt * expectedConsumption));
         }
 
         [Test]
@@ -303,7 +308,7 @@ namespace ConsoleTests
         [Test]
         public void FuelUsageOnePoint()
         {
-            // this will fail as there are no fuel curve points at all
+            // this will fail as there are not enough fuel curve points
             FuelUsagePointTest(new double[] { 1, 0, 0, 0, 0 }, new double[] { 0.33, 0, 0, 0, 0 });
         }
 
@@ -321,7 +326,7 @@ namespace ConsoleTests
         {
             // This tests that the fuel usage should be equal to the first fuel usage point since the load factor is on that point
 
-            FuelUsagePointTest(new double[] { 0.5, 1, 0, 0, 0 }, new double[] { 0.6, 0.4, 0, 0, 0 }, 0.6, 0.5, true);
+            FuelUsagePointTest(new double[] { 0.0, 0.5, 1, 0, 0 }, new double[] { 0.6, 0.6, 0.4, 0, 0 }, 0.6, 0.5, true);
         }
 
         [Test]
@@ -329,7 +334,7 @@ namespace ConsoleTests
         {
             // This tests that the fuel usage should be equal to the second fuel usage point since the load factor is on that point
 
-            FuelUsagePointTest(new double[] { 0.1, 0.5, 1, 0, 0 }, new double[] { 0.1, 0.6, 0.4, 0, 0 }, 0.4, 1, true);
+            FuelUsagePointTest(new double[] { 0.0, 0.5, 1, 0, 0 }, new double[] { 0.4, 0.6, 0.4, 0, 0 }, 0.4, 1, true);
         }
 
         [Test]
@@ -337,7 +342,7 @@ namespace ConsoleTests
         {
             // This tests that the fuel usage should be midway between the two point since the load factor is midway
 
-            FuelUsagePointTest(new double[] { 0.1, 0.4, 1, 0, 0 }, new double[] { 0.1, 0.7, 0.3, 0, 0, 0 }, 0.5, 0.7, true);
+            FuelUsagePointTest(new double[] { 0.0, 0.4, 1, 0, 0 }, new double[] { 0.5, 0.7, 0.3, 0, 0 }, 0.5, 0.7, true);
         }
 
         [Test]
@@ -357,12 +362,12 @@ namespace ConsoleTests
             values["GenBlackCfg"] = new double[] { 1 };
             values["LoadP"] = new double[] { constLoad };
 
-            StringBuilder fuelsettings = BuildCsvFor(values.Keys.ToList(), values.Values.ToArray());
-            File.WriteAllText(settingsFile, fuelsettings.ToString());
+            StringBuilder simSettings = BuildCsvFor(values.Keys.ToList(), values.Values.ToArray());
+            File.WriteAllText(settingsFile, simSettings.ToString());
 
             // Act
             int retValue = StartConsoleApplication(
-                string.Format("--iterations {0} --input {1} --output {2} {0} Gen1E Gen1FuelCnt",
+                string.Format("--iterations {0} --input {1} --output {2} {0} Gen1E Gen1FuelCnt Gen1RunCnt",
                     iterations, settingsFile, outFile));
 
             // Assert
@@ -372,10 +377,11 @@ namespace ConsoleTests
             
             var totalE = Convert.ToDouble(fileArray[2][1]);
             var totalFuel = Convert.ToDouble(fileArray[2][2]);
+            var runCnt = Convert.ToDouble(fileArray[2][3]);
 
             // convert kWs to kWh
             Assert.IsTrue(DoublesAreEqual((iterations - 61) * constLoad / 60 / 60, totalE));
-            Assert.IsTrue(DoublesAreEqual(totalFuel, fuelConst * totalE));
+            Assert.IsTrue(DoublesAreEqual(totalFuel, fuelConst * runCnt));
         }
 
         [Test]

@@ -67,8 +67,8 @@ namespace ConsoleTests
             sim.AddOutput(outFile, new[] { "Gen1RunCnt", "Gen1ServiceCnt" }, (uint)iterations);
             sim.Iterations = (ulong)iterations;
 
-            StringBuilder fuelsettings = BuildCsvFor(values.Keys.ToList(), values.Values.ToArray());
-            File.WriteAllText(settingsFile, fuelsettings.ToString());
+            StringBuilder simSettings = BuildCsvFor(values.Keys.ToList(), values.Values.ToArray());
+            File.WriteAllText(settingsFile, simSettings.ToString());
 
             // Act
             sim.Simulate();
@@ -113,8 +113,8 @@ namespace ConsoleTests
             sim.AddOutput(outFile, new[] { "Gen1RunCnt", "Gen1ServiceCnt" }, (uint)iterations);
             sim.Iterations = (ulong)iterations;
 
-            StringBuilder fuelsettings = BuildCsvFor(values.Keys.ToList(), values.Values.ToArray());
-            File.WriteAllText(settingsFile, fuelsettings.ToString());
+            StringBuilder simSettings = BuildCsvFor(values.Keys.ToList(), values.Values.ToArray());
+            File.WriteAllText(settingsFile, simSettings.ToString());
 
             // Act
             sim.Simulate();
@@ -364,6 +364,258 @@ namespace ConsoleTests
 
             // at 70m: load 400
             Assert.IsTrue(DoublesAreEqual(400, gen1P.ElementAt(80 * 60)));
+        }
+
+        [Test]
+        // tests overload trips at 100 % when overload factor unset
+        public void OverloadUnset()
+        {
+            // Arrange, Act
+            dynamic results = OverUnderLoadTest(new double[] { 900, 1000, 1001, 1001 });
+            List<double> genP = results.genP;
+            List<double> genOnlineCfg = results.genCfg;
+
+            // Assert
+
+            // ok
+            Assert.IsTrue(DoublesAreEqual(900, genP.ElementAt(61)));
+            Assert.IsTrue(DoublesAreEqual(2, genOnlineCfg.ElementAt(61)));
+
+            // ok
+            Assert.IsTrue(DoublesAreEqual(1000, genP.ElementAt(1199)));
+            Assert.IsTrue(DoublesAreEqual(2, genOnlineCfg.ElementAt(1199)));
+
+            // tripped
+            Assert.IsTrue(DoublesAreEqual(0, genP.ElementAt(1200)));
+            Assert.IsTrue(DoublesAreEqual(0, genOnlineCfg.ElementAt(1200)));
+        }
+
+        [Test]
+        // tests overload doesn't trip until at x % for y seconds when overload factor set
+        public void OverloadSetTime()
+        {
+            // Arrange, Act
+            dynamic results = OverUnderLoadTest(new double[] { 900, 1000, 1100, 1100 }, 300, 10);
+            List<double> genP = results.genP;
+            List<double> genOnlineCfg = results.genCfg;
+
+            // Assert
+
+            // ok
+            Assert.IsTrue(DoublesAreEqual(900, genP.ElementAt(61)));
+            Assert.IsTrue(DoublesAreEqual(2, genOnlineCfg.ElementAt(61)));
+
+            // ok
+            Assert.IsTrue(DoublesAreEqual(1000, genP.ElementAt(1199)));
+            Assert.IsTrue(DoublesAreEqual(2, genOnlineCfg.ElementAt(1199)));
+
+            // ok
+            Assert.IsTrue(DoublesAreEqual(1100, genP.ElementAt(1200)));
+            Assert.IsTrue(DoublesAreEqual(2, genOnlineCfg.ElementAt(1200)));
+
+            // ok
+            Assert.IsTrue(DoublesAreEqual(1100, genP.ElementAt(1499)));
+            Assert.IsTrue(DoublesAreEqual(2, genOnlineCfg.ElementAt(1499)));
+
+            // tripped
+            Assert.IsTrue(DoublesAreEqual(0, genP.ElementAt(1500)));
+            Assert.IsTrue(DoublesAreEqual(0, genOnlineCfg.ElementAt(1500)));
+        }
+
+        [Test]
+        // tests that set time but unset % doesn't enable overload factor
+        public void OverloadPartSet()
+        {
+            // Arrange, Act
+            dynamic results = OverUnderLoadTest(new double[] { 900, 1000, 1001, 1001}, 300, 0 );
+            List<double> genP = results.genP;
+            List<double> genOnlineCfg = results.genCfg;
+
+            // Assert
+
+            // ok
+            Assert.IsTrue(DoublesAreEqual(900, genP.ElementAt(61)));
+            Assert.IsTrue(DoublesAreEqual(2, genOnlineCfg.ElementAt(61)));
+
+            // ok
+            Assert.IsTrue(DoublesAreEqual(1000, genP.ElementAt(1199)));
+            Assert.IsTrue(DoublesAreEqual(2, genOnlineCfg.ElementAt(1199)));
+
+            // tripped
+            Assert.IsTrue(DoublesAreEqual(0, genP.ElementAt(1200)));
+            Assert.IsTrue(DoublesAreEqual(0, genOnlineCfg.ElementAt(1200)));
+        }
+
+        [Test]
+        // tests overload trips over x % when overload factor set
+        public void OverloadSetOver()
+        {
+            // Arrange, Act
+            dynamic results = OverUnderLoadTest(new double[] { 900, 1000, 1101, 1101 }, 300, 10);
+            List<double> genP = results.genP;
+            List<double> genOnlineCfg = results.genCfg;
+
+            // Assert
+
+            // ok
+            Assert.IsTrue(DoublesAreEqual(900, genP.ElementAt(61)));
+            Assert.IsTrue(DoublesAreEqual(2, genOnlineCfg.ElementAt(61)));
+
+            // ok
+            Assert.IsTrue(DoublesAreEqual(1000, genP.ElementAt(1199)));
+            Assert.IsTrue(DoublesAreEqual(2, genOnlineCfg.ElementAt(1199)));
+
+            // tripped
+            Assert.IsTrue(DoublesAreEqual(0, genP.ElementAt(1200)));
+            Assert.IsTrue(DoublesAreEqual(0, genOnlineCfg.ElementAt(1200)));
+        }
+
+        [Test]
+        // tests underload trips at 0 % when underload factor unset
+        public void UnderloadUnset()
+        {
+            // Arrange, Act
+            dynamic results = OverUnderLoadTest(new double[] { 10, 0, -1, -1 });
+            List<double> genP = results.genP;
+            List<double> genOnlineCfg = results.genCfg;
+
+            // Assert
+
+            // ok
+            Assert.IsTrue(DoublesAreEqual(10, genP.ElementAt(61)));
+            Assert.IsTrue(DoublesAreEqual(2, genOnlineCfg.ElementAt(61)));
+
+            // ok
+            Assert.IsTrue(DoublesAreEqual(0, genP.ElementAt(1199)));
+            Assert.IsTrue(DoublesAreEqual(2, genOnlineCfg.ElementAt(1199)));
+
+            // tripped
+            Assert.IsTrue(DoublesAreEqual(0, genP.ElementAt(1200)));
+            Assert.IsTrue(DoublesAreEqual(0, genOnlineCfg.ElementAt(1200)));
+        }
+
+        [Test]
+        // tests underload doesn't trip until at 0-x % for y seconds when underload factor set
+        public void UnderloadSetTime()
+        {
+            // Arrange, Act
+            dynamic results = OverUnderLoadTest(new double[] { 10, 0, -100, -100 }, 0, 0, 300, 10);
+            List<double> genP = results.genP;
+            List<double> genOnlineCfg = results.genCfg;
+
+            // Assert
+
+            // ok
+            Assert.IsTrue(DoublesAreEqual(10, genP.ElementAt(61)));
+            Assert.IsTrue(DoublesAreEqual(2, genOnlineCfg.ElementAt(61)));
+
+            // ok
+            Assert.IsTrue(DoublesAreEqual(0, genP.ElementAt(1199)));
+            Assert.IsTrue(DoublesAreEqual(2, genOnlineCfg.ElementAt(1199)));
+
+            // ok
+            Assert.IsTrue(DoublesAreEqual(-100, genP.ElementAt(1200)));
+            Assert.IsTrue(DoublesAreEqual(2, genOnlineCfg.ElementAt(1200)));
+
+            // ok
+            Assert.IsTrue(DoublesAreEqual(-100, genP.ElementAt(1499)));
+            Assert.IsTrue(DoublesAreEqual(2, genOnlineCfg.ElementAt(1499)));
+
+            // tripped
+            Assert.IsTrue(DoublesAreEqual(0, genP.ElementAt(1500)));
+            Assert.IsTrue(DoublesAreEqual(0, genOnlineCfg.ElementAt(1500)));
+        }
+        [Test]
+        // tests that set time but unset % doesn't enable underload factor
+        public void UnderloadPartSet()
+        {
+            // Arrange, Act
+            dynamic results = OverUnderLoadTest(new double[] { 10, 0, -1, -1 }, 0, 0, 300, 0);
+            List<double> genP = results.genP;
+            List<double> genOnlineCfg = results.genCfg;
+
+            // Assert
+
+            // ok
+            Assert.IsTrue(DoublesAreEqual(10, genP.ElementAt(61)));
+            Assert.IsTrue(DoublesAreEqual(2, genOnlineCfg.ElementAt(61)));
+
+            // ok
+            Assert.IsTrue(DoublesAreEqual(0, genP.ElementAt(1199)));
+            Assert.IsTrue(DoublesAreEqual(2, genOnlineCfg.ElementAt(1199)));
+
+            // tripped
+            Assert.IsTrue(DoublesAreEqual(0, genP.ElementAt(1200)));
+            Assert.IsTrue(DoublesAreEqual(0, genOnlineCfg.ElementAt(1200)));
+        }
+
+        [Test]
+        // tests underload trips under 0-x % when underload factor set
+        public void UnderloadSetUnder()
+        {
+            // Arrange, Act
+            dynamic results = OverUnderLoadTest(new double[] { 10, 0, -101, -101 }, 0, 0, 300, 10);
+            List<double> genP = results.genP;
+            List<double> genOnlineCfg = results.genCfg;
+
+            // Assert
+
+            // ok
+            Assert.IsTrue(DoublesAreEqual(10, genP.ElementAt(61)));
+            Assert.IsTrue(DoublesAreEqual(2, genOnlineCfg.ElementAt(61)));
+
+            // ok
+            Assert.IsTrue(DoublesAreEqual(0, genP.ElementAt(1199)));
+            Assert.IsTrue(DoublesAreEqual(2, genOnlineCfg.ElementAt(1199)));
+
+            // tripped
+            Assert.IsTrue(DoublesAreEqual(0, genP.ElementAt(1200)));
+            Assert.IsTrue(DoublesAreEqual(0, genOnlineCfg.ElementAt(1200)));
+        }
+
+        private object OverUnderLoadTest(
+            double[] loadProfile,
+            double genOverLoadT = 0,
+            double genOverLoadPct = 0,
+            double genUnderLoadT = 0,
+            double genUnderLoadPct = 0)
+        {
+            // Arrange
+            var settingsFile1 = GetTempFilename;
+            var settingsFile2 = GetTempFilename;
+            var outFile = GetTempFilename;
+
+            int period = 10 * 60;
+            var values = new SortedDictionary<string, double[]>();
+            InsertFuelConsumption(values, 0.33, 8);
+            values["Gen2MaxP"] = new double[] { 1000 };
+            values["GenConfig1"] = new double[] { 0x2 };
+            values["GenAvailSet"] = new double[] { 0x2 };
+            values["Gen2OverLoadT"] = new [] { genOverLoadT };
+            values["Gen2OverloadPctP"] = new [] { genOverLoadPct };
+            values["Gen2UnderloadT"] = new [] { genUnderLoadT };
+            values["Gen2UnderloadPctP"] = new [] { genUnderLoadPct };
+            int iterations = (loadProfile.Count() + 1) * period;
+
+            StringBuilder settings = BuildCsvFor(values.Keys.ToList(), values.Values.ToArray());
+            File.WriteAllText(settingsFile1, settings.ToString());
+            settings = BuildCsvFor("LoadP", loadProfile, period);
+            File.WriteAllText(settingsFile2, settings.ToString());
+
+            var sim = new Simulator();
+            sim.AddInput(settingsFile1);
+            sim.AddInput(settingsFile2);
+            sim.AddOutput(outFile, new[] { "Gen2P", "GenOnlineCfg" });
+            sim.Iterations = (ulong)iterations;
+
+            // Act
+            sim.Simulate();
+
+            var fileArray = CsvFileToArray(outFile);
+            var gen2P = fileArray.Select(col => col[1]).Where((s, i) => i > 0).Select(Convert.ToDouble).ToList();
+            var genOnlineCfg = fileArray.Select(col => col[2]).Where((s, i) => i > 0).Select(Convert.ToDouble).ToList();
+
+            return new {genP = gen2P, genCfg = genOnlineCfg};
         }
     }
 }

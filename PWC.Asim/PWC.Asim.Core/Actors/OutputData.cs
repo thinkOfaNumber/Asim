@@ -207,14 +207,6 @@ namespace PWC.Asim.Core.Actors
             catch (ObjectDisposedException)
             {
             }
-            try
-            {
-                _file.Flush();
-                _file.Close();
-            }
-            catch (ObjectDisposedException)
-            {
-            }
         }
 
         #endregion

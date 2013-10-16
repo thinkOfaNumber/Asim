@@ -121,7 +121,7 @@ namespace PWC.Asim.Core.Utils
         public static double GenP
         {
             get { return _genP.Val; }
-            private set { _genP.Val = value; }
+            protected set { _genP.Val = value; }
         }
         private static bool Overload
         {
@@ -164,8 +164,18 @@ namespace PWC.Asim.Core.Utils
         private readonly Shared _loadFact;
         protected readonly Shared _serviceCnt;
         internal readonly ServiceCounter[] _serviceCounters = new ServiceCounter[Settings.MaxSvcIntervals];
+        /// <summary>
+        ///  FuelCurveP is P/Pnom (Load Factor)
+        /// </summary>
         private readonly Shared[] _fuelCurveP = new Shared[Settings.FuelCurvePoints];
+        /// <summary>
+        /// FuelCurveL is L/Hr
+        /// </summary>
         private readonly Shared[] _fuelCurveL = new Shared[Settings.FuelCurvePoints];
+        protected readonly Shared _genOverloadT;
+        protected readonly Shared _genOverloadPctP;
+        protected readonly Shared _genUnderloadT;
+        protected readonly Shared _genUnderloadPctP;
         private static readonly Shared _onlineCfg;
         private static readonly Shared _genIdealP;
         private static readonly Shared _genMaxP;
@@ -199,24 +209,28 @@ namespace PWC.Asim.Core.Utils
             _idBit = (ushort)(1 << id);
             State = GeneratorState.Stopped;
 
-            int n = id + 1;
-            _p = SharedVars.GetOrNew("Gen" + n + "P");
-            _startCnt = SharedVars.GetOrNew("Gen" + n + "StartCnt");
-            _stopCnt = SharedVars.GetOrNew("Gen" + n + "StopCnt");
-            _loadFact = SharedVars.GetOrNew("Gen" + n + "LoadFact");
-            _runCnt = SharedVars.GetOrNew("Gen" + n + "RunCnt");
-            _e = SharedVars.GetOrNew("Gen" + n + "E");
-            _fuelCnt = SharedVars.GetOrNew("Gen" + n + "FuelCnt");
-            _maxP = SharedVars.GetOrNew("Gen" + n + "MaxP");
-            _minRunTPa = SharedVars.GetOrNew("Gen" + n + "MinRunTPa");
-            _idealPctP = SharedVars.GetOrNew("Gen" + n + "IdealPctP");
-            _idealP = SharedVars.GetOrNew("Gen" + n + "IdealP");
-            _serviceCnt = SharedVars.GetOrNew("Gen" + n + "ServiceCnt");
+            var genN = "Gen" + (id + 1);
+            _p = SharedVars.GetOrNew(genN + "P");
+            _startCnt = SharedVars.GetOrNew(genN + "StartCnt");
+            _stopCnt = SharedVars.GetOrNew(genN + "StopCnt");
+            _loadFact = SharedVars.GetOrNew(genN + "LoadFact");
+            _runCnt = SharedVars.GetOrNew(genN + "RunCnt");
+            _e = SharedVars.GetOrNew(genN + "E");
+            _fuelCnt = SharedVars.GetOrNew(genN + "FuelCnt");
+            _maxP = SharedVars.GetOrNew(genN + "MaxP");
+            _minRunTPa = SharedVars.GetOrNew(genN + "MinRunTPa");
+            _idealPctP = SharedVars.GetOrNew(genN + "IdealPctP");
+            _idealP = SharedVars.GetOrNew(genN + "IdealP");
+            _serviceCnt = SharedVars.GetOrNew(genN + "ServiceCnt");
+            _genOverloadT = SharedVars.GetOrNew(genN + "OverLoadT");
+            _genOverloadPctP = SharedVars.GetOrNew(genN + "OverloadPctP");
+            _genUnderloadT = SharedVars.GetOrNew(genN + "UnderloadT");
+            _genUnderloadPctP = SharedVars.GetOrNew(genN + "UnderloadPctP");
             for (int i = 0; i < Settings.FuelCurvePoints; i++)
             {
                 // Gen1Cons1P, Gen1Cons1L; Gen1Cons2P, Gen1Cons2L; ...
-                _fuelCurveP[i] = SharedVars.GetOrNew("Gen" + n + "FuelCons" + (i + 1) + "P");
-                _fuelCurveL[i] = SharedVars.GetOrNew("Gen" + n + "FuelCons" + (i + 1) + "L");
+                _fuelCurveP[i] = SharedVars.GetOrNew(genN + "FuelCons" + (i + 1) + "P");
+                _fuelCurveL[i] = SharedVars.GetOrNew(genN + "FuelCons" + (i + 1) + "L");
             }
             for (int i = 0; i < Settings.MaxSvcIntervals; i++)
             {
@@ -297,7 +311,7 @@ namespace PWC.Asim.Core.Utils
 
         public abstract void Stop();
 
-        public abstract void CriticalStop();
+        protected abstract void CriticalStop();
 
         protected abstract void Service();
 
@@ -317,7 +331,7 @@ namespace PWC.Asim.Core.Utils
                 E += P * Settings.PerHourToSec;
                 LoadFact = P / MaxP;
                 FuelCnt += FuelConsumptionSecond();
-                IdealP = MaxP * IdealPctP / 100;
+                IdealP = MaxP * IdealPctP * Settings.Percent;
                 _spinP = Math.Max(MaxP - P, 0);
             }
             
@@ -346,7 +360,7 @@ namespace PWC.Asim.Core.Utils
             int i = FindFirstPoint();
 
             // slope
-            double m = (_fuelCurveL[i].Val - _fuelCurveL[i + 1].Val) / (_fuelCurveP[i].Val - _fuelCurveP[i + 1].Val);
+            double m = (_fuelCurveL[i + 1].Val - _fuelCurveL[i].Val) / (_fuelCurveP[i + 1].Val - _fuelCurveP[i].Val);
 
             // use the point slope formula where x1,y1 is the point using [i], and x is the load factor
             // y - y1 = m(x - x1)
@@ -355,10 +369,11 @@ namespace PWC.Asim.Core.Utils
 
             double y = m*(LoadFact - _fuelCurveP[i].Val) + _fuelCurveL[i].Val;
 
-            // now y is the L/kWh, but we want L so multiply by kWh per iteration
-            double consumptionSecond = y*P*Settings.PerHourToSec;
+            // now y is the L/Hr, but we want L/iteration so multiply by Hr per iteration
+            double consumptionSecond = y * Settings.PerHourToSec;
 
-            return consumptionSecond;
+            // lower limit should be 0 since a curve extended backwards may cross the y axis below zero
+            return consumptionSecond < 0 ? 0 : consumptionSecond;
         }
 
         /// <summary>

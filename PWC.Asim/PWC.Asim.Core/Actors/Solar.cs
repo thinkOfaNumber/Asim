@@ -92,11 +92,11 @@ namespace PWC.Asim.Core.Actors
             // apply Spinning reserve limits (PWCSLMS-41)
             if (_pvSetLimitSpinPct.Val > 0 && _pvSetLimitSpinPct.Val <= 100)
             {
-                setP = Math.Min(setP, _genSpinP.Val*_pvSetLimitSpinPct.Val/100.0D);
+                setP = Math.Min(setP, _genSpinP.Val * _pvSetLimitSpinPct.Val * Settings.Percent);
             }
             if (_pvSetLimitSpinpPct.Val > 0 && _pvSetLimitSpinpPct.Val <= 100)
             {
-                setP = Math.Min(setP, _statSpinSetP.Val * _pvSetLimitSpinpPct.Val / 100.0D);
+                setP = Math.Min(setP, _statSpinSetP.Val * _pvSetLimitSpinpPct.Val * Settings.Percent);
             }
 
             // calculate delta and ramp limits
