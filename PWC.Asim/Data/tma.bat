@@ -6,7 +6,10 @@ set FILES=
 echo starting tma with %* > tma.log
 call :splitFiles %ASIM_OUTPUTFILES%
 set "FILESBS=%FILES:\=/%"
-echo call %1 %FILESBS% >> tma.log
+set FILE_NAME="%~nx1"
+set FILE_FOLDER="%~dp1"
+cd %FILE_FOLDER%
+echo call %FILE_NAME% %FILESBS% >> tma.log
 call %1 %FILESBS%
 endlocal
 GOTO:EOF
