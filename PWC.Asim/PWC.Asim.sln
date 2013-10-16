@@ -10,6 +10,10 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PWC.Asim.Algorithms.PvSimple", "Algorithms\PWC.Asim.Algorithms.PvSimple\PWC.Asim.Algorithms.PvSimple.csproj", "{6617A9B5-067C-4473-A69D-06526D323A31}"
 EndProject
 Project("{930C7802-8A8C-48F9-8165-68863BCCD9DD}") = "PWC.Asim.Installer", "PWC.Asim.Installer\PWC.Asim.Installer.wixproj", "{50397CBA-C963-4E45-B788-7B05722D421A}"
+	ProjectSection(ProjectDependencies) = postProject
+		{3198A90B-6521-4630-8AAD-79E5E3E36D90} = {3198A90B-6521-4630-8AAD-79E5E3E36D90}
+		{1F80C760-FF1E-430B-9977-0219EA64C467} = {1F80C760-FF1E-430B-9977-0219EA64C467}
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PWC.Asim.Core", "PWC.Asim.Core\PWC.Asim.Core.csproj", "{F871DB06-EB95-4326-9DB9-7AF31EEAE5D5}"
 EndProject
