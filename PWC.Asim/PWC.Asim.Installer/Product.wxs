@@ -158,6 +158,7 @@ See http://wix.tramontana.co.hu/tutorial and
         <File Id='archivebat' Source='..\Data\archive.bat' />
         <File Id='testbat' Source='..\Data\test.bat' />
         <File Id='tmabat' Source='..\Data\tma.bat' />
+        <File Id='loadzip' Source='..\Data\load.zip' />
       </Component>
     </DirectoryRef>
 
