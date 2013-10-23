@@ -28,6 +28,7 @@ See http://wix.tramontana.co.hu/tutorial and
 
     <UIRef Id="WixUI_Advanced"/>
     <UIRef Id="WixUI_ErrorProgressText" />
+    
     <WixVariable Id="WixUILicenseRtf" Value="..\..\COPYING.rtf" />
 
     <Property Id="ApplicationFolderName" Value="Asim" />
@@ -117,10 +118,10 @@ See http://wix.tramontana.co.hu/tutorial and
     <DirectoryRef Id="AsimDocsDir">
       <Component Id="PdfDocs" Guid="31D80BB9-76A9-47BB-AE4F-82F08F6CD723">
         <RemoveFolder Id="RemoveAsimDocsDir" On="uninstall" Directory="AsimDocsDir" />
-        <File Id="UserManualPDF" Name="Model User Manual.pdf" Source="..\..\docs\Model User Manual.pdf">
+        <File Id="ReferenceManualPDF" Name="Reference Manual.pdf" Source="..\..\docs\Reference Manual.pdf">
           <!--<Shortcut Id='startmenuManual' Directory='ProgramMenuDir' Name='Model User Manual.pdf' Advertise='yes' />-->
         </File>
-        <RegistryValue Root='HKCU' Key='Software\[Manufacturer]\[ProductName]\UserManualPDF' Type='string' Value=''
+        <RegistryValue Root='HKCU' Key='Software\[Manufacturer]\[ProductName]\ReferenceManualPDF' Type='string' Value=''
                        KeyPath='yes' />
       </Component>
       <Component Id='MacroDocs' Guid='51510D6C-CD03-402E-9632-B6E6499F7943'>
@@ -213,20 +214,24 @@ See http://wix.tramontana.co.hu/tutorial and
 		</Feature>
 
     <!-- Customising the Exit screen to allow for the readme to be opened. -->
+    <Property Id="WIXUI_EXITDIALOGOPTIONALTEXT" Value="Thank you for installing !(loc.Property_ProductName)." />
+    
+    <Property Id='WIXUI_EXITDIALOGOPTIONALCHECKBOXTEXT' Value='View the Readme' />
     <UI>
-      <Publish Dialog="ExitDialog"
-            Control="Finish"
-            Event="DoAction"
-            Value="LaunchFile">
+      <Publish Dialog="ExitDialog" Control="Finish" Event="DoAction" Value="LaunchFile">
         WIXUI_EXITDIALOGOPTIONALCHECKBOX = 1 and NOT Installed
       </Publish>
+      <Publish Dialog="ExitDialog" Control="Finish" Event="DoAction" Value="LaunchInstallDir">
+        NOT Installed
+      </Publish>
     </UI>
-
-    <Property Id='WIXUI_EXITDIALOGOPTIONALCHECKBOXTEXT' Value='View the Readme' />
-
-    <Property Id='WixShellExecTarget' Value='[#ReadMe]' />
-    <CustomAction Id='LaunchFile' BinaryKey='WixCA' DllEntry='WixShellExec' Impersonate='yes' />
-
+    
+    <Property Id="WixShellExecTarget" Value="[#ReadMe]" />
+    <CustomAction Id="LaunchFile" BinaryKey="WixCA" DllEntry="WixShellExec" Impersonate="yes" />
+    
+    <Property Id="QtExecCmdLine" Value='"cmd.exe" /c "explorer.exe [APPLICATIONFOLDER]"' />
+    <CustomAction Id="LaunchInstallDir" BinaryKey="WixCA" DllEntry="CAQuietExec" Execute="immediate" Return="check"/>
+    
     <!-- The InstallExecuteSequence table describes the order that actions will be executed during       -->
     <!-- installation, repair and uninstall of this product.                                             -->
     <InstallExecuteSequence>

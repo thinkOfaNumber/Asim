@@ -18,7 +18,8 @@ GOTO:EOF
 set tosplit=%*
 for /F "tokens=1,* delims=," %%A in ("%tosplit%") DO (
 	rem echo parsing %%A
-	call :FullPath "%%A" FP
+	call :QuoteString %%A str
+	call :FullPath !str! FP
 	echo received path !FP! >> tma.log
 	set FILES=!FILES! -get "!FP!"
 	IF [%%B] == [] exit /b
@@ -28,4 +29,8 @@ GOTO:EOF
 
 :FullPath
 set "%~2=%~dpnx1"
+GOTO:EOF
+
+:QuoteString
+for /f "useback tokens=*" %%A in ('%1') do set %~2="%%~A"
 GOTO:EOF
