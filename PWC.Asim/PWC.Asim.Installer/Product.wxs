@@ -59,6 +59,7 @@ See http://wix.tramontana.co.hu/tutorial and
     <!-- This is a list of directories that are used by this product as installation locations or custom -->
     <!-- action file search locations.                                                                   -->
     <Directory Id="TARGETDIR" Name="SourceDir">
+      <Directory Id="DesktopFolder" Name="Desktop"/> 
       <Directory Id="LocalAppDataFolder" Name="AppData">
         <Directory Id="Microsoft" Name="Microsoft">
           <Directory Id="AddIns" Name="AddIns">
@@ -66,6 +67,15 @@ See http://wix.tramontana.co.hu/tutorial and
         </Directory>
 
         <Directory Id="APPLICATIONFOLDER" Name="Asim">
+          <Component Id="ApplicationDesktopShortcut" Guid="15CF4AC2-30E1-46C3-B411-61A6C623C8B8">
+            <Shortcut Id="ApplicationShortcut" 
+                      Directory="DesktopFolder" 
+                      WorkingDirectory="APPLICATIONFOLDER"
+                      Target="[APPLICATIONFOLDER]"
+                      Name="Asim"
+                      Show="normal" />
+            <RegistryValue Action="write" Root='HKCU' Key="Software\[Manufacturer]\[ProductName]\DesktopShortcut" Type="string" Value="" KeyPath="yes" />
+          </Component>
           <Directory Id="AsimBinDir" Name="bin" />
           <Directory Id="AsimDocsDir" Name="Docs" />
           <Directory Id='AsimSamples' Name='Samples' />
@@ -118,32 +128,12 @@ See http://wix.tramontana.co.hu/tutorial and
     <DirectoryRef Id="AsimDocsDir">
       <Component Id="PdfDocs" Guid="31D80BB9-76A9-47BB-AE4F-82F08F6CD723">
         <RemoveFolder Id="RemoveAsimDocsDir" On="uninstall" Directory="AsimDocsDir" />
-        <File Id="ReferenceManualPDF" Name="Reference Manual.pdf" Source="..\..\docs\Reference Manual.pdf">
-          <!--<Shortcut Id='startmenuManual' Directory='ProgramMenuDir' Name='Model User Manual.pdf' Advertise='yes' />-->
-        </File>
-        <RegistryValue Root='HKCU' Key='Software\[Manufacturer]\[ProductName]\ReferenceManualPDF' Type='string' Value=''
-                       KeyPath='yes' />
-      </Component>
-      <Component Id='MacroDocs' Guid='51510D6C-CD03-402E-9632-B6E6499F7943'>
-        <File Id="InstallMacroPDF" Name="Excel Addin Installation.pdf" Source="..\..\docs\InstallingMacro\Excel Addin Installation.pdf">
-          <!--<Shortcut Id='startmenuMacro' Directory='ProgramMenuDir' Name='Excel Addin Installation.pdf' Advertise='yes' />-->
-        </File>
-        <RegistryValue Root='HKCU' Key='Software\[Manufacturer]\[ProductName]\InstallMacroPDF' Type='string' Value=''
-                       KeyPath='yes' />
-      </Component>
-
-      <Component Id='ReadMe' Guid='3D70C70A-5471-4515-AB87-482C3AE8C00B'>
-        <File Id='ReadMe' Name='Readme.txt' Source='..\..\README.txt'>
-        </File>
-        <RegistryValue Root='HKCU' Key='Software\[Manufacturer]\[ProductName]\ReadMe' Type='string' Value=''
-                       KeyPath='yes' />
-      </Component>
-
-      <Component Id='LicenceCopy' Guid='B5A4D805-A992-44A0-BD1C-AFB75328D889'>
-        <File Id='LicenceCopy' Name='Copying.rtf' Source='..\..\COPYING.rtf'>
-        </File>
-        <RegistryValue Root='HKCU' Key='Software\[Manufacturer]\[ProductName]\Copying' Type='string' Value=''
-                       KeyPath='yes' />
+        <RegistryValue Root='HKCU' Key='Software\[Manufacturer]\[ProductName]\Documents' Type='string' Value='' KeyPath='yes' />
+        <File Id='ReferenceManualPDF' Name='Reference Manual.pdf' Source='..\..\docs\Reference Manual.pdf' />
+        <File Id='InstallMacroPDF' Name='Excel Addin Installation.pdf' Source='..\..\docs\InstallingMacro\Excel Addin Installation.pdf' />
+        <File Id='QuickStartPDF' Name='Quick Start.pdf' Source='..\..\docs\QuickStartGuide\Quick Start.pdf' />
+        <File Id='ReadMe' Name='Readme.txt' Source='..\..\README.txt' />
+        <File Id='LicenceCopy' Name='Copying.rtf' Source='..\..\COPYING.rtf' />
       </Component>
       
     </DirectoryRef>
@@ -151,8 +141,7 @@ See http://wix.tramontana.co.hu/tutorial and
     <DirectoryRef Id="AsimSamples">
       <Component Id='Samples' Guid='806D06EB-BB7B-4611-AC99-3ECB508EE92D'>
         <RemoveFolder Id="RemoveAsimSamples" On="uninstall" Directory="AsimSamples" />
-        <RegistryValue Root='HKCU' Key='Software\[Manufacturer]\[ProductName]\Samples' Type='string' Value=''
-                       KeyPath='yes' />
+        <RegistryValue Root='HKCU' Key='Software\[Manufacturer]\[ProductName]\Samples' Type='string' Value='' KeyPath='yes' />
         <File Id='ExampleXlsX' Source='..\Data\Example.xlsx' />
         <File Id='ExampleXls' Source='..\Data\Example.xls' />
         <File Id='archivebat' Source='..\Data\archive.bat' />
@@ -199,9 +188,6 @@ See http://wix.tramontana.co.hu/tutorial and
       <Feature Id='Documentation' Title='User Manual' Description='The Asim User Manual.' Level='1' AllowAdvertise="no">
         <!--<ComponentRef Id='ProgramMenuDir' />-->
         <ComponentRef Id='PdfDocs' />
-        <ComponentRef Id='MacroDocs' />
-        <ComponentRef Id='ReadMe' />
-        <ComponentRef Id='LicenceCopy' />
         <ComponentRef Id='Samples' />
         <ComponentRef Id='AsimAddin' />
       </Feature>
@@ -212,6 +198,10 @@ See http://wix.tramontana.co.hu/tutorial and
         <ComponentRef Id='AlgorithmsPvFsc'/>
       </Feature>
       
+      <Feature Id='Shortcut' Title='Create Shortcut' Description='Create shortcut on the desktop' Level='1' AllowAdvertise='no'>
+        <ComponentRef Id='ApplicationDesktopShortcut' />
+      </Feature>
+    
 		</Feature>
 
     <!-- Customising the Exit screen to allow for the readme to be opened. -->
