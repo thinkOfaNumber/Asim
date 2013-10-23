@@ -64,6 +64,8 @@ namespace PWC.Asim.Core.Actors
 
         public void Finish()
         {
+            if (_asimRteCnt == 0)
+                return;
             double tot = 0;
             _times.ToList().ForEach(t => tot += t);
             Console.WriteLine("RTE total time {0}s, ave time {1}s", tot, tot / _times.Count);
@@ -79,7 +81,10 @@ namespace PWC.Asim.Core.Actors
             cp.GenerateInMemory = true;
 
             cp.ReferencedAssemblies.Add("system.dll");
-            cp.ReferencedAssemblies.Add("PWC.Asim.Core.dll");
+            var thisAsembly = typeof(RunTimeExtentions).Assembly.CodeBase;
+            thisAsembly = new Uri(thisAsembly).LocalPath;
+            // cp.ReferencedAssemblies.Add("PWC.Asim.Core.dll");
+            cp.ReferencedAssemblies.Add(thisAsembly);
 
             var codeBuilder = new StringBuilder();
             var methods = new StringBuilder();
@@ -135,7 +140,7 @@ namespace PWC.Asim.Core.Actors
             Console.WriteLine("RTE compiled successfully.");
 
             Assembly a = cr.CompiledAssembly;
-            object rteClass = a.CreateInstance("AsimRunTimeExtension.AsimRteClass");
+            object rteClass = a.CreateInstance("PWC.Asim.Core.Eval.AsimRteClass");
             Type t = rteClass.GetType();
             _evalBlocks = new Delegates.EvalBlock[_asimRteCnt];
             for (int i = 0; i < _asimRteCnt; i++)
@@ -149,7 +154,7 @@ namespace PWC.Asim.Core.Actors
         const string PlumbingFmt = @"
 using System;
 using PWC.Asim.Core.Utils;
-namespace AsimRunTimeExtension
+namespace PWC.Asim.Core.Eval
 {{
     public class AsimRteClass
     {{

@@ -296,6 +296,15 @@ namespace PWC.Asim.ExcelTools.Logic
                             });
                         break;
 
+                    case "eval":
+                        for (int j = 2; j <= data.GetLength(1); j++)
+                        {
+                            var cell = data[i, j];
+                            if (cell != null)
+                                _settings.EvalFiles.Add(cell.ToString());
+                        }
+                        break;
+
                     default:
                         Console.WriteLine("unknown option: '" + s + "'");
                         break;

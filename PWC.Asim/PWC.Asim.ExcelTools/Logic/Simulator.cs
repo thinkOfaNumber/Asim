@@ -186,6 +186,12 @@ namespace PWC.Asim.ExcelTools.Logic
                 }
             });
 
+            settings.EvalFiles.ForEach(file =>
+                {
+                    args.Append(" --eval ");
+                    args.Append(Helper.Quote + file + Helper.Quote);
+                });
+
             if (!string.IsNullOrWhiteSpace(settings.WatchFile) && settings.WatchGlobs.Any())
             {
                 args.Append(" --watch ");
