@@ -67,6 +67,8 @@ namespace PWC.Asim.ExcelTools.Logic
 
         public List<TemplateInformation> Reports { get; set; }
 
+        public List<String> EvalFiles { get; set; }
+
         public LogFileInformation LogInformation { get; set; }
 
         private DateTime _dateSimulatorRun;
@@ -93,6 +95,7 @@ namespace PWC.Asim.ExcelTools.Logic
             Reports = new List<TemplateInformation>();
             ExtraArgList = new List<List<string>>();
             BatchCommands = new List<List<string>>();
+            EvalFiles = new List<string>();
             RunSimulator = true;
             _dateSimulatorRun = DateTime.Now;
             Simulator = Environment.GetEnvironmentVariable("ProgramFiles") + @"\Power Water Corporation\Asim\Asim.exe";
