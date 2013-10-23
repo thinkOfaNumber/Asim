@@ -65,7 +65,8 @@ namespace PWC.Asim.Core.Utils
         private Timer _timer;
         private List<InputOption> _inputActors = new List<InputOption>();
         private List<OutputOption> _outputActors = new List<OutputOption>();
-        private List<ReportFile> _reportFiles = new List<ReportFile>();
+        private readonly List<ReportFile> _reportFiles = new List<ReportFile>();
+        private readonly List<string> _evalFiles = new List<string>();
         private StreamWriter _watchWriter;
         private readonly Dictionary<string, string> _controllers = new Dictionary<string, string>();
         private readonly SharedContainer _sharedVars = SharedContainer.Instance;
@@ -100,6 +101,11 @@ namespace PWC.Asim.Core.Utils
             _reportFiles.Add(new ReportFile() {Template = template, Output = output});
         }
 
+        public void AddEval(string file)
+        {
+            _evalFiles.Add(file);
+        }
+
         #endregion Options
 
         public void Simulate()
@@ -110,7 +116,7 @@ namespace PWC.Asim.Core.Utils
 
             _inputActors.ForEach(i => actors[iA++] = new NextData(i.Filename, StartTime, i.Recycle));
             // add extra simulation actors here.  Order is important:
-            actors[iA++] = new RunTimeExtentions();
+            actors[iA++] = new RunTimeExtentions(_evalFiles);
             actors[iA++] = new Load();
             actors[iA++] = new Station();
             actors[iA++] = new SheddableLoadMgr();

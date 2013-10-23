@@ -42,6 +42,7 @@ namespace PWC.Asim.ConsoleApp
             Algorithm,
             GeneratorStats,
             Report,
+            Eval,
             Debug
         }
 
@@ -161,6 +162,10 @@ namespace PWC.Asim.ConsoleApp
 
                         case Arguments.Report:
                             _simulator.AddReport(arglist.Dequeue(), arglist.Dequeue());
+                            break;
+
+                        case Arguments.Eval:
+                            _simulator.AddEval(arglist.Dequeue());
                             break;
 
                         case Arguments.Debug:
