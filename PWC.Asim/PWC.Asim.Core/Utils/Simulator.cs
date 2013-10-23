@@ -104,12 +104,13 @@ namespace PWC.Asim.Core.Utils
 
         public void Simulate()
         {
-            int nActors = _inputActors.Count + _outputActors.Count + 5; // 5 is number of explicit classes set below
+            int nActors = _inputActors.Count + _outputActors.Count + 6; // 6 is number of explicit classes set below
             int iA = 0;
             var actors = new IActor[nActors];
 
             _inputActors.ForEach(i => actors[iA++] = new NextData(i.Filename, StartTime, i.Recycle));
             // add extra simulation actors here.  Order is important:
+            actors[iA++] = new RunTimeExtentions();
             actors[iA++] = new Load();
             actors[iA++] = new Station();
             actors[iA++] = new SheddableLoadMgr();

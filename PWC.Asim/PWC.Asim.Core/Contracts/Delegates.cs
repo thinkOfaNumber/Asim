@@ -37,5 +37,7 @@ namespace PWC.Asim.Core.Contracts
         public delegate double SolarController(double pvAvailP, double lastSetP,
             double genP, double genSpinP, double genIdealP,
             double loadP, double statSpinSetP, double switchDownP);
+
+        public delegate object EvalBlock();
     }
 }

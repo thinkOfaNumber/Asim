@@ -84,6 +84,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Actors\RunTimeExtentions.cs" />
     <Compile Include="Actors\SheddableLoadMgr.cs" />
     <Compile Include="Actors\GenMgr.cs" />
     <Compile Include="Actors\Load.cs" />
