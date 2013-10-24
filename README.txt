@@ -19,21 +19,25 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 USING
 
 Further details on running the program can be found in the manual -
-"Model User Manual.pdf", in the docs folder.
+"Reference Manaul.pdf", in the docs folder.
 
 
 CONTRIBUTING
 
-Please assign the copyright on all contributions to Power Water Corporation.
-Please provide patches to source code in unified diff format.  Contributions
-can be emailed to the author:
-Iain Buchanan, iain DOT buchanan AT radicalsystems DOT com DOT au
+Please use the Fork & Pull method to submit a pull request via GitHub.
+
+All pull requests must include:
+ - Formatted and tested code
+ - Updated documentation
+ - Unit tests to thoroughly test the behaviour and edge cases of your feature / bugfix
 
 
 BUG REPORTS
 
-Due to the nature of this program, please make bug reports as small as possible.
-If possible, reproduce the bug using a small set of input and output files.
+Due to the large size of output files, please make bug reports as small as possible.
+If possible, reproduce the bug using a small set of input and output files representing
+a few hours of simulation time.
+
 Include in your bug report all input files and executable files required to
 reproduce the bug, and detailed steps to reproduce the behaviour, as well as
 what behaviour you were expecing.
