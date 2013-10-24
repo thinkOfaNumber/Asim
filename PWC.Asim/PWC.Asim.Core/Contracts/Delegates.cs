@@ -38,6 +38,11 @@ namespace PWC.Asim.Core.Contracts
             double genP, double genSpinP, double genIdealP,
             double loadP, double statSpinSetP, double switchDownP);
 
-        public delegate object EvalBlock();
+        /// <summary>
+        /// All eval blocks will be run in a method with this signature.  The return type is ignored.
+        /// </summary>
+        /// <param name="it">The current iteration</param>
+        /// <returns></returns>
+        public delegate object EvalBlock(ulong it);
     }
 }

@@ -19,7 +19,7 @@ namespace PWC.Asim.Core.Actors
         private int _asimRteCnt = 0;
         private readonly IList<string> _runTimeExtensions = new List<string>();
         private Delegates.EvalBlock[] _evalBlocks;
-        private readonly IList<double> _times = new List<double>();
+        // private readonly IList<double> _times = new List<double>();
 
         public RunTimeExtentions(IEnumerable<string> files = null)
         {
@@ -38,28 +38,29 @@ namespace PWC.Asim.Core.Actors
 
         public void Run(ulong iteration)
         {
-            DateTime st, et;
+            // DateTime st, et;
             if (iteration == 0)
             {
                 if (!_runTimeExtensions.Any())
                     return;
                 Console.WriteLine("RTE Parsing run-time extensions");
-                st = DateTime.Now;
+                // st = DateTime.Now;
                 ParseLines(_runTimeExtensions);
-                et = DateTime.Now;
-                Console.WriteLine("RTE Loaded run-time extensions in {0}s", (et - st).TotalSeconds);
+                // et = DateTime.Now;
+                // Console.WriteLine("RTE Loaded run-time extensions in {0}s", (et - st).TotalSeconds);
+                Console.WriteLine("RTE Loaded run-time extensions");
             }
 
             if (_asimRteCnt == 0)
                 return;
             // run all evals
-            st = DateTime.Now;
+            // st = DateTime.Now;
             for (int i = 0; i < _asimRteCnt; i++)
             {
-                _evalBlocks[i]();
+                _evalBlocks[i](iteration);
             }
-            et = DateTime.Now;
-            _times.Add((et - st).TotalSeconds);
+            //et = DateTime.Now;
+            //_times.Add((et - st).TotalSeconds);
         }
 
         public void Finish()
@@ -67,8 +68,8 @@ namespace PWC.Asim.Core.Actors
             if (_asimRteCnt == 0)
                 return;
             double tot = 0;
-            _times.ToList().ForEach(t => tot += t);
-            Console.WriteLine("RTE total time {0}s, ave time {1}s", tot, tot / _times.Count);
+            //_times.ToList().ForEach(t => tot += t);
+            //Console.WriteLine("RTE total time {0}s, ave time {1}s", tot, tot / _times.Count);
         }
 
         private void ParseLines(IList<String> lines)
@@ -107,6 +108,8 @@ namespace PWC.Asim.Core.Actors
             // now go back and replace real shared "Name" with "Name.Val"
             foreach (var line in lines)
             {
+                if (string.IsNullOrWhiteSpace(line))
+                    continue;
                 string replacedLine = line;
                 sharedVars.ForEach(s => replacedLine = replacedLine.Replace(s, s + ".Val"));
                 // build the list of methods
@@ -171,7 +174,7 @@ namespace PWC.Asim.Core.Eval
         const string InstanceFmt = @"        private readonly Shared {0} = Share.GetOrNew(""{0}"");
 ";
         const string MethodFmt = @"
-        public object EvalMethod{0}()
+        public object EvalMethod{0}(ulong it)
         {{
             return {1}; // eval line {2}
         }}

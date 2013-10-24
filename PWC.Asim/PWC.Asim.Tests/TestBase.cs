@@ -339,5 +339,20 @@ namespace ConsoleTests
                 instance.GetOrNew("Gen" + i + "FuelCons5L").Val =  0;
             }
         }
+
+        /// <summary>
+        /// Use this function to cleanup shared variables when running core tests.  This is
+        /// not necessary for console app regression tests.
+        /// </summary>
+        protected void CoreCleanup()
+        {
+            // Reset static values to their default (0)
+            var sharedVars = SharedContainer.Instance;
+            var vars = sharedVars.GetAllNames();
+            foreach (string n in vars)
+            {
+                sharedVars.GetExisting(n).Val = 0;
+            }
+        }
     }
 }

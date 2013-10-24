@@ -50,6 +50,7 @@
     <Compile Include="CoreTests.cs" />
     <Compile Include="ExcelIntegrationTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="RteTests.cs" />
     <Compile Include="TestBase.cs" />
   </ItemGroup>
   <ItemGroup>
