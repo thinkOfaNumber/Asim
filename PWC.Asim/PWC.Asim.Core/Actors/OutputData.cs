@@ -79,7 +79,7 @@ namespace PWC.Asim.Core.Actors
             _filename = filename;
             try
             {
-                _file = new FileStream(_filename, FileMode.OpenOrCreate, FileAccess.Write);
+                _file = new FileStream(_filename, FileMode.Create, FileAccess.Write);
                 var buf = new BufferedStream(_file);
                 _stream = new StreamWriter(buf);
             }

@@ -32,13 +32,7 @@ namespace ConsoleTests
         [SetUp]
         public void Cleanup()
         {
-            // Reset static values to their default (0)
-            var sharedVars = SharedContainer.Instance;
-            var vars = sharedVars.GetAllNames();
-            foreach (string n in vars)
-            {
-                sharedVars.GetExisting(n).Val = 0;
-            }
+            CoreCleanup();
         }
 
         [Test]
