@@ -36,7 +36,7 @@ xcopy Algorithms\PWC.Asim.Algorithms.PvSimple\bin\Release\PWC.Asim.Algorithms.Pv
 xcopy Algorithms\PWC.Asim.Algorithms.PvFsc\bin\Release\PWC.Asim.Algorithms.PvFsc.dll %BUILDDIR%\bin
 
 rem docs
-xcopy "..\docs\Model User Manual.pdf" %BUILDDIR%\docs
+xcopy "..\docs\Reference Manual.pdf" %BUILDDIR%\docs
 xcopy "..\docs\InstallingMacro\Excel Addin Installation.pdf" %BUILDDIR%\docs
 
 rem Excel Addin

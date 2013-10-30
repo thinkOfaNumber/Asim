@@ -130,7 +130,6 @@ See http://wix.tramontana.co.hu/tutorial and
         <RemoveFolder Id="RemoveAsimDocsDir" On="uninstall" Directory="AsimDocsDir" />
         <RegistryValue Root='HKCU' Key='Software\[Manufacturer]\[ProductName]\Documents' Type='string' Value='' KeyPath='yes' />
         <File Id='ReferenceManualPDF' Name='Reference Manual.pdf' Source='..\..\docs\Reference Manual.pdf' />
-        <File Id='InstallMacroPDF' Name='Excel Addin Installation.pdf' Source='..\..\docs\InstallingMacro\Excel Addin Installation.pdf' />
         <File Id='QuickStartPDF' Name='Quick Start.pdf' Source='..\..\docs\QuickStartGuide\Quick Start.pdf' />
         <File Id='ReadMe' Name='Readme.txt' Source='..\..\README.txt' />
         <File Id='LicenceCopy' Name='Copying.rtf' Source='..\..\COPYING.rtf' />
