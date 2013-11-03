@@ -28,14 +28,13 @@ See http://wix.tramontana.co.hu/tutorial and
 
     <UIRef Id="WixUI_Advanced"/>
     <UIRef Id="WixUI_ErrorProgressText" />
-    
+
     <WixVariable Id="WixUILicenseRtf" Value="..\..\COPYING.rtf" />
 
     <Property Id="ApplicationFolderName" Value="Asim" />
     <Property Id="WixAppFolder" Value="WixPerUserFolder" />
 
-    
-    
+
     <!-- This information enables Windows Installer major upgrade functionality so users can seamlessly  -->
     <!-- install a new version of the product and have the old version automatically uninstall behind    -->
     <!-- the scenes. See the following topic in the MSDN Library for additional information:             -->
@@ -59,17 +58,19 @@ See http://wix.tramontana.co.hu/tutorial and
     <!-- This is a list of directories that are used by this product as installation locations or custom -->
     <!-- action file search locations.                                                                   -->
     <Directory Id="TARGETDIR" Name="SourceDir">
-      <Directory Id="DesktopFolder" Name="Desktop"/> 
-      <Directory Id="LocalAppDataFolder" Name="AppData">
+      <Directory Id="DesktopFolder" Name="Desktop"/>
+      <Directory Id="AppDataFolder" Name="AppData">
         <Directory Id="Microsoft" Name="Microsoft">
           <Directory Id="AddIns" Name="AddIns">
           </Directory>
         </Directory>
+      </Directory>
 
+      <Directory Id="LocalAppDataFolder" Name="LocalAppData">
         <Directory Id="APPLICATIONFOLDER" Name="Asim">
           <Component Id="ApplicationDesktopShortcut" Guid="15CF4AC2-30E1-46C3-B411-61A6C623C8B8">
-            <Shortcut Id="ApplicationShortcut" 
-                      Directory="DesktopFolder" 
+            <Shortcut Id="ApplicationShortcut"
+                      Directory="DesktopFolder"
                       WorkingDirectory="APPLICATIONFOLDER"
                       Target="[APPLICATIONFOLDER]"
                       Name="Asim"
@@ -93,11 +94,11 @@ See http://wix.tramontana.co.hu/tutorial and
       <Component Id="AsimExecutable" Guid="11E4343E-F6F9-459D-B818-650729003F25">
         <RemoveFolder Id="RemoveAppRootDirectory" On="uninstall" Directory="APPLICATIONFOLDER" />
         <RemoveFolder Id="RemoveAsimBinDir" On="uninstall" />
-        
+
         <File Id="AsimEXE" Name="Asim.exe" Source="..\PWC.Asim.ConsoleApp\bin\Release\AsimStatic.exe" />
         <RegistryValue Root='HKCU' Key='Software\[Manufacturer]\[ProductName]\AsimEXE' Type='string' Value=''
                        KeyPath='yes' />
-        
+
       </Component>
       <Component Id="ExcelExecutable" Guid="54128474-16E7-4130-A9D6-E34FA3327F9C">
         <File Id="ExcelEXE" Name="AsimExcelTools.exe" Source="..\PWC.Asim.ExcelTools\bin\Release\AsimExcelTools.exe" />
@@ -111,13 +112,13 @@ See http://wix.tramontana.co.hu/tutorial and
         <RegistryValue Root='HKCU' Key='Software\[Manufacturer]\[ProductName]\PvSimple' Type='string' Value=''
                        KeyPath='yes' />
       </Component>
-      
+
       <Component Id='AlgorithmsPvNone' Guid='23914A25-CCE4-4655-AC35-3B7C53040D26'>
         <File Id='PvNone' Name='PWC.Asim.Algorithms.PvNone.dll' Source='..\Algorithms\PWC.Asim.Algorithms.PvNone\bin\Release\PWC.Asim.Algorithms.PvNone.dll' />
         <RegistryValue Root='HKCU' Key='Software\[Manufacturer]\[ProductName]\PvNone' Type='string' Value=''
                        KeyPath='yes' />
       </Component>
-      
+
       <Component Id='AlgorithmsPvFsc' Guid='F1C18D68-F041-4A24-B326-28B1A5AC0967'>
         <File Id='PvFsc' Name='PWC.Asim.Algorithms.PvFsc.dll' Source='..\Algorithms\PWC.Asim.Algorithms.PvFsc\bin\Release\PWC.Asim.Algorithms.PvFsc.dll' />
         <RegistryValue Root='HKCU' Key='Software\[Manufacturer]\[ProductName]\PvFsc' Type='string' Value=''
@@ -131,10 +132,11 @@ See http://wix.tramontana.co.hu/tutorial and
         <RegistryValue Root='HKCU' Key='Software\[Manufacturer]\[ProductName]\Documents' Type='string' Value='' KeyPath='yes' />
         <File Id='ReferenceManualPDF' Name='Reference Manual.pdf' Source='..\..\docs\Reference Manual.pdf' />
         <File Id='QuickStartPDF' Name='Quick Start.pdf' Source='..\..\docs\QuickStartGuide\Quick Start.pdf' />
+        <File Id='ConfigGuidePDF' Name='Configuration Guide.pdf' Source='..\..\docs\ConfigurationGuide\Configuration Guide.pdf' />
         <File Id='ReadMe' Name='Readme.txt' Source='..\..\README.txt' />
-        <File Id='LicenceCopy' Name='Copying.rtf' Source='..\..\COPYING.rtf' />
+        <File Id='LicenceCopyRtf' Name='Copying.rtf' Source='..\..\COPYING.rtf' />
+        <File Id='LicenceCopyTxt' Name='Copying.txt' Source='..\..\COPYING.txt' />
       </Component>
-      
     </DirectoryRef>
 
     <DirectoryRef Id="AsimSamples">
@@ -175,37 +177,35 @@ See http://wix.tramontana.co.hu/tutorial and
     <!-- installation or repair scenarios. In this case, the source files are in a cab file that will be -->
     <!-- embedded directly into the MSI at build time.                                                   -->
     <Media Id="1" Cabinet="Application.cab" EmbedCab="yes" />
-    
-    <Feature Id="CompleteProduct" Title="PWC.Asim.Installer" Level="1" Description="The complete package." Absent="disallow" AllowAdvertise="no"
+
+    <Feature Id="CompleteProduct" Title="Asim Package" Level="1" Description="The complete Asim package." Absent="disallow" AllowAdvertise="no"
              Display="expand" ConfigurableDirectory="TARGETDIR">
 
-      <Feature Id="MainProgram" Title="Programs" Description="The main executables." Level="1" Absent="disallow" AllowAdvertise="no">
+      <Feature Id="MainProgram" Title="Asim" Description="Required Asim Program Files." Level="1" Absent="disallow" AllowAdvertise="no">
         <ComponentRef Id='AsimExecutable' />
         <ComponentRef Id='ExcelExecutable' />
-      </Feature>
-
-      <Feature Id='Documentation' Title='User Manual' Description='The Asim User Manual.' Level='1' AllowAdvertise="no">
-        <!--<ComponentRef Id='ProgramMenuDir' />-->
-        <ComponentRef Id='PdfDocs' />
-        <ComponentRef Id='Samples' />
         <ComponentRef Id='AsimAddin' />
       </Feature>
 
-      <Feature Id='Algorithms' Title='Algorithms' Description='The additional DLLs' Level='1' AllowAdvertise="no">
+      <Feature Id='Documentation' Title='Asim Documentation' Description='Asim Documentation.' Level='1' AllowAdvertise="no">
+        <!--<ComponentRef Id='ProgramMenuDir' />-->
+        <ComponentRef Id='PdfDocs' />
+        <ComponentRef Id='Samples' />
+      </Feature>
+
+      <Feature Id='Algorithms' Title='Additional Algorithms' Description='Additional Algorithms for Solar Controllers.' Level='1' AllowAdvertise="no">
         <ComponentRef Id='AlgorithmsPvSimple'/>
         <ComponentRef Id='AlgorithmsPvNone'/>
         <ComponentRef Id='AlgorithmsPvFsc'/>
       </Feature>
-      
-      <Feature Id='Shortcut' Title='Create Shortcut' Description='Create shortcut on the desktop' Level='1' AllowAdvertise='no'>
+
+      <Feature Id='Shortcut' Title='Desktop Shortcut' Description='Create a shortcut on the desktop.' Level='1' AllowAdvertise='no'>
         <ComponentRef Id='ApplicationDesktopShortcut' />
       </Feature>
-    
 		</Feature>
 
     <!-- Customising the Exit screen to allow for the readme to be opened. -->
     <Property Id="WIXUI_EXITDIALOGOPTIONALTEXT" Value="Thank you for installing !(loc.Property_ProductName)." />
-    
     <Property Id='WIXUI_EXITDIALOGOPTIONALCHECKBOXTEXT' Value='View the Readme' />
     <UI>
       <Publish Dialog="ExitDialog" Control="Finish" Event="DoAction" Value="LaunchFile">
@@ -215,13 +215,13 @@ See http://wix.tramontana.co.hu/tutorial and
         NOT Installed
       </Publish>
     </UI>
-    
+
     <Property Id="WixShellExecTarget" Value="[#ReadMe]" />
     <CustomAction Id="LaunchFile" BinaryKey="WixCA" DllEntry="WixShellExec" Impersonate="yes" />
-    
+
     <Property Id="QtExecCmdLine" Value='"cmd.exe" /c "explorer.exe [APPLICATIONFOLDER]"' />
     <CustomAction Id="LaunchInstallDir" BinaryKey="WixCA" DllEntry="CAQuietExec" Execute="immediate" Return="check"/>
-    
+
     <!-- The InstallExecuteSequence table describes the order that actions will be executed during       -->
     <!-- installation, repair and uninstall of this product.                                             -->
     <InstallExecuteSequence>
@@ -231,7 +231,7 @@ See http://wix.tramontana.co.hu/tutorial and
       <RemoveExistingProducts After="InstallFinalize" />
       <LaunchConditions After="AppSearch"/>
     </InstallExecuteSequence>
-      
+
     <!-- These properties define links that will appear in the Add/Remove Programs control panel when    -->
     <!-- this product is installed on the system.                                                        -->
     <!--<Property Id="ARPHELPLINK" Value="!(loc.Property_ArpHelpLink)" />
