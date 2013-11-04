@@ -2,7 +2,6 @@
 <WixLocalization Culture="en-us" xmlns="http://schemas.microsoft.com/wix/2006/localization">
   <String Id="LaunchCondition_AllUsers">Setting the ALLUSERS property is not allowed because [ProductName] is a per-user application. Setup will now exit.</String>
   <String Id="LaunchCondition_LaterVersion">A later version of [ProductName] is already installed.</String>
-  <String Id="LaunchCondition_WrongOSVersion">[ProductName] can only be installed on Microsoft Windows Vista Home Premium or Ultimate Edition.</String>
 
   <String Id="Property_ArpHelpLink">http://msdn.microsoft.com/mce/</String>
   <String Id="Property_ArpUrlInfoAbout">http://msdn.microsoft.com/mce/</String>
@@ -10,6 +9,6 @@
   <String Id="Property_ProductName">Asim</String>
   <String Id="Property_CompanyName">Power Water Corporation</String>
 
-  <String Id="Package_Description">A Simulator</String>
+  <String Id="Package_Description">A Mini-Grid Power System Simulator</String>
   <String Id="Package_Comments">This Installer database contains the logic and data required to install Asim.</String>
 </WixLocalization>

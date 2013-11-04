@@ -7,8 +7,8 @@ See http://wix.tramontana.co.hu/tutorial and
 -->
 <!-- These variables define the Windows Installer product version, product code and upgrade code. They   -->
 <!-- will be used later on in this file.                                                                 -->
-<?define Property_ProductVersion = "2.2.0" ?>
-<?define Property_ProductCode = "C01688B7-B7EC-43AE-8230-B79460E92EE1" ?>
+<?define Property_ProductVersion = "2.2.1" ?>
+<?define Property_ProductCode = "*" ?>
 <?define Property_UpgradeCode = "F8BEFBA3-8DA8-4165-A420-F01EB22561E5" ?>
 
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
@@ -31,6 +31,7 @@ See http://wix.tramontana.co.hu/tutorial and
 
     <WixVariable Id="WixUILicenseRtf" Value="..\..\COPYING.rtf" />
 
+    <Property Id="PREVIOUSVERSIONSINSTALLED" Secure="yes" />
     <Property Id="ApplicationFolderName" Value="Asim" />
     <Property Id="WixAppFolder" Value="WixPerUserFolder" />
 
@@ -225,10 +226,7 @@ See http://wix.tramontana.co.hu/tutorial and
     <!-- The InstallExecuteSequence table describes the order that actions will be executed during       -->
     <!-- installation, repair and uninstall of this product.                                             -->
     <InstallExecuteSequence>
-      <Custom Action="CA_BlockOlderVersionInstall" After="FindRelatedProducts">
-        <![CDATA[NEWERVERSIONDETECTED]]>
-      </Custom>
-      <RemoveExistingProducts After="InstallFinalize" />
+      <RemoveExistingProducts Before="InstallInitialize" />
       <LaunchConditions After="AppSearch"/>
     </InstallExecuteSequence>
 
