@@ -30,12 +30,17 @@ namespace PWC.Asim.Core.Actors
         private readonly Shared _statSpinP;
         private readonly Shared _statSpinSetP;
         private readonly Shared _statMaintainSpin;
+
         private readonly Shared _loadCapAl;
         private readonly Shared _loadCapMargin;
         private readonly Shared _loadMaxP;
         private readonly Shared _loadP;
+
         private readonly Shared _pvP;
         private readonly Shared _pvCvgPct;
+        private readonly Shared _pvAvailP;
+        private readonly Shared _pvSpillP;
+
         private readonly Shared _genCfgSetP;
         private readonly Shared _genCfgSetK;
         private readonly Shared _genP;
@@ -43,8 +48,15 @@ namespace PWC.Asim.Core.Actors
         private readonly Shared _genOnlineCfg;
         private readonly Shared _genSpinP;
         private readonly Shared _genCapP;
+
         private readonly Shared _shedP;
         private readonly Shared _shedOffP;
+
+        private readonly Shared _battP;
+        private readonly Shared _battSt;
+        private readonly Shared _battSetP;
+        private readonly Shared _battRechargeSetP;
+
         private static bool _lastStatBlack;
         private readonly Shared _statBlack;
         private double _genCoverP;
@@ -66,6 +78,8 @@ namespace PWC.Asim.Core.Actors
             _loadP = _sharedVars.GetOrNew("LoadSetP");
             _pvP = _sharedVars.GetOrNew("PvP");
             _pvCvgPct = _sharedVars.GetOrNew("PvCvgPct");
+            _pvAvailP = _sharedVars.GetOrNew("PvAvailP");
+            _pvSpillP = _sharedVars.GetOrNew("PvSpillP");
             _genCfgSetP = _sharedVars.GetOrNew("GenCfgSetP");
             _genCfgSetK = _sharedVars.GetOrNew("GenCfgSetK");
             _genP = _sharedVars.GetOrNew("GenP");
@@ -76,6 +90,10 @@ namespace PWC.Asim.Core.Actors
             _shedP = _sharedVars.GetOrNew("ShedP");
             _shedOffP = _sharedVars.GetOrNew("ShedOffP");
             _statBlack = _sharedVars.GetOrNew("StatBlack");
+            _battP = _sharedVars.GetOrNew("BattP");
+            _battSt = _sharedVars.GetOrNew("BattSt");
+            _battSetP = _sharedVars.GetOrNew("BattSetP");
+            _battRechargeSetP = _sharedVars.GetOrNew("BattRechargeSetP");
         }
 
         #region Implementation of IActor
@@ -83,18 +101,17 @@ namespace PWC.Asim.Core.Actors
         public void Run(ulong iteration)
         {
             // calc
-            double pvCoverage = _pvP.Val * _pvCvgPct.Val * Settings.Percent;
-            double reserve;
+            double reserve = CalculateReserve();
+            bool dieselOffOk = DieselOffOk();
 
-            if (_statMaintainSpin.Val > 0)
-            {
-                reserve = Math.Max(_statSpinSetP.Val, pvCoverage - _shedP.Val + _shedOffP.Val);
-            }
-            else
-            {
-                reserve = Math.Max(0, Math.Max(_statSpinSetP.Val, pvCoverage) - _shedP.Val + _shedOffP.Val);
-            }
+            CalculateSetpoints(reserve, iteration);
+            
+            // battery setpoint
+            _battSetP.Val = dieselOffOk ? _pvSpillP.Val : _battRechargeSetP.Val;
+        }
 
+        private void CalculateSetpoints(double reserve, ulong iteration)
+        {
             // generator coverage setpoint
             _genCoverP = (_loadP.Val - _pvP.Val) + reserve;
             if (_genCfgSetK.Val <= 0 || _genCfgSetK.Val > 1)
@@ -104,7 +121,7 @@ namespace PWC.Asim.Core.Actors
             // actual generator loading setpoint
             GenSetP = _genSetP.Val = _loadP.Val - _pvP.Val;
             // station output
-            _statP.Val = _genP.Val + _pvP.Val;
+            _statP.Val = _genP.Val + _pvP.Val + _battP.Val;
             // station spinning reserve
             _statSpinP.Val = _genSpinP.Val + _shedP.Val;
 
@@ -112,7 +129,7 @@ namespace PWC.Asim.Core.Actors
             _loadMaxP.Val = Math.Max(_loadP.Val, _loadMaxP.Val);
             // load capacity warning (GenCapP not set until after Station Run())
             _loadCapAl.Val = iteration > 0 && _genCapP.Val < (_loadMaxP.Val * _loadCapMargin.Val) ? 1.0D : 0.0D;
-            
+
             // blackout detection
             IsBlack = _genOnlineCfg.Val <= 0;
             _statBlack.Val = IsBlack ? 1 : 0;
@@ -123,6 +140,25 @@ namespace PWC.Asim.Core.Actors
                 BlackStartInit = true;
             }
             _lastStatBlack = IsBlack;
+        }
+
+        private bool DieselOffOk()
+        {
+            bool battDischargeOk = Convert.ToInt32(_battSt.Val) == Convert.ToInt32(BatteryState.CanDischarge);
+            return battDischargeOk && _pvAvailP.Val > _loadP.Val + _statSpinP.Val + 20;
+        }
+
+        private double CalculateReserve()
+        {
+            double pvCoverage = _pvP.Val * _pvCvgPct.Val * Settings.Percent;
+            if (_statMaintainSpin.Val > 0)
+            {
+                return Math.Max(_statSpinSetP.Val, pvCoverage - _shedP.Val + _shedOffP.Val);
+            }
+            else
+            {
+                return Math.Max(0, Math.Max(_statSpinSetP.Val, pvCoverage) - _shedP.Val + _shedOffP.Val);
+            }
         }
 
         public void Init()

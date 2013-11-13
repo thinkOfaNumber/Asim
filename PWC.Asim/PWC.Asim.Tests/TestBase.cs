@@ -263,10 +263,10 @@ namespace ConsoleTests
             return values;
         }
 
-        public bool DoublesAreEqual(double a, double b)
+        public bool DoublesAreEqual(double a, double b, double margin = 0.0001)
         {
             double diff = Math.Abs(a - b);
-            if (diff < 0.0001)
+            if (diff < margin)
             {
                 return true;
             }

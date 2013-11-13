@@ -159,7 +159,7 @@ namespace PWC.Asim.Core.Utils
                 {
                     actors[iA].Finish();
                 }
-                Console.WriteLine("inner loop took {0}s", innerLoopTime.TotalSeconds);
+                Console.WriteLine("inner loop took {0}s, rate: {1:N0}S/s", innerLoopTime.TotalSeconds, Iteration / innerLoopTime.TotalSeconds);
             }
             catch(SimulationException e)
             {
