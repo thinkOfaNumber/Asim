@@ -30,6 +30,9 @@ namespace PWC.Asim.Core.Actors
         private readonly Shared _battSt; // current State (1=Charging, 2=Discharging)
         private BatteryState _batteryState = BatteryState.Charging;
 
+        private readonly Shared _genSpinP;
+        private readonly Shared _pvSpillP;
+
         public Battery()
         {
             _battMaxE = _sharedVars.GetOrNew("BattMaxE");
@@ -44,6 +47,8 @@ namespace PWC.Asim.Core.Actors
             _battP = _sharedVars.GetOrNew("BattP");
             _battSt = _sharedVars.GetOrNew("BattSt");
             _battRechargeSetP = _sharedVars.GetOrNew("BattRechargeSetP");
+            _genSpinP = _sharedVars.GetOrNew("GenSpinP");
+            _pvSpillP = _sharedVars.GetOrNew("PvSpillP");
         }
 
 
@@ -54,20 +59,32 @@ namespace PWC.Asim.Core.Actors
 
         public void Run(ulong iteration)
         {
+            if (Station.IsBlack)
+            {
+                _batteryState = BatteryState.Charging;
+                _battP.Val = 0;
+                return;
+            }
+
             _battSt.Val = Convert.ToDouble(_batteryState);
 
-            _battP.Val = Util.Limit(_battSetP.Val, _battMinP.Val, _battMaxP.Val);
-            _battE.Val += -_battP.Val * _battEfficiencyPct.Val * Settings.Percent * Settings.PerHourToSec;
+            double battP = Util.Limit(_battSetP.Val, _battMinP.Val, _battMaxP.Val); // user defined limits
+            battP = Math.Min(battP, _battE.Val*Settings.SecondsInAnHour); // can't output more E than is stored
+            battP = Math.Min(battP, _genSpinP.Val + _pvSpillP.Val); // limit to actual available power
+            battP = Math.Min(battP, Math.Max(0, (_battMaxE.Val - _battE.Val) * Settings.SecondsInAnHour)); // limit to max capacity. todo: this doesn't account for effeciency < 100%
+
+            _battE.Val += -battP * _battEfficiencyPct.Val * Settings.Percent * Settings.PerHourToSec;
             _battE.Val = Math.Max(0, _battE.Val); // E can't be negative
-            _battP.Val = Math.Min(_battP.Val, _battE.Val * Settings.PerHourToSec); // can't output if no E
-            if (_battP.Val >= 0)
+
+            if (battP >= 0)
             {
-                _battExportedE.Val += _battP.Val * Settings.PerHourToSec;
+                _battExportedE.Val += battP * Settings.PerHourToSec;
             }
             else
             {
-                _battImportedE.Val += -_battP.Val * Settings.PerHourToSec;
+                _battImportedE.Val += -battP * Settings.PerHourToSec;
             }
+            _battP.Val = battP;
             NextState();
         }
 

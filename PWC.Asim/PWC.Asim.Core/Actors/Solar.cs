@@ -86,12 +86,13 @@ namespace PWC.Asim.Core.Actors
             double setP = _solarController(_pvAvailP.Val, _pvSetP.Val,
                 _genP.Val, _genSpinP.Val,
                 _genIdealP.Val, _loadP.Val, _statSpinSetP.Val,
-                // magic number 5 is to prevent switching on the "fencline"
+                // magic number 5 is to prevent switching on the "fence line"
                 Math.Max(0, _genLowP.Val - _statHystP.Val - _statSpinSetP.Val + 5.0D));
 
             // apply Spinning reserve limits (PWCSLMS-41)
             if (_pvSetLimitSpinPct.Val > 0 && _pvSetLimitSpinPct.Val <= 100)
             {
+                // todo: adding an offset of 5 to the GenSpinP limit here smooths the behaviour a bit but it's not an ideal solution
                 setP = Math.Min(setP, _genSpinP.Val * _pvSetLimitSpinPct.Val * Settings.Percent);
             }
             if (_pvSetLimitSpinpPct.Val > 0 && _pvSetLimitSpinpPct.Val <= 100)

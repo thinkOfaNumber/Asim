@@ -104,10 +104,10 @@ namespace PWC.Asim.Core.Actors
             double reserve = CalculateReserve();
             bool dieselOffOk = DieselOffOk();
 
-            CalculateSetpoints(reserve, iteration);
-            
             // battery setpoint
-            _battSetP.Val = dieselOffOk ? _pvSpillP.Val : _battRechargeSetP.Val;
+            _battSetP.Val = dieselOffOk ? _pvSpillP.Val : -_battRechargeSetP.Val;
+
+            CalculateSetpoints(reserve, iteration);
         }
 
         private void CalculateSetpoints(double reserve, ulong iteration)
@@ -119,7 +119,7 @@ namespace PWC.Asim.Core.Actors
             _genCfgSetP.Val = _genCfgSetP.Val * (1.0D - _genCfgSetK.Val) + _genCfgSetK.Val * _genCoverP;
 
             // actual generator loading setpoint
-            GenSetP = _genSetP.Val = _loadP.Val - _pvP.Val;
+            GenSetP = _genSetP.Val = _loadP.Val - _pvP.Val - _battP.Val;
             // station output
             _statP.Val = _genP.Val + _pvP.Val + _battP.Val;
             // station spinning reserve
