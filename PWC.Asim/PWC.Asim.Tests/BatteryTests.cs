@@ -164,13 +164,18 @@ namespace ConsoleTests
             values["BattEfficiencyPct"] = new double[] { 100 };
             values["BattRechargeSetP"] = new double[] { 5 }; // min recharge rate when diesel on
             values["Gen1MaxP"] = new double[] { 100 };
-            values["GenConfig1"] = new double[] { 1 };
+            values["GenConfig1"] = new double[] { 0 }; // allow diesel off mode
+            values["GenConfig2"] = new double[] { 1 };
             values["GenAvailSet"] = new double[] { 1 };
             values["GenBlackCfg"] = new double[] { 1 };
             values["Gen1FuelCons1P"] = new double[] { 0 };
             values["Gen1FuelCons1L"] = new double[] { 50 };
             values["Gen1FuelCons2P"] = new double[] { 1 };
             values["Gen1FuelCons2L"] = new double[] { 50 };
+            values["Gen1OverLoadT"] = new double[] { 5 };
+            values["Gen1OverloadPctP"] = new double[] { 10 };
+            values["Gen1UnderloadT"] = new double[] { 5 };
+            values["Gen1UnderloadPctP"] = new double[] { 10 };
             var loadProfile = new double[] { 50, 40, 30, 20, 10, 10, 10, 20, 20, 30, 30, 40, 40, 50 };
             var pvProfile = new double[] {0, 0, 10, 10, 20, 20, 25, 20, 15, 15, 10, 10, 10, 0};
 
@@ -184,7 +189,13 @@ namespace ConsoleTests
             var sim = new Simulator();
             sim.AddInput(settingsFile1);
             sim.AddInput(settingsFile2);
-            sim.AddOutput(outFile, new[] { "BattSetP", "BattP", "BattE", "BattSt", "LoadP", "StatSt", "GenP", "GenOnlineCfg", "StatBlack", "PvAvailP", "PvP", "PvSpillP" });
+            sim.AddOutput(outFile, new[]
+            {
+                "BattSetP", "BattP", "BattE", "BattSt",
+                "LoadP", "StatSt", "StatBlack",
+                "GenP", "GenCfgSetP", "GenOnlineCfg", "GenSetCfg", "Gen1StartCnt", "Gen1StopCnt",
+                "PvAvailP", "PvP", "PvSpillP"
+            });
             sim.Iterations = iterations;
 
             // Act

@@ -58,11 +58,14 @@ namespace PWC.Asim.Core.Actors
         private readonly Shared _genLowP;
         private readonly Shared _genCfgSetP;
         private readonly Shared _genSetP;
-        private readonly Shared _statHystP;
         private readonly Shared _genAvailCfg;
         private readonly Shared _genBlackCfg;
         private readonly Shared _genMinRunTPa;
         private readonly Shared _genSwitchDownDelayT;
+
+        private readonly Shared _statHystP;
+        private readonly Shared _statSt;
+
         private ulong _switchDownDelayAct;
 
         private ulong _iteration;
@@ -79,11 +82,12 @@ namespace PWC.Asim.Core.Actors
             _genLowP = _sharedVars.GetOrNew("GenLowP");
             _genCfgSetP = _sharedVars.GetOrNew("GenCfgSetP");
             _genSetP = _sharedVars.GetOrNew("GenSetP");
-            _statHystP = _sharedVars.GetOrNew("StatHystP");
             _genAvailCfg = _sharedVars.GetOrNew("GenAvailCfg");
             _genBlackCfg = _sharedVars.GetOrNew("GenBlackCfg");
             _genMinRunTPa = _sharedVars.GetOrNew("GenMinRunTPa");
             _genSwitchDownDelayT = _sharedVars.GetOrNew("GenSwitchDownDelayT");
+            _statHystP = _sharedVars.GetOrNew("StatHystP");
+            _statSt = _sharedVars.GetOrNew("StatSt");
         }
 
         #region Implementation of IActor
@@ -154,7 +158,7 @@ namespace PWC.Asim.Core.Actors
             // black start or select
             ushort newCfg;
             double lowerP;
-            if (GeneratorBase.OnlineCfg == 0 && BlackStartPower() > _genCfgSetP.Val)
+            if (GeneratorBase.OnlineCfg == 0 && !StationSolarBatteryMode() && BlackStartPower() > _genCfgSetP.Val)
             {
                 newCfg = (ushort)_genBlackCfg.Val;
                 lowerP = 0;
@@ -189,7 +193,8 @@ namespace PWC.Asim.Core.Actors
 
         /// <summary>
         /// Select the best configuration of generators to run, based on setpoint,
-        /// hysteresis, switch down timers, etc.
+        /// hysteresis, switch down timers, etc.  "No Generators" can only be selected if
+        /// a zero configuration provided (GenConfig1 = 0) and station mode == PowerSource.SolarBattery.
         /// </summary>
         /// <param name="lowerP">output showing the next lower configuration power (if found), or 0.</param>
         /// <returns>The selected configuration to put online.</returns>
@@ -206,7 +211,7 @@ namespace PWC.Asim.Core.Actors
                 if (((ushort)_configSets[i].Val & (ushort)_genAvailCfg.Val) != (ushort)_configSets[i].Val)
                     continue;
                 double thisP = TotalPower((ushort)_configSets[i].Val);
-                if (thisP >= _genCfgSetP.Val)
+                if (thisP >= _genCfgSetP.Val && (thisP > 0.1D || StationSolarBatteryMode()))
                 {
                     found = i;
                     break;
@@ -238,7 +243,9 @@ namespace PWC.Asim.Core.Actors
             // only switch to a lower configuration if it is below the hysteresis of the current configuration
             // todo: there is an issue with this if there is a drop of two configurations, we'll still apply
             // hysteresis to the lower one, when it only needs to be applied to the middle one.
-            else if (_genCfgSetP.Val < foundP - _statHystP.Val)
+            else if (_genCfgSetP.Val < foundP - _statHystP.Val
+                // "No generator" configuration doesn't require a switch-down hysteresis!
+                || (_genCfgSetP.Val < 0.1D && foundCfg == 0))
                 bestCfg = foundCfg;
 
             // don't switch to a smaller configuration as Hysteresis wasn't satisfied
@@ -346,6 +353,11 @@ namespace PWC.Asim.Core.Actors
                     Gen[i].P = 0;
                 }
             }
+        }
+
+        private bool StationSolarBatteryMode()
+        {
+            return Convert.ToInt32(_statSt.Val) == Convert.ToInt32(PowerSource.SolarBattery);
         }
     }
 }

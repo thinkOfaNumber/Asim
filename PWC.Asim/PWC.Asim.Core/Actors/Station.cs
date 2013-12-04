@@ -51,6 +51,7 @@ namespace PWC.Asim.Core.Actors
         private readonly Shared _pvCvgPct;
         private readonly Shared _pvAvailP;
         private readonly Shared _pvSpillP;
+        private readonly Shared _pvBattExtraP;
 
         private readonly Shared _genCfgSetP;
         private readonly Shared _genCfgSetK;
@@ -67,6 +68,7 @@ namespace PWC.Asim.Core.Actors
         private readonly Shared _battSt;
         private readonly Shared _battSetP;
         private readonly Shared _battRechargeSetP;
+        private readonly Shared _battMaxP;
 
         private static bool _lastStatBlack;
         private readonly Shared _statBlack;
@@ -95,6 +97,7 @@ namespace PWC.Asim.Core.Actors
             _pvCvgPct = _sharedVars.GetOrNew("PvCvgPct");
             _pvAvailP = _sharedVars.GetOrNew("PvAvailP");
             _pvSpillP = _sharedVars.GetOrNew("PvSpillP");
+            _pvBattExtraP = _sharedVars.GetOrNew("PvBattExtraP");
             _genCfgSetP = _sharedVars.GetOrNew("GenCfgSetP");
             _genCfgSetK = _sharedVars.GetOrNew("GenCfgSetK");
             _genP = _sharedVars.GetOrNew("GenP");
@@ -109,6 +112,7 @@ namespace PWC.Asim.Core.Actors
             _battSt = _sharedVars.GetOrNew("BattSt");
             _battSetP = _sharedVars.GetOrNew("BattSetP");
             _battRechargeSetP = _sharedVars.GetOrNew("BattRechargeSetP");
+            _battMaxP = _sharedVars.GetOrNew("BattMaxP");
         }
 
         #region Implementation of IActor
@@ -187,12 +191,17 @@ namespace PWC.Asim.Core.Actors
 
         private bool BattDischargeOk()
         {
-            return Convert.ToInt32(_battSt.Val) == Convert.ToInt32(BatteryState.CanDischarge);
+            // pull out of Solar + Battery mode when:
+            // 1. battery is below MinE:
+            return Convert.ToInt32(_battSt.Val) == Convert.ToInt32(BatteryState.CanDischarge) &&
+                // or 2. Solar plus Batt Max output can't provide load (there's no point in staying
+                // in battery discharge mode if the diesel is supplementing it):
+                _pvAvailP.Val + _battMaxP.Val > _loadP.Val;
         }
 
         private bool DieselOffOk()
         {
-            return BattDischargeOk() && _pvAvailP.Val > _loadP.Val + _statSpinSetP.Val;
+            return BattDischargeOk() && _pvAvailP.Val > _loadP.Val + _statSpinSetP.Val + _pvBattExtraP.Val;
         }
 
         private double CalculateReserve()
