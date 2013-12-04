@@ -176,6 +176,8 @@ namespace ConsoleTests
             values["Gen1OverloadPctP"] = new double[] { 10 };
             values["Gen1UnderloadT"] = new double[] { 5 };
             values["Gen1UnderloadPctP"] = new double[] { 10 };
+            // values["GenCfgSetK"] = new double[] { 0.1 };
+            values["GenSwitchUpDelayT"] = new double[] { 2 };
             var loadProfile = new double[] { 50, 40, 30, 20, 10, 10, 10, 20, 20, 30, 30, 40, 40, 50 };
             var pvProfile = new double[] {0, 0, 10, 10, 20, 20, 25, 20, 15, 15, 10, 10, 10, 0};
 

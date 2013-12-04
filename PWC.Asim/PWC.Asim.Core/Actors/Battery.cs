@@ -87,7 +87,7 @@ namespace PWC.Asim.Core.Actors
 
             double battP = Util.Limit(_battSetP.Val, _battMinP.Val, _battMaxP.Val); // user defined limits
             battP = Math.Min(battP, _battE.Val*Settings.SecondsInAnHour); // can't output more E than is stored
-            battP = Math.Min(battP, _genSpinP.Val + _pvSpillP.Val); // limit to actual available power
+            battP = Math.Max(battP, -(_genSpinP.Val + _pvSpillP.Val)); // limit charge to actual available power
             battP = Math.Max(battP, -(_battRatedE.Val - _battE.Val) * Settings.SecondsInAnHour); // limit to max capacity. todo: this doesn't account for effeciency < 100%
 
             _battE.Val += -battP * _battEfficiencyPct.Val * Settings.Percent * Settings.PerHourToSec;

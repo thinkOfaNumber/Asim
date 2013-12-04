@@ -44,6 +44,11 @@ namespace PWC.Asim.Core.Utils
         /// instead of dividing by 100.
         /// </summary>
         public const double Percent = 1.0D/100.0D;
+        /// <summary>
+        /// For the purposes of floating point comparision and "off" values, doubles
+        /// less than this +/-value can be considered to be zero
+        /// </summary>
+        public const double Insignificant = 0.01;
     }
 
     public enum DateFormat

@@ -62,11 +62,13 @@ namespace PWC.Asim.Core.Actors
         private readonly Shared _genBlackCfg;
         private readonly Shared _genMinRunTPa;
         private readonly Shared _genSwitchDownDelayT;
+        private readonly Shared _genSwitchUpDelayT;
 
         private readonly Shared _statHystP;
         private readonly Shared _statSt;
 
         private ulong _switchDownDelayAct;
+        private ulong _switchUpDelayAct;
 
         private ulong _iteration;
         private Shared[] _configSets = new Shared[Settings.MAX_CFG];
@@ -86,6 +88,7 @@ namespace PWC.Asim.Core.Actors
             _genBlackCfg = _sharedVars.GetOrNew("GenBlackCfg");
             _genMinRunTPa = _sharedVars.GetOrNew("GenMinRunTPa");
             _genSwitchDownDelayT = _sharedVars.GetOrNew("GenSwitchDownDelayT");
+            _genSwitchUpDelayT = _sharedVars.GetOrNew("GenSwitchUpDelayT");
             _statHystP = _sharedVars.GetOrNew("StatHystP");
             _statSt = _sharedVars.GetOrNew("StatSt");
         }
@@ -211,7 +214,7 @@ namespace PWC.Asim.Core.Actors
                 if (((ushort)_configSets[i].Val & (ushort)_genAvailCfg.Val) != (ushort)_configSets[i].Val)
                     continue;
                 double thisP = TotalPower((ushort)_configSets[i].Val);
-                if (thisP >= _genCfgSetP.Val && (thisP > 0.1D || StationSolarBatteryMode()))
+                if (thisP >= _genCfgSetP.Val && (thisP > Settings.Insignificant || StationSolarBatteryMode()))
                 {
                     found = i;
                     break;
@@ -245,7 +248,7 @@ namespace PWC.Asim.Core.Actors
             // hysteresis to the lower one, when it only needs to be applied to the middle one.
             else if (_genCfgSetP.Val < foundP - _statHystP.Val
                 // "No generator" configuration doesn't require a switch-down hysteresis!
-                || (_genCfgSetP.Val < 0.1D && foundCfg == 0))
+                || (_genCfgSetP.Val < Settings.Insignificant && foundCfg == 0))
                 bestCfg = foundCfg;
 
             // don't switch to a smaller configuration as Hysteresis wasn't satisfied
@@ -265,6 +268,20 @@ namespace PWC.Asim.Core.Actors
             else
             {
                 _switchDownDelayAct = (ulong)_genSwitchDownDelayT.Val;
+            }
+
+            if (found != -1 && bestCfg != GenSetCfg && foundP > currCfgPower)
+            {
+                if (_switchUpDelayAct > 0)
+                {
+                    _switchUpDelayAct--;
+                    // roll back the change
+                    bestCfg = GenSetCfg;
+                }
+            }
+            else
+            {
+                _switchUpDelayAct = (ulong)_genSwitchUpDelayT.Val;
             }
 
             // we didn't choose to switch down for some reason above
