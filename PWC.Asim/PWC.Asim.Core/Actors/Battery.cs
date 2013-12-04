@@ -1,7 +1,22 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿// Copyright (C) 2012, 2013  Power Water Corporation
+//
+// This file is part of "Asim" - A Renewable Energy Power Station
+// Control System Simulator
+//
+// Asim is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+// 
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+// 
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+using System;
 using PWC.Asim.Core.Contracts;
 using PWC.Asim.Core.Utils;
 
@@ -16,6 +31,7 @@ namespace PWC.Asim.Core.Actors
     {
         private readonly SharedContainer _sharedVars = SharedContainer.Instance;
 
+        private readonly Shared _battRatedE; // rated 100% charge level of battery
         private readonly Shared _battMaxE; // high charge level at which to be able to provide diesel off
         private readonly Shared _battMinE; // low charge level at which to require diesel to recharge
         private readonly Shared _battE; // current usable energy in the battery
@@ -35,6 +51,7 @@ namespace PWC.Asim.Core.Actors
 
         public Battery()
         {
+            _battRatedE = _sharedVars.GetOrNew("BattRatedE");
             _battMaxE = _sharedVars.GetOrNew("BattMaxE");
             _battMinE = _sharedVars.GetOrNew("BattMinE");
             _battE = _sharedVars.GetOrNew("BattE");
@@ -71,7 +88,7 @@ namespace PWC.Asim.Core.Actors
             double battP = Util.Limit(_battSetP.Val, _battMinP.Val, _battMaxP.Val); // user defined limits
             battP = Math.Min(battP, _battE.Val*Settings.SecondsInAnHour); // can't output more E than is stored
             battP = Math.Min(battP, _genSpinP.Val + _pvSpillP.Val); // limit to actual available power
-            battP = Math.Min(battP, Math.Max(0, (_battMaxE.Val - _battE.Val) * Settings.SecondsInAnHour)); // limit to max capacity. todo: this doesn't account for effeciency < 100%
+            battP = Math.Max(battP, -(_battRatedE.Val - _battE.Val) * Settings.SecondsInAnHour); // limit to max capacity. todo: this doesn't account for effeciency < 100%
 
             _battE.Val += -battP * _battEfficiencyPct.Val * Settings.Percent * Settings.PerHourToSec;
             _battE.Val = Math.Max(0, _battE.Val); // E can't be negative
@@ -90,7 +107,7 @@ namespace PWC.Asim.Core.Actors
 
         private void NextState()
         {
-            if (_batteryState == BatteryState.Charging && _battE.Val >= _battMaxE.Val)
+            if (_batteryState == BatteryState.Charging && _battE.Val > _battMaxE.Val)
             {
                 _batteryState = BatteryState.CanDischarge;
             }

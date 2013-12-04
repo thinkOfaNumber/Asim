@@ -77,7 +77,7 @@ namespace PWC.Asim.Core.Actors
             _simLoadP -= _shedOffP.Val;
 
             // simulate battery in / out
-            _simLoadP -= _battP.Val;
+            //_simLoadP -= _battP.Val;
 
             _loadSetP.Val = _simLoadP;
         }

@@ -22,6 +22,16 @@ using PWC.Asim.Core.Utils;
 
 namespace PWC.Asim.Core.Actors
 {
+    public enum PowerSource
+    {
+        // load is provided by Diesel plus normal system (solar etc)
+        DieselPlus = 1,
+        // load is provided by Renewable and Battery
+        SolarBattery = 2,
+        // Diesel generation needed to replenish battery
+        BatteryDepleted = 3
+    }
+
     class Station : IActor
     {
         private readonly SharedContainer _sharedVars = SharedContainer.Instance;
@@ -30,6 +40,7 @@ namespace PWC.Asim.Core.Actors
         private readonly Shared _statSpinP;
         private readonly Shared _statSpinSetP;
         private readonly Shared _statMaintainSpin;
+        private readonly Shared _statSt;
 
         private readonly Shared _loadCapAl;
         private readonly Shared _loadCapMargin;
@@ -60,10 +71,13 @@ namespace PWC.Asim.Core.Actors
         private static bool _lastStatBlack;
         private readonly Shared _statBlack;
         private double _genCoverP;
+        private PowerSource _mode = PowerSource.DieselPlus;
 
         public static bool BlackStartInit { get; private set; }
         public static bool IsBlack { get; private set; }
         public static double GenSetP { get; private set; }
+
+        
 
         public Station()
         {
@@ -72,6 +86,7 @@ namespace PWC.Asim.Core.Actors
             _statSpinP = _sharedVars.GetOrNew("StatSpinP");
             _statSpinSetP = _sharedVars.GetOrNew("StatSpinSetP");
             _statMaintainSpin = _sharedVars.GetOrNew("StatMaintainSpin");
+            _statSt = _sharedVars.GetOrNew("StatSt");
             _loadCapAl = _sharedVars.GetOrNew("LoadCapAl");
             _loadCapMargin = _sharedVars.GetOrNew("LoadCapMargin");
             _loadMaxP = _sharedVars.GetOrNew("LoadMaxP");
@@ -100,22 +115,50 @@ namespace PWC.Asim.Core.Actors
 
         public void Run(ulong iteration)
         {
-            // calc
-            double reserve = CalculateReserve();
-            bool dieselOffOk = DieselOffOk();
+            // mode
+            switch (_mode)
+            {
+                case PowerSource.DieselPlus:
+                    if (DieselOffOk())
+                        _mode = PowerSource.SolarBattery;
+                    break;
 
+                case PowerSource.SolarBattery:
+                    if (!BattDischargeOk())
+                        _mode = PowerSource.BatteryDepleted;
+                    break;
+
+                case PowerSource.BatteryDepleted:
+                    if (_genOnlineCfg.Val > 0)
+                        _mode = PowerSource.DieselPlus;
+                    break;
+
+                default:
+                    _mode = PowerSource.DieselPlus;
+                    break;
+            }
+            _statSt.Val = Convert.ToDouble(_mode);
             // battery setpoint
-            _battSetP.Val = dieselOffOk ? _pvSpillP.Val : -_battRechargeSetP.Val;
+            _battSetP.Val =
+                _mode == PowerSource.DieselPlus
+                    // Diesel plus renewable: charge with PvSpill or minimum recharge rate
+                    ? -Math.Max(_pvSpillP.Val, _battRechargeSetP.Val)
+                    // No Diesel: take full load
+                    : _loadP.Val - _pvAvailP.Val;
 
-            CalculateSetpoints(reserve, iteration);
+            CalculateSetpoints(iteration);
         }
 
-        private void CalculateSetpoints(double reserve, ulong iteration)
+        private void CalculateSetpoints(ulong iteration)
         {
             // generator coverage setpoint
-            _genCoverP = (_loadP.Val - _pvP.Val) + reserve;
+            // (when transitioning back to diesel mode, don't account for battery so as to force sufficient generators online)
+            double battCoverage = _mode == PowerSource.BatteryDepleted ? 0 : _battP.Val;
+
+            _genCoverP = (_loadP.Val - _pvP.Val - battCoverage) + CalculateReserve();
             if (_genCfgSetK.Val <= 0 || _genCfgSetK.Val > 1)
                 _genCfgSetK.Val = 1.0D;
+            // IIR filter
             _genCfgSetP.Val = _genCfgSetP.Val * (1.0D - _genCfgSetK.Val) + _genCfgSetK.Val * _genCoverP;
 
             // actual generator loading setpoint
@@ -131,7 +174,7 @@ namespace PWC.Asim.Core.Actors
             _loadCapAl.Val = iteration > 0 && _genCapP.Val < (_loadMaxP.Val * _loadCapMargin.Val) ? 1.0D : 0.0D;
 
             // blackout detection
-            IsBlack = _genOnlineCfg.Val <= 0;
+            IsBlack = _genOnlineCfg.Val <= 0 && _mode == PowerSource.DieselPlus;
             _statBlack.Val = IsBlack ? 1 : 0;
             BlackStartInit = false;
             if (IsBlack && !_lastStatBlack)
@@ -142,23 +185,22 @@ namespace PWC.Asim.Core.Actors
             _lastStatBlack = IsBlack;
         }
 
+        private bool BattDischargeOk()
+        {
+            return Convert.ToInt32(_battSt.Val) == Convert.ToInt32(BatteryState.CanDischarge);
+        }
+
         private bool DieselOffOk()
         {
-            bool battDischargeOk = Convert.ToInt32(_battSt.Val) == Convert.ToInt32(BatteryState.CanDischarge);
-            return battDischargeOk && _pvAvailP.Val > _loadP.Val + _statSpinP.Val + 20;
+            return BattDischargeOk() && _pvAvailP.Val > _loadP.Val + _statSpinSetP.Val;
         }
 
         private double CalculateReserve()
         {
             double pvCoverage = _pvP.Val * _pvCvgPct.Val * Settings.Percent;
-            if (_statMaintainSpin.Val > 0)
-            {
-                return Math.Max(_statSpinSetP.Val, pvCoverage - _shedP.Val + _shedOffP.Val);
-            }
-            else
-            {
-                return Math.Max(0, Math.Max(_statSpinSetP.Val, pvCoverage) - _shedP.Val + _shedOffP.Val);
-            }
+            return _statMaintainSpin.Val > 0
+                ? Math.Max(_statSpinSetP.Val, pvCoverage - _shedP.Val + _shedOffP.Val)
+                : Math.Max(0, Math.Max(_statSpinSetP.Val, pvCoverage) - _shedP.Val + _shedOffP.Val);
         }
 
         public void Init()

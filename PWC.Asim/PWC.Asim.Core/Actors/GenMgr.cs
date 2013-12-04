@@ -200,9 +200,6 @@ namespace PWC.Asim.Core.Actors
             ushort bestCfg = 0;
             double currCfgPower = TotalPower(GenSetCfg);
 
-            //if (_iteration == 60)
-            //    Debugger.Break();
-
             for (int i = 0; i < Settings.MAX_CFG; i++)
             {
                 // ignore configurations with unavailable sets

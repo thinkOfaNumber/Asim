@@ -1,4 +1,22 @@
-﻿using System;
+﻿// Copyright (C) 2012, 2013  Power Water Corporation
+//
+// This file is part of "Asim" - A Renewable Energy Power Station
+// Control System Simulator
+//
+// Asim is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+// 
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+// 
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -19,7 +37,7 @@ namespace ConsoleTests
         }
 
         [Test]
-        public void ChargeTest()
+        public void OverChargeTest()
         {
             // Arrange
             var sharedVars = SharedContainer.Instance;
@@ -48,8 +66,8 @@ namespace ConsoleTests
             battery.Finish();
 
             // Assert
-            Assert.IsTrue(DoublesAreEqual(50, battImportedE.Val, 0.001));
-            Assert.IsTrue(DoublesAreEqual(50, battE.Val, 0.001));
+            Assert.IsTrue(DoublesAreEqual(battMaxE.Val, battImportedE.Val, 0.001));
+            Assert.IsTrue(DoublesAreEqual(battMaxE.Val, battE.Val, 0.001));
             Assert.AreEqual(Convert.ToInt32(BatteryState.CanDischarge), Convert.ToInt32(battSt.Val));
         }
 
@@ -137,11 +155,14 @@ namespace ConsoleTests
 
             var values = new SortedDictionary<string, double[]>();
             InsertFuelConsumption(values, 0.33, 4);
-            values["BattMinP"] = new double[] { -10 };
-            values["BattMaxP"] = new double[] { 10 };
-            values["BattMaxE"] = new double[] { 50 };
+            values["BattRatedE"] = new double[] { 50 }; // battery rating kWh
+            values["BattE"] = new double[] { 30 }; // starting charge kWh
+            values["BattMinP"] = new double[] { -10 }; // max charge rate kW
+            values["BattMaxP"] = new double[] { 10 }; // max discharge rate kW
+            values["BattMinE"] = new double[] { 10 }; // need diesels (depleted)
+            values["BattMaxE"] = new double[] { 35 }; // can sustain station (Diesel off)
             values["BattEfficiencyPct"] = new double[] { 100 };
-            values["BattRechargeSetP"] = new double[] { 20 };
+            values["BattRechargeSetP"] = new double[] { 5 }; // min recharge rate when diesel on
             values["Gen1MaxP"] = new double[] { 100 };
             values["GenConfig1"] = new double[] { 1 };
             values["GenAvailSet"] = new double[] { 1 };
@@ -151,7 +172,8 @@ namespace ConsoleTests
             values["Gen1FuelCons2P"] = new double[] { 1 };
             values["Gen1FuelCons2L"] = new double[] { 50 };
             var loadProfile = new double[] { 50, 40, 30, 20, 10, 10, 10, 20, 20, 30, 30, 40, 40, 50 };
-            var pvProfile = new double[]   {  0,  0, 10, 20, 30, 40, 50, 60, 50, 40, 30, 20, 10,  0 };
+            var pvProfile = new double[] {0, 0, 10, 10, 20, 20, 25, 20, 15, 15, 10, 10, 10, 0};
+
             ulong iterations = (ulong)(loadProfile.Count() + 1) * period;
 
             StringBuilder settings = BuildCsvFor(new List<string> { "LoadP", "PvAvailP" }, new[] { loadProfile, pvProfile }, period);
@@ -162,7 +184,7 @@ namespace ConsoleTests
             var sim = new Simulator();
             sim.AddInput(settingsFile1);
             sim.AddInput(settingsFile2);
-            sim.AddOutput(outFile, new[] { "BattSetP", "BattP", "BattE", "BattIMportedE", "BattSt", "LoadP", "GenP", "PvP" });
+            sim.AddOutput(outFile, new[] { "BattSetP", "BattP", "BattE", "BattSt", "LoadP", "StatSt", "GenP", "GenOnlineCfg", "StatBlack", "PvAvailP", "PvP", "PvSpillP" });
             sim.Iterations = iterations;
 
             // Act
@@ -171,7 +193,7 @@ namespace ConsoleTests
             // Assert
             var results = CsvFileToColHash(outFile);
 
-
+            int i = 5;
         }
 
         [Test]
