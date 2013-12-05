@@ -31,10 +31,11 @@ namespace PWC.Asim.Core.Actors
             }
         }
 
-        public void Init()
-        {
+        public void Init() { }
 
-        }
+        public void Read(ulong iteration) { }
+
+        public void Write(ulong iteration) { }
 
         public void Run(ulong iteration)
         {

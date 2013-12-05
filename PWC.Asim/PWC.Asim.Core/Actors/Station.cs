@@ -79,8 +79,6 @@ namespace PWC.Asim.Core.Actors
         public static bool IsBlack { get; private set; }
         public static double GenSetP { get; private set; }
 
-        
-
         public Station()
         {
             _statP = _sharedVars.GetOrNew("StatP");
@@ -117,23 +115,32 @@ namespace PWC.Asim.Core.Actors
 
         #region Implementation of IActor
 
+        public void Init()
+        {
+            BlackoutDetection();
+        }
+
+        public void Read(ulong iteration) { }
+
         public void Run(ulong iteration)
         {
-            // mode
+            // state machine
             switch (_mode)
             {
                 case PowerSource.DieselPlus:
-                    if (DieselOffOk())
+                    if (DieselOffOk() && !IsBlack)
                         _mode = PowerSource.SolarBattery;
                     break;
 
                 case PowerSource.SolarBattery:
-                    if (!BattDischargeOk())
+                    if (IsBlack)
+                        _mode = PowerSource.DieselPlus;
+                    else if (!BattDischargeOk())
                         _mode = PowerSource.BatteryDepleted;
                     break;
 
                 case PowerSource.BatteryDepleted:
-                    if (_genOnlineCfg.Val > 0)
+                    if (_genOnlineCfg.Val > 0 || IsBlack)
                         _mode = PowerSource.DieselPlus;
                     break;
 
@@ -146,11 +153,34 @@ namespace PWC.Asim.Core.Actors
             _battSetP.Val =
                 _mode == PowerSource.DieselPlus
                     // Diesel plus renewable: charge with PvSpill or minimum recharge rate
-                    ? -Math.Max(_pvSpillP.Val, _battRechargeSetP.Val)
+                    ? -Math.Max(_pvAvailP.Val - _loadP.Val, _battRechargeSetP.Val)
                     // No Diesel: take full load
                     : _loadP.Val - _pvAvailP.Val;
 
             CalculateSetpoints(iteration);
+        }
+
+        public void Write(ulong iteration)
+        {
+            BlackoutDetection();
+        }
+
+        private void BlackoutDetection()
+        {
+            // blackout detection must be done at the beginning of the cycle to 
+            IsBlack =
+                _mode == PowerSource.DieselPlus
+                    ? _genOnlineCfg.Val <= 0
+                    : _loadP.Val - _genP.Val - _pvP.Val - _battP.Val > Settings.Insignificant;
+
+            _statBlack.Val = IsBlack ? 1 : 0;
+            BlackStartInit = false;
+            if (IsBlack && !_lastStatBlack)
+            {
+                _statBlackCnt.Val++;
+                BlackStartInit = true;
+            }
+            _lastStatBlack = IsBlack;
         }
 
         private void CalculateSetpoints(ulong iteration)
@@ -176,17 +206,6 @@ namespace PWC.Asim.Core.Actors
             _loadMaxP.Val = Math.Max(_loadP.Val, _loadMaxP.Val);
             // load capacity warning (GenCapP not set until after Station Run())
             _loadCapAl.Val = iteration > 0 && _genCapP.Val < (_loadMaxP.Val * _loadCapMargin.Val) ? 1.0D : 0.0D;
-
-            // blackout detection
-            IsBlack = _genOnlineCfg.Val <= 0 && _mode == PowerSource.DieselPlus;
-            _statBlack.Val = IsBlack ? 1 : 0;
-            BlackStartInit = false;
-            if (IsBlack && !_lastStatBlack)
-            {
-                _statBlackCnt.Val++;
-                BlackStartInit = true;
-            }
-            _lastStatBlack = IsBlack;
         }
 
         private bool BattDischargeOk()
@@ -210,11 +229,6 @@ namespace PWC.Asim.Core.Actors
             return _statMaintainSpin.Val > 0
                 ? Math.Max(_statSpinSetP.Val, pvCoverage - _shedP.Val + _shedOffP.Val)
                 : Math.Max(0, Math.Max(_statSpinSetP.Val, pvCoverage) - _shedP.Val + _shedOffP.Val);
-        }
-
-        public void Init()
-        {
-
         }
 
         public void Finish()

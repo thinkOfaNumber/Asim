@@ -42,12 +42,12 @@ namespace PWC.Asim.Core.Actors
         private readonly Shared _battImportedE; // imported energy counter
         private readonly Shared _battExportedE; // export energy counter
         private readonly Shared _battP; // current battery power (+ve export, -ve import)
-        private readonly Shared _battRechargeSetP; // setpoint to charge at
         private readonly Shared _battSt; // current State (1=Charging, 2=Discharging)
         private BatteryState _batteryState = BatteryState.Charging;
 
         private readonly Shared _genSpinP;
-        private readonly Shared _pvSpillP;
+        private readonly Shared _pvAvailP;
+        private readonly Shared _loadP;
 
         public Battery()
         {
@@ -63,16 +63,17 @@ namespace PWC.Asim.Core.Actors
             _battExportedE = _sharedVars.GetOrNew("BattExportedE");
             _battP = _sharedVars.GetOrNew("BattP");
             _battSt = _sharedVars.GetOrNew("BattSt");
-            _battRechargeSetP = _sharedVars.GetOrNew("BattRechargeSetP");
             _genSpinP = _sharedVars.GetOrNew("GenSpinP");
-            _pvSpillP = _sharedVars.GetOrNew("PvSpillP");
+            _pvAvailP = _sharedVars.GetOrNew("PvAvailP");
+            _loadP = _sharedVars.GetOrNew("LoadSetP");
         }
 
 
-        public void Init()
-        {
+        public void Init() { }
 
-        }
+        public void Read(ulong iteration) { }
+
+        public void Write(ulong iteration) { }
 
         public void Run(ulong iteration)
         {
@@ -80,27 +81,29 @@ namespace PWC.Asim.Core.Actors
             {
                 _batteryState = BatteryState.Charging;
                 _battP.Val = 0;
+                _battSt.Val = Convert.ToDouble(_batteryState);
                 return;
             }
 
             _battSt.Val = Convert.ToDouble(_batteryState);
 
             double battP = Util.Limit(_battSetP.Val, _battMinP.Val, _battMaxP.Val); // user defined limits
-            battP = Math.Min(battP, _battE.Val*Settings.SecondsInAnHour); // can't output more E than is stored
-            battP = Math.Max(battP, -(_genSpinP.Val + _pvSpillP.Val)); // limit charge to actual available power
-            battP = Math.Max(battP, -(_battRatedE.Val - _battE.Val) * Settings.SecondsInAnHour); // limit to max capacity. todo: this doesn't account for effeciency < 100%
 
-            _battE.Val += -battP * _battEfficiencyPct.Val * Settings.Percent * Settings.PerHourToSec;
-            _battE.Val = Math.Max(0, _battE.Val); // E can't be negative
-
-            if (battP >= 0)
+            if (battP >= 0) // producing
             {
+                battP = Math.Min(battP, _battE.Val * Settings.SecondsInAnHour); // can't output more E than is stored
+
                 _battExportedE.Val += battP * Settings.PerHourToSec;
             }
-            else
+            else // charging
             {
+                battP = Math.Max(battP, -(_genSpinP.Val + _pvAvailP.Val - _loadP.Val)); // limit charge to actual available power
+                battP = Math.Max(battP, -(_battRatedE.Val - _battE.Val) * Settings.SecondsInAnHour); // limit to max capacity. todo: this doesn't account for effeciency < 100%
+
                 _battImportedE.Val += -battP * Settings.PerHourToSec;
             }
+            _battE.Val += -battP * _battEfficiencyPct.Val * Settings.Percent * Settings.PerHourToSec;
+            _battE.Val = Math.Max(0, _battE.Val); // E can't be negative
             _battP.Val = battP;
             NextState();
         }

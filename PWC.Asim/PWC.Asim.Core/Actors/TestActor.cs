@@ -25,15 +25,19 @@ namespace PWC.Asim.Core.Actors
     {
         #region Implementation of IActor
 
+        public void Init()
+        {
+            Console.WriteLine("1: init.");
+        }
+
+        public void Read(ulong iteration) { }
+
         public void Run(ulong iteration)
         {
             Console.WriteLine("1: hello, world!");
         }
 
-        public void Init()
-        {
-            Console.WriteLine("1: init.");
-        }
+        public void Write(ulong iteration) { }
 
         public void Finish()
         {

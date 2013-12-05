@@ -149,9 +149,11 @@ namespace PWC.Asim.Core.Utils
                 {
                     Iteration = i;
                     for (iA = 0; iA < nActors; iA++)
-                    {
+                        actors[iA].Read(i);
+                    for (iA = 0; iA < nActors; iA++)
                         actors[iA].Run(i);
-                    }
+                    for (iA = 0; iA < nActors; iA++)
+                        actors[iA].Write(i);
                 }
                 var end = DateTime.Now;
                 innerLoopTime = end - start;

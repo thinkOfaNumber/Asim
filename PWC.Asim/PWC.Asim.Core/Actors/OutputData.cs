@@ -95,7 +95,11 @@ namespace PWC.Asim.Core.Actors
 
         #region Implementation of IActor
 
-        public void Run(ulong iteration)
+        public void Read(ulong iteration) { }
+
+        public void Run(ulong iteration) { }
+
+        public void Write(ulong iteration)
         {
             // write output every "_outputEvery" samples, or always if that is 1.
             bool write = _outputEvery == 1 || iteration == 0 || ((iteration % _outputEvery) == 0);
