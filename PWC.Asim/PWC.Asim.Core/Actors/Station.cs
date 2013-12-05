@@ -73,6 +73,7 @@ namespace PWC.Asim.Core.Actors
         private static bool _lastStatBlack;
         private readonly Shared _statBlack;
         private double _genCoverP;
+        private int _blackDelay;
         private PowerSource _mode = PowerSource.DieselPlus;
 
         public static bool BlackStartInit { get; private set; }
@@ -117,6 +118,7 @@ namespace PWC.Asim.Core.Actors
 
         public void Init()
         {
+            _blackDelay = 1;
             BlackoutDetection();
         }
 
@@ -167,11 +169,18 @@ namespace PWC.Asim.Core.Actors
 
         private void BlackoutDetection()
         {
+            if (_mode == PowerSource.DieselPlus
+                ? _genOnlineCfg.Val <= 0
+                : _loadP.Val - _genP.Val - _pvP.Val - _battP.Val > Settings.Insignificant)
+            {
+                _blackDelay++;
+            }
+            else
+            {
+                _blackDelay = 0;
+            }
             // blackout detection must be done at the beginning of the cycle to 
-            IsBlack =
-                _mode == PowerSource.DieselPlus
-                    ? _genOnlineCfg.Val <= 0
-                    : _loadP.Val - _genP.Val - _pvP.Val - _battP.Val > Settings.Insignificant;
+            IsBlack = _blackDelay >= 2;
 
             _statBlack.Val = IsBlack ? 1 : 0;
             BlackStartInit = false;
@@ -215,7 +224,7 @@ namespace PWC.Asim.Core.Actors
             return Convert.ToInt32(_battSt.Val) == Convert.ToInt32(BatteryState.CanDischarge) &&
                 // or 2. Solar plus Batt Max output can't provide load (there's no point in staying
                 // in battery discharge mode if the diesel is supplementing it):
-                _pvAvailP.Val + _battMaxP.Val > _loadP.Val;
+                _pvAvailP.Val + _battMaxP.Val >= _loadP.Val;
         }
 
         private bool DieselOffOk()

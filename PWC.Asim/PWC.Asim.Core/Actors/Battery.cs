@@ -97,7 +97,7 @@ namespace PWC.Asim.Core.Actors
             }
             else // charging
             {
-                battP = Math.Max(battP, -(_genSpinP.Val + _pvAvailP.Val - _loadP.Val)); // limit charge to actual available power
+                battP = Math.Max(battP, -(_genSpinP.Val + Math.Max(0, _pvAvailP.Val - _loadP.Val))); // limit charge to actual available power
                 battP = Math.Max(battP, -(_battRatedE.Val - _battE.Val) * Settings.SecondsInAnHour); // limit to max capacity. todo: this doesn't account for effeciency < 100%
 
                 _battImportedE.Val += -battP * Settings.PerHourToSec;
