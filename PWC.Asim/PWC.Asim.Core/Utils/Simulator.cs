@@ -110,7 +110,7 @@ namespace PWC.Asim.Core.Utils
 
         public void Simulate()
         {
-            int nActors = _inputActors.Count + _outputActors.Count + 6; // 6 is number of explicit classes set below
+            int nActors = _inputActors.Count + _outputActors.Count + 7; // 7 is number of explicit classes set below
             int iA = 0;
             var actors = new IActor[nActors];
 
@@ -122,6 +122,7 @@ namespace PWC.Asim.Core.Utils
             actors[iA++] = new SheddableLoadMgr();
             actors[iA++] = new GenMgr(GuessGeneratorState ? GenMgrType.Calculate : GenMgrType.Simulate);
             actors[iA++] = new Solar(LoadSolarDelegate());
+            actors[iA++] = new Battery();
             _outputActors.ForEach(o => actors[iA++] = new OutputData(o.Filename, o.Vars, o.Period, StartTime, DateFormat.Other));
 
             // free
@@ -148,9 +149,11 @@ namespace PWC.Asim.Core.Utils
                 {
                     Iteration = i;
                     for (iA = 0; iA < nActors; iA++)
-                    {
+                        actors[iA].Read(i);
+                    for (iA = 0; iA < nActors; iA++)
                         actors[iA].Run(i);
-                    }
+                    for (iA = 0; iA < nActors; iA++)
+                        actors[iA].Write(i);
                 }
                 var end = DateTime.Now;
                 innerLoopTime = end - start;
@@ -159,7 +162,7 @@ namespace PWC.Asim.Core.Utils
                 {
                     actors[iA].Finish();
                 }
-                Console.WriteLine("inner loop took {0}s", innerLoopTime.TotalSeconds);
+                Console.WriteLine("inner loop took {0}s, rate: {1:N0}S/s", innerLoopTime.TotalSeconds, Iteration / innerLoopTime.TotalSeconds);
             }
             catch(SimulationException e)
             {

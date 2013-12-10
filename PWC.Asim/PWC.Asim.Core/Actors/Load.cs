@@ -36,6 +36,7 @@ namespace PWC.Asim.Core.Actors
         private readonly Shared _shedOffP;
         private readonly Shared _loadMaxUpP;
         private readonly Shared _loadMaxDownP;
+        private readonly Shared _battP;
         private double _oldLoadP;
         private double _deltaLoadP;
         private double _simLoadP;
@@ -48,11 +49,14 @@ namespace PWC.Asim.Core.Actors
             _shedOffP = _sharedVars.GetOrNew("ShedOffP");
             _loadMaxUpP = _sharedVars.GetOrNew("LoadMaxUpP");
             _loadMaxDownP = _sharedVars.GetOrNew("LoadMaxDownP");
+            _battP = _sharedVars.GetOrNew("BattP");
         }
 
-        public void Init()
-        {
-        }
+        public void Init() { }
+
+        public void Read(ulong iteration) { }
+
+        public void Write(ulong iteration) { }
 
         public void Run(ulong iteration)
         {
@@ -73,6 +77,9 @@ namespace PWC.Asim.Core.Actors
 
             // simulate sheddable load switching off by substracting offline sheddable load component
             _simLoadP -= _shedOffP.Val;
+
+            // simulate battery in / out
+            //_simLoadP -= _battP.Val;
 
             _loadSetP.Val = _simLoadP;
         }

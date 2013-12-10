@@ -46,6 +46,7 @@ namespace PWC.Asim.Core.Actors
         private readonly Shared _genIdealP;
         private readonly Shared _genSpinP;
         private readonly Shared _genLowP;
+        private readonly Shared _battP;
 
         readonly Delegates.SolarController _solarController;
 
@@ -73,9 +74,14 @@ namespace PWC.Asim.Core.Actors
             _genIdealP = _sharedVars.GetOrNew("GenIdealP");
             _genSpinP = _sharedVars.GetOrNew("GenSpinP");
             _genLowP = _sharedVars.GetOrNew("GenLowP");
+            _battP = _sharedVars.GetOrNew("BattP");
         }
 
         #region Implementation of IActor
+
+        public void Read(ulong iteration) { }
+
+        public void Write(ulong iteration) { }
 
         public void Run(ulong iteration)
         {
@@ -85,13 +91,14 @@ namespace PWC.Asim.Core.Actors
             // calculate desired setpoint
             double setP = _solarController(_pvAvailP.Val, _pvSetP.Val,
                 _genP.Val, _genSpinP.Val,
-                _genIdealP.Val, _loadP.Val, _statSpinSetP.Val,
-                // magic number 5 is to prevent switching on the "fencline"
+                _genIdealP.Val, _loadP.Val - _battP.Val, _statSpinSetP.Val,
+                // magic number 5 is to prevent switching on the "fence line"
                 Math.Max(0, _genLowP.Val - _statHystP.Val - _statSpinSetP.Val + 5.0D));
 
             // apply Spinning reserve limits (PWCSLMS-41)
             if (_pvSetLimitSpinPct.Val > 0 && _pvSetLimitSpinPct.Val <= 100)
             {
+                // todo: adding an offset of 5 to the GenSpinP limit here smooths the behaviour a bit but it's not an ideal solution
                 setP = Math.Min(setP, _genSpinP.Val * _pvSetLimitSpinPct.Val * Settings.Percent);
             }
             if (_pvSetLimitSpinpPct.Val > 0 && _pvSetLimitSpinpPct.Val <= 100)

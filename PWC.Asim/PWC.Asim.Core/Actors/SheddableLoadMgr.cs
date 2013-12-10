@@ -91,6 +91,10 @@ namespace PWC.Asim.Core.Actors
                 _shedLatencyLoad[i] = 0;
         }
 
+        public void Read(ulong iteration) { }
+
+        public void Write(ulong iteration) { }
+
         public void Run(ulong iteration)
         {
             _executionManager.RunActions(iteration);

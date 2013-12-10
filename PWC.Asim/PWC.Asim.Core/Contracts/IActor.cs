@@ -20,8 +20,32 @@ namespace PWC.Asim.Core.Contracts
 {
     public interface IActor
     {
+        /// <summary>
+        /// Init() is called once at program start.
+        /// </summary>
         void Init();
+
+        /// <summary>
+        /// All Read() functions are called at the start of every iteration.
+        /// </summary>
+        /// <param name="iteration"></param>
+        void Read(ulong iteration);
+
+        /// <summary>
+        /// All Run() functions are called after all Read() functions have been completed.
+        /// </summary>
+        /// <param name="iteration"></param>
         void Run(ulong iteration);
+
+        /// <summary>
+        /// All write functions are called after all Run() functions have been completed.
+        /// </summary>
+        /// <param name="iteration"></param>
+        void Write(ulong iteration);
+
+        /// <summary>
+        /// Finish() is called once at program end.
+        /// </summary>
         void Finish();
     }
 }

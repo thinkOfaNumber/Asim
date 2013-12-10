@@ -81,6 +81,10 @@ namespace PWC.Asim.Core.Actors
 
         #region Implementation of IActor
 
+        public void Read(ulong iteration) { }
+
+        public void Write(ulong iteration) { }
+
         public void Run(ulong iteration)
         {
             if (iteration != (ulong)_nextT || _noMoreData)

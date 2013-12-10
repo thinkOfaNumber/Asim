@@ -25,7 +25,7 @@ namespace PWC.Asim.Core.Utils
         public const int MAX_GENS = 8;
         public const int MAX_CFG = 1 << MAX_GENS;
         public const int FuelCurvePoints = 5;
-        public const double PerHourToSec = 1 / (60.0 * 60.0);
+        public const double PerHourToSec = 1.0D / (60.0D * 60.0D);
         public const int SecondsInAMinute = 60;
         public const int SecondsInAnHour  = 60 * SecondsInAMinute;
         public const int SecondsInADay    = 24 * SecondsInAnHour;
@@ -44,6 +44,11 @@ namespace PWC.Asim.Core.Utils
         /// instead of dividing by 100.
         /// </summary>
         public const double Percent = 1.0D/100.0D;
+        /// <summary>
+        /// For the purposes of floating point comparision and "off" values, doubles
+        /// less than this +/-value can be considered to be zero
+        /// </summary>
+        public const double Insignificant = 0.01;
     }
 
     public enum DateFormat

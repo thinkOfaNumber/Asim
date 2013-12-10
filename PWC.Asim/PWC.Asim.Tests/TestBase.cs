@@ -87,8 +87,11 @@ namespace ConsoleTests
         [TestFixtureTearDown]
         public void TestFixtureTearDown()
         {
-            while (_tempFiles.Any())
+            var maxTries = _tempFiles.Count*3;
+            int tries = 0;
+            while (_tempFiles.Any() && tries < maxTries)
             {
+                tries ++;
                 string f = _tempFiles.Dequeue();
                 try
                 {
@@ -98,6 +101,10 @@ namespace ConsoleTests
                 {
                     _tempFiles.Enqueue(f);
                 }
+            }
+            while (_tempFiles.Any())
+            {
+                Console.WriteLine("Failed to delete temp file '{0}'", _tempFiles.Dequeue());
             }
         }
 
@@ -263,10 +270,25 @@ namespace ConsoleTests
             return values;
         }
 
-        public bool DoublesAreEqual(double a, double b)
+        public Dictionary<string,List<double>> CsvFileToColHash(string filename)
+        {
+            var file = CsvFileToArray(filename);
+            var table = new Dictionary<string, List<double>>();
+
+            for (int colidx = 1; colidx < file.First().Length; colidx++) // ignore t column
+            {
+                string name = file.Select(col => col[colidx]).Where((s, i) => i == 0).First();
+                var values = file.Select(col => col[colidx]).Where((s, i) => i > 0).Select(Convert.ToDouble).ToList();
+                table[name] = values;
+            }
+
+            return table;
+        }
+
+        public bool DoublesAreEqual(double a, double b, double margin = 0.0001)
         {
             double diff = Math.Abs(a - b);
-            if (diff < 0.0001)
+            if (diff < margin)
             {
                 return true;
             }
