@@ -134,6 +134,7 @@ See http://wix.tramontana.co.hu/tutorial and
         <File Id='ReferenceManualPDF' Name='Reference Manual.pdf' Source='..\..\docs\Reference Manual.pdf' />
         <File Id='QuickStartPDF' Name='Quick Start.pdf' Source='..\..\docs\QuickStartGuide\Quick Start.pdf' />
         <File Id='ConfigGuidePDF' Name='Configuration Guide.pdf' Source='..\..\docs\ConfigurationGuide\Configuration Guide.pdf' />
+        <File Id='NpcAnalyserXLSX' Name='NPC Analyser Template.xlsx' Source='..\..\docs\NPC Analyser Template.xlsx' />
         <File Id='ReadMe' Name='Readme.txt' Source='..\..\README.txt' />
         <File Id='LicenceCopyRtf' Name='Copying.rtf' Source='..\..\COPYING.rtf' />
         <File Id='LicenceCopyTxt' Name='Copying.txt' Source='..\..\COPYING.txt' />
