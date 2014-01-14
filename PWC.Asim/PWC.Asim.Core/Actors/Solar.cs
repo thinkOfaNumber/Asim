@@ -22,7 +22,7 @@ using PWC.Asim.Core.Utils;
 
 namespace PWC.Asim.Core.Actors
 {
-    class Solar : IActor
+    public class Solar : IActor
     {
         private readonly SharedContainer _sharedVars = SharedContainer.Instance;
         private readonly Shared _pvP;
@@ -119,14 +119,14 @@ namespace PWC.Asim.Core.Actors
 
             // apply ramp limited setpoint
             setP = Math.Max(0, _pvP.Val + deltaSetP);
-            // limit setpoint to available solar power
-            setP = Math.Min(setP, _pvAvailP.Val);
             // solar trips off in case of a black station
             if (_statBlack.Val > 0)
                 setP = 0;
 
             // assume solar farm outputs this immediatly
-            _pvP.Val = _pvSetP.Val = setP;
+            _pvSetP.Val = setP;
+            // limit actual PvP to available solar power
+            _pvP.Val = Math.Min(setP, _pvAvailP.Val);
 
             // calculate spill
             _pvSpillP.Val = _pvAvailP.Val - _pvP.Val;

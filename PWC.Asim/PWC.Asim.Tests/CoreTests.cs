@@ -22,6 +22,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using NUnit.Framework;
+using PWC.Asim.Core.Actors;
 using PWC.Asim.Core.Contracts;
 using PWC.Asim.Core.Utils;
 
@@ -610,6 +611,31 @@ namespace ConsoleTests
             var genOnlineCfg = fileArray.Select(col => col[2]).Where((s, i) => i > 0).Select(Convert.ToDouble).ToList();
 
             return new {genP = gen2P, genCfg = genOnlineCfg};
+        }
+
+        [Test]
+        // check that PV SetP is not limited by PvAvailP
+        public void PvSetPnotLimitedByAvailP()
+        {
+            // Arrange
+            var sharedVars = SharedContainer.Instance;
+            IActor pvController = new Solar((Delegates.SolarController)Solar.DefaultSolarController);
+            var pvSetP = sharedVars.GetOrDefault("PvSetP");
+            var pvAvailP = sharedVars.GetOrNew("PvAvailP");
+            var loadP = sharedVars.GetOrNew("LoadSetP");
+            var genIdealP = sharedVars.GetOrNew("GenIdealP");
+
+            pvAvailP.Val = 20;
+            loadP.Val = 100;
+            genIdealP.Val = 0;
+
+            // Act
+            pvController.Init();
+            pvController.Run(1);
+            pvController.Finish();
+
+            // Assert
+            Assert.LessOrEqual(20, pvSetP.Val);
         }
     }
 }
