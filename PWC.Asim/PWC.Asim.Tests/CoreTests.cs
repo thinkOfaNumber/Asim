@@ -637,5 +637,81 @@ namespace ConsoleTests
             // Assert
             Assert.LessOrEqual(20, pvSetP.Val);
         }
+
+        [Test]
+        public void PvSetPQuantize()
+        {
+            // Arrange
+            var sharedVars = SharedContainer.Instance;
+            IActor pvController = new Solar((Delegates.SolarController)Solar.DefaultSolarController);
+            var pvSetP = sharedVars.GetOrDefault("PvSetP");
+            var pvAvailP = sharedVars.GetOrNew("PvAvailP");
+            var loadP = sharedVars.GetOrNew("LoadSetP");
+            var genIdealP = sharedVars.GetOrNew("GenIdealP");
+            var pvStepP = sharedVars.GetOrNew("PvStepP");
+            var pvStepT = sharedVars.GetOrNew("PvStepT");
+            var pvSetPprofile = new List<double>();
+            const int iterations = 1000;
+
+            pvAvailP.Val = iterations;
+            genIdealP.Val = 0;
+            pvStepP.Val = 10;
+            pvStepT.Val = 0;
+
+            // Act
+            pvController.Init();
+            for (ulong i = 0; i < iterations; i++)
+            {
+                loadP.Val = i;
+                pvController.Run(i);
+                pvSetPprofile.Add(pvSetP.Val);
+            }
+            pvController.Finish();
+
+            // Assert
+            Assert.AreEqual(iterations, pvSetPprofile.Count);
+            Assert.Less(0, pvSetP.Val);
+            pvSetPprofile.ForEach(setP=>Assert.IsTrue((int)(setP % 10) == 0));
+        }
+
+        [Test]
+        public void PvSetPQuantizeHold()
+        {
+            // Arrange
+            var sharedVars = SharedContainer.Instance;
+            IActor pvController = new Solar((Delegates.SolarController)Solar.DefaultSolarController);
+            var pvSetP = sharedVars.GetOrDefault("PvSetP");
+            var pvAvailP = sharedVars.GetOrNew("PvAvailP");
+            var loadP = sharedVars.GetOrNew("LoadSetP");
+            var genIdealP = sharedVars.GetOrNew("GenIdealP");
+            var pvStepP = sharedVars.GetOrNew("PvStepP");
+            var pvStepT = sharedVars.GetOrNew("PvStepT");
+            var pvSetPprofile = new List<double>();
+            const int iterations = 1000;
+
+            pvAvailP.Val = iterations;
+            genIdealP.Val = 0;
+            pvStepP.Val = 10;
+            pvStepT.Val = 60;
+
+            // Act
+            pvController.Init();
+            for (ulong i = 0; i < iterations; i++)
+            {
+                loadP.Val = i;
+                pvController.Run(i);
+                pvSetPprofile.Add(pvSetP.Val);
+            }
+            pvController.Finish();
+
+            // Assert
+            Assert.AreEqual(iterations, pvSetPprofile.Count);
+            Assert.Less(0, pvSetP.Val);
+            pvSetPprofile.ForEach(setP => Assert.IsTrue((int)(setP % 10) == 0));
+            for (int i = 0; i < iterations - 60; i += 60)
+            {
+                pvSetPprofile.GetRange(i, 60).ForEach(setP => Assert.AreEqual(i, setP));
+            }
+        }
     }
 }
