@@ -7,7 +7,7 @@ See http://wix.tramontana.co.hu/tutorial and
 -->
 <!-- These variables define the Windows Installer product version, product code and upgrade code. They   -->
 <!-- will be used later on in this file.                                                                 -->
-<?define Property_ProductVersion = "2.2.3" ?>
+<?define Property_ProductVersion = "2.2.4" ?>
 <?define Property_ProductCode = "*" ?>
 <?define Property_UpgradeCode = "F8BEFBA3-8DA8-4165-A420-F01EB22561E5" ?>
 

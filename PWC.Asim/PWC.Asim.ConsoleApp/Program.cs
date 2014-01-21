@@ -258,8 +258,7 @@ Asim.exe --iterations 100000 --path C:\\Users\\Joe\\Data
         private static string Version()
         {
             var version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
-            DateTime buildDate = new DateTime(2000, 1, 1).AddDays(version.Build);
-            return string.Format("version {0}-{1}", buildDate.ToString("yyyy/MM/dd"), version.Revision);
+            return string.Format("version {0}.{1}.{2}", version.Major, version.Minor, version.Revision);
         }
     }
 }
