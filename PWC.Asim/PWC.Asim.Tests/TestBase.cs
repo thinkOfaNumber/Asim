@@ -373,7 +373,9 @@ namespace ConsoleTests
             var vars = sharedVars.GetAllNames();
             foreach (string n in vars)
             {
-                sharedVars.GetExisting(n).Val = 0;
+                var s = sharedVars.GetExisting(n);
+                s.ScaleFunction(null, null);
+                s.Val = 0;
             }
         }
     }

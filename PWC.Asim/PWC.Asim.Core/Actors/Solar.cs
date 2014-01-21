@@ -22,7 +22,7 @@ using PWC.Asim.Core.Utils;
 
 namespace PWC.Asim.Core.Actors
 {
-    class Solar : IActor
+    public class Solar : IActor
     {
         private readonly SharedContainer _sharedVars = SharedContainer.Instance;
         private readonly Shared _pvP;
@@ -37,6 +37,10 @@ namespace PWC.Asim.Core.Actors
         private readonly Shared _pvMaxLimP;
         private readonly Shared _pvSetLimitSpinPct;
         private readonly Shared _pvSetLimitSpinpPct;
+        private readonly Shared _pvStepP;
+        private int _stepPq;
+        private readonly Shared _pvStepT;
+        private int _stepT;
 
         private readonly Shared _loadP;
         private readonly Shared _statSpinSetP;
@@ -65,6 +69,8 @@ namespace PWC.Asim.Core.Actors
             _pvMaxLimP = _sharedVars.GetOrNew("PvMaxLimP");
             _pvSetLimitSpinPct = _sharedVars.GetOrNew("PvSetLimitSpinPct");
             _pvSetLimitSpinpPct = _sharedVars.GetOrNew("PvSetLimitSpinpPct");
+            _pvStepP = _sharedVars.GetOrNew("PvStepP");
+            _pvStepT = _sharedVars.GetOrNew("PvStepT");
 
             _loadP = _sharedVars.GetOrNew("LoadSetP");
             _statSpinSetP = _sharedVars.GetOrNew("StatSpinSetP");
@@ -119,14 +125,29 @@ namespace PWC.Asim.Core.Actors
 
             // apply ramp limited setpoint
             setP = Math.Max(0, _pvP.Val + deltaSetP);
-            // limit setpoint to available solar power
-            setP = Math.Min(setP, _pvAvailP.Val);
+
             // solar trips off in case of a black station
             if (_statBlack.Val > 0)
                 setP = 0;
 
+            // quantize SetP
+            if (_pvStepP.Val >= 1) // less than 1 will be rounded down to 0, which means no quantization.
+            {
+                _stepPq = (int) _pvStepP.Val;
+                if (_pvStepT.Val < 1 || --_stepT == 0)
+                    _pvSetP.Val = (int)setP / _stepPq * _stepPq;
+
+                if (_stepT <= 0)
+                    _stepT = (int) _pvStepT.Val;
+            }
+            else
+            {
+                _pvSetP.Val = setP;
+            }
+
+            // limit actual PvP to available solar power and 
             // assume solar farm outputs this immediatly
-            _pvP.Val = _pvSetP.Val = setP;
+            _pvP.Val = Math.Min(_pvSetP.Val, _pvAvailP.Val);
 
             // calculate spill
             _pvSpillP.Val = _pvAvailP.Val - _pvP.Val;

@@ -101,12 +101,12 @@ namespace PWC.Asim.Core.Actors
                             string[] func = _cells[i + 1].Split(_scaleChars, StringSplitOptions.RemoveEmptyEntries);
                             // update the translation function which will be used to translate this
                             // variable the next time it is read.  Essentially it is (d * x + k)
-                            _values[i].Update.ScaleFunction = v => v * Convert.ToDouble(func[0]) + Convert.ToDouble(func[1]);
+                            _values[i].Update.ScaleFunction(Convert.ToDouble(func[0]), Convert.ToDouble(func[1]));
                         }
                         else
                         {
                             // ignore first cell
-                            _values[i].Update.Val = Convert.ToDouble(_cells[i + 1]);
+                            _values[i].Update.SetWithScale(Convert.ToDouble(_cells[i + 1]));
                         }
                     }
                     catch (Exception e)
@@ -158,7 +158,6 @@ namespace PWC.Asim.Core.Actors
                 {
                     _values[i].DoScale = true;
                     _values[i].Update = _sharedVars.GetOrNew(headers[i].Substring(1));
-                    _values[i].Update.ScaleFunction = v => v;
                 }
                 else
                 {

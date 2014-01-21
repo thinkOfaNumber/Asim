@@ -63,7 +63,14 @@ namespace PWC.Asim.ExcelTools.Logic
             {
                 Directory.SetCurrentDirectory(fileInfo.DirectoryName);
                 _weOpened = !IsFileOpen(fileInfo.FullName);
-                _workBook = System.Runtime.InteropServices.Marshal.BindToMoniker(fileInfo.FullName) as Excel.Workbook;
+                if (_weOpened)
+                    _workBook =
+                        System.Runtime.InteropServices.Marshal.BindToMoniker(fileInfo.FullName) as Excel.Workbook;
+                else
+                {
+                    var app = System.Runtime.InteropServices.Marshal.GetActiveObject("Excel.Application") as Excel.Application;
+                    _workBook = app.ActiveWorkbook;
+                }
                 GetWorkbookData();
             }
             catch (Exception e)
@@ -377,7 +384,8 @@ namespace PWC.Asim.ExcelTools.Logic
                         ChartObject resultChart = resultCharts.Add(150, 100, 300, 100);
                         _resultChartPage = resultChart.Chart;
 
-                        _workBook.Application.Visible = true;
+                        if (_weOpened)
+                            _workBook.Application.Visible = true;
                     }
 
                     if (message.Contains("%"))
