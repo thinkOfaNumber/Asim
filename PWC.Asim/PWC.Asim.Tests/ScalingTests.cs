@@ -72,7 +72,7 @@ namespace ConsoleTests
             for (int i = 0; i < fooProfile.Count; i++)
             {
                 var expectedValue = _scalingValues[i/10].Item1 + _scalingValues[i/10].Item2;
-                Assert.AreEqual(expectedValue, fooProfile[i]);
+                Assert.IsTrue(DoublesAreEqual(expectedValue, fooProfile[i]));
             }
         }
 
@@ -114,9 +114,9 @@ namespace ConsoleTests
             for (int i = 0; i < fooProfile1.Count; i++)
             {
                 var expectedValue = _scalingValues[i / 10].Item1 + _scalingValues[i / 10].Item2;
-                Assert.AreEqual(expectedValue, fooProfile1[i]);
+                Assert.IsTrue(DoublesAreEqual(expectedValue, fooProfile1[i]));
                 expectedValue = _negScalingValues[i / 10].Item1 + _negScalingValues[i / 10].Item2;
-                Assert.AreEqual(expectedValue, fooProfile2[i]);
+                Assert.IsTrue(DoublesAreEqual(expectedValue, fooProfile2[i]));
             }
         }
 
@@ -152,10 +152,36 @@ namespace ConsoleTests
             for (int i = 0; i < fooProfile1.Count; i++)
             {
                 var expectedValue = _scalingValues[i / 10].Item1 + _scalingValues[i / 10].Item2;
-                Assert.AreEqual(expectedValue, fooProfile1[i]);
+                Assert.IsTrue(DoublesAreEqual(expectedValue, fooProfile1[i]));
                 expectedValue = _negScalingValues[i / 10].Item1 + _negScalingValues[i / 10].Item2;
-                Assert.AreEqual(expectedValue, fooProfile2[i]);
+                Assert.IsTrue(DoublesAreEqual(expectedValue, fooProfile2[i]));
             }
+        }
+
+        [Test]
+        public void ScalingDegredation()
+        {
+            // setting a variable to it's own value shouldn't continually scale it
+
+            // Arrange
+            var sharedVars = SharedContainer.Instance;
+            var foo1 = sharedVars.GetOrNew("FooVar1");
+            var fooProfile1 = new List<double>();
+
+
+            // Act
+            foo1.Val = 1000;
+            foo1.ScaleFunction(0.9, 0);
+            for (ulong i = 0; i < 100; i++)
+            {
+                foo1.Val = foo1.Val;
+                fooProfile1.Add(foo1.Val);
+            }
+
+            // Assert
+            Assert.AreEqual(100, fooProfile1.Count);
+
+            fooProfile1.ForEach(v=> Assert.AreEqual(900, v));
         }
 
         private List<string> GenerateFile(List<Tuple<double, double>> scales, string var, int step)

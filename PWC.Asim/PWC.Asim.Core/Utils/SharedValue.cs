@@ -31,19 +31,32 @@ namespace PWC.Asim.Core.Utils
 
     public class Shared
     {
-        private Func<double, double> _scaleFunction;
+        private double? _multiplier;
+        private double? _offset;
+
         /// <summary>
-        /// A function with the definition:
-        /// double Func(double input);
-        /// which is called when a scaling modifier is required to be applied
-        /// to this value.
+        /// Set the multiplier and offset values for scaling this value when called by the
+        /// SetWithScale() function.
         /// </summary>
-        public Func<double, double> ScaleFunction
+        /// <param name="multiplier">multiplier</param>
+        /// <param name="offset">offset</param>
+        public void ScaleFunction(double? multiplier, double? offset)
         {
-            set
+            if (multiplier.HasValue && offset.HasValue)
             {
-                _scaleFunction = value;
-                _val = _scaleFunction == null ? _unscaled : _scaleFunction(_unscaled);
+                if (_multiplier.HasValue && _offset.HasValue)
+                    // undo old scale
+                    _val = (_val - _offset.Value)/_multiplier.Value;
+
+                // apply new scale
+                _val = (_val * multiplier.Value) + offset.Value;
+                _multiplier = multiplier;
+                _offset = offset;
+            }
+            else
+            {
+                _multiplier = null;
+                _offset = null;
             }
         }
 
@@ -53,28 +66,46 @@ namespace PWC.Asim.Core.Utils
         /// void Method(double oldVal, double newVal);
         /// </summary>
         public event EventHandler<SharedEventArgs> OnValueChanged;
+
         private double _val;
-        private double _unscaled;
+
+        /// <summary>
+        /// The setter & getter for the value of this Shared object.
+        /// </summary>
         public double Val
         {
             get { return _val; }
             set
             {
-                if (OnValueChanged != null && _unscaled != value)
-                {
-                    OnValueChanged(this, new SharedEventArgs { OldValue = _unscaled, NewValue = value });
-                }
-                _unscaled = value;
-                _val = _scaleFunction == null ? _unscaled : _scaleFunction(_unscaled);
+                ValueChangedEvent(value);
+                _val = value;
+            }
+        }
+
+        /// <summary>
+        /// This function should generally only be called from the input data file loader, where
+        /// any input data should be scaled.  All normal set operations shouldn't keep scaling the
+        /// same value and may use the Val property.
+        /// </summary>
+        /// <param name="value">value to set according to ScaleFunction</param>
+        public void SetWithScale(double value)
+        {
+            ValueChangedEvent(value);
+            if (_multiplier.HasValue && _offset.HasValue)
+                _val = (value*_multiplier.Value) + _offset.Value;
+            else
+                _val = value;
+        }
+
+        private void ValueChangedEvent(double newValue)
+        {
+            if (OnValueChanged != null && _val != newValue)
+            {
+                OnValueChanged(this, new SharedEventArgs { OldValue = _val, NewValue = newValue });
             }
         }
 
         internal string Name;
-
-        public Shared()
-        {
-            ScaleFunction = null;
-        }
     }
 
     public sealed class SharedContainer
@@ -82,6 +113,11 @@ namespace PWC.Asim.Core.Utils
         // singleton
         private static readonly SharedContainer instance = new SharedContainer();
         private SharedContainer() { }
+
+        /// <summary>
+        /// Use this property to get an instance of the SharedContainer singleton for creating
+        /// and accessing Shared values.
+        /// </summary>
         public static SharedContainer Instance
         {
             get
@@ -122,6 +158,7 @@ namespace PWC.Asim.Core.Utils
 
         public List<string> MatchGlobs(string[] globs)
         {
+            // ReSharper disable once TooWideLocalVariableScope
             Regex regex;
             var varList = new List<string>();
 
