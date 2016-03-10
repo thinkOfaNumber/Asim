@@ -19,7 +19,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 USING
 
 Further details on running the program can be found in the manual -
-"Reference Manaul.pdf", in the docs folder.
+"Reference Manual.pdf", in the docs folder.
 
 
 CONTRIBUTING
@@ -40,7 +40,7 @@ a few hours of simulation time.
 
 Include in your bug report all input files and executable files required to
 reproduce the bug, and detailed steps to reproduce the behaviour, as well as
-what behaviour you were expecing.
+what behaviour you were expecting.
 
 
 KNOWN ISSUES

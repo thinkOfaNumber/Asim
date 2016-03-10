@@ -22,7 +22,7 @@ folder like so:
 NEW TESTS
 
 - Each test must go into the folder "tests"
-- Each test must be in it's own folder.
+- Each test must be in its own folder.
 - The suggested folder name is <number>-<testname> eg 00-PVtest,
 - 01-loadtest, etc.
 - Each test must contain the file "run", the first line of which will
